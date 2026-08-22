@@ -1,6 +1,7 @@
 package dev.paperarc.mixin.common;
 
 import com.destroystokyo.paper.event.server.ServerTickEndEvent;
+import com.destroystokyo.paper.event.server.ServerTickStartEvent;
 import dev.paperarc.event.PaperArcEvents;
 import net.minecraft.server.MinecraftServer;
 import org.spongepowered.asm.mixin.Mixin;
@@ -36,6 +37,21 @@ public abstract class MinecraftServerMixin {
 
     @Unique
     private boolean paperarc$tickTiming;
+
+    /**
+     * ServerTickStartEvent 触发点。
+     * <p>
+     * 对照 Paper：事件在 tickCount++ 前发出（参数为 tickCount+1），
+     * 位于 pause-while-empty 早退分支之后——只有真正执行的 tick 才发。
+     * 用 tickChildren 调用点定位可精确落在同一位置。
+     */
+    @Inject(
+        method = "tickServer",
+        at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;tickChildren(Ljava/util/function/BooleanSupplier;)V")
+    )
+    private void paperarc$onTickBegin(BooleanSupplier hasTimeLeft, CallbackInfo ci) {
+        PaperArcEvents.fire(new ServerTickStartEvent(this.tickCount + 1));
+    }
 
     @Inject(method = "tickServer", at = @At("HEAD"))
     private void paperarc$onTickStart(BooleanSupplier hasTimeLeft, CallbackInfo ci) {
