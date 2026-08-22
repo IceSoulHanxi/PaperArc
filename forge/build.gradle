@@ -25,7 +25,6 @@ configurations {
 
 dependencies {
     forge libs.forge
-    modApi libs.architectury.forge
 
     compileOnly libs.spigot.api
 

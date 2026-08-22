@@ -7,13 +7,6 @@ architectury {
     neoForge()
 }
 
-loom {
-    neoForge {
-        mixinConfig 'paperarc-common.mixins.json'
-        mixinConfig 'paperarc-neoforge.mixins.json'
-    }
-}
-
 configurations {
     common
     shadowCommon
@@ -24,7 +17,6 @@ configurations {
 
 dependencies {
     neoForge libs.neoforge
-    modApi libs.architectury.neoforge
 
     compileOnly libs.spigot.api
 

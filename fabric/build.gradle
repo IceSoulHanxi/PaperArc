@@ -18,7 +18,6 @@ configurations {
 dependencies {
     modImplementation libs.fabric.loader
     modImplementation libs.fabric.api
-    modApi libs.architectury.fabric
 
     compileOnly libs.spigot.api
 

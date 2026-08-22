@@ -5,7 +5,6 @@ architectury {
 dependencies {
     // 仅用于 fabric-loader 的 @Environment 注解与 mixin 基础设施，不得使用其他类
     modImplementation libs.fabric.loader
-    modApi libs.architectury.common
 
     // Bukkit / Arclight 层：运行时由 Arclight 提供，仅编译期可见
     compileOnly libs.spigot.api

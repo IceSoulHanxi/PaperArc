@@ -4,7 +4,6 @@ architectury-loom = '1.9-SNAPSHOT'
 # architectury-plugin 版本在根 build.gradle 的 plugins 块中声明（3.4-SNAPSHOT）
 
 # Architectury API（MC 1.21.x 对应 13.x 线）
-architectury-api = '13.0.11'
 
 # MC 与加载器
 minecraft = '1.21.1'
@@ -18,10 +17,6 @@ spigot-api = '1.21.1-R0.1-SNAPSHOT'
 arclight-api = '1.7.3'
 
 [libraries]
-architectury-common = { module = 'dev.architectury:architectury', version.ref = 'architectury-api' }
-architectury-forge = { module = 'dev.architectury:architectury-forge', version.ref = 'architectury-api' }
-architectury-neoforge = { module = 'dev.architectury:architectury-neoforge', version.ref = 'architectury-api' }
-architectury-fabric = { module = 'dev.architectury:architectury-fabric', version.ref = 'architectury-api' }
 
 forge = { module = 'net.minecraftforge:forge', version.ref = 'forge' }
 neoforge = { module = 'net.neoforged:neoforge', version.ref = 'neoforge' }
