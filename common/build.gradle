@@ -9,4 +9,11 @@ dependencies {
     // Bukkit / Arclight 层：运行时由 Arclight 提供，仅编译期可见
     compileOnly libs.spigot.api
     compileOnly libs.arclight.api
+
+    // Paper API 表面（实现目标）；shade 由各平台子项目负责
+    compileOnly libs.paper.api
+
+    // MixinExtras 注解（common mixin 可用 @WrapOperation 等）
+    compileOnly libs.mixinextras.common
+    annotationProcessor libs.mixinextras.common
 }

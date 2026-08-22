@@ -27,6 +27,16 @@ dependencies {
     forge libs.forge
 
     compileOnly libs.spigot.api
+    compileOnly libs.paper.api
+
+    // MixinExtras：Forge 不自带，通过 loom include 嵌套 jar（remapJar 自动写 mods.toml [[files]]）
+    implementation libs.mixinextras.forge
+    annotationProcessor libs.mixinextras.forge
+    include libs.mixinextras.forge
+
+    // shade paper-api + adventure（shadowJar 中排除 org.bukkit，运行时用 Arclight 的）
+    shadowCommon(libs.paper.api) { transitive = false }
+    shadowCommon(libs.bundles.adventure) { transitive = false }
 
     common(project(path: ':common', configuration: 'namedElements')) { transitive = false }
     shadowCommon(project(path: ':common', configuration: 'transformProductionForge')) { transitive = false }
@@ -43,6 +53,8 @@ processResources {
 shadowJar {
     exclude 'fabric.mod.json'
     exclude 'architectury.common.json'
+    exclude 'org/bukkit/**'
+    exclude 'module-info.class'
 
     configurations = [project.configurations.shadowCommon]
     archiveClassifier = 'dev-shadow'

@@ -19,6 +19,15 @@ dependencies {
     neoForge libs.neoforge
 
     compileOnly libs.spigot.api
+    compileOnly libs.paper.api
+
+    // MixinExtras：NeoForge 20.4+ 运行时自带，仅需编译期 + 注解处理器
+    compileOnly libs.mixinextras.neoforge
+    annotationProcessor libs.mixinextras.neoforge
+
+    // shade paper-api + adventure（shadowJar 中排除 org.bukkit，运行时用 Arclight 的）
+    shadowCommon(libs.paper.api) { transitive = false }
+    shadowCommon(libs.bundles.adventure) { transitive = false }
 
     common(project(path: ':common', configuration: 'namedElements')) { transitive = false }
     shadowCommon(project(path: ':common', configuration: 'transformProductionNeoForge')) { transitive = false }
@@ -35,6 +44,8 @@ processResources {
 shadowJar {
     exclude 'fabric.mod.json'
     exclude 'architectury.common.json'
+    exclude 'org/bukkit/**'
+    exclude 'module-info.class'
 
     configurations = [project.configurations.shadowCommon]
     archiveClassifier = 'dev-shadow'

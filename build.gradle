@@ -28,6 +28,8 @@ subprojects {
         maven { url = 'https://oss.sonatype.org/content/repositories/snapshots/' }
         // arclight-api 所在仓库
         maven { url = 'https://maven.izzel.io/releases' }
+        // Paper API 仓库
+        maven { url = 'https://repo.papermc.io/repository/maven-public/' }
         // Architectury 运行库
         maven { url = 'https://maven.architectury.dev/' }
         // NeoForge 官方仓库

@@ -20,6 +20,16 @@ dependencies {
     modImplementation libs.fabric.api
 
     compileOnly libs.spigot.api
+    compileOnly libs.paper.api
+
+    // MixinExtras：loom include 自动嵌套 jar 并引导初始化
+    implementation libs.mixinextras.fabric
+    annotationProcessor libs.mixinextras.fabric
+    include libs.mixinextras.fabric
+
+    // shade paper-api + adventure（shadowJar 中排除 org.bukkit，运行时用 Arclight 的）
+    shadowCommon(libs.paper.api) { transitive = false }
+    shadowCommon(libs.bundles.adventure) { transitive = false }
 
     common(project(path: ':common', configuration: 'namedElements')) { transitive = false }
     shadowCommon(project(path: ':common', configuration: 'transformProductionFabric')) { transitive = false }
@@ -35,6 +45,8 @@ processResources {
 
 shadowJar {
     exclude 'architectury.common.json'
+    exclude 'org/bukkit/**'
+    exclude 'module-info.class'
 
     configurations = [project.configurations.shadowCommon]
     archiveClassifier = 'dev-shadow'

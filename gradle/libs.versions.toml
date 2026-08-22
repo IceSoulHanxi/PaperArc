@@ -16,6 +16,14 @@ fabric-api = '0.116.15+1.21.1'
 spigot-api = '1.21.1-R0.1-SNAPSHOT'
 arclight-api = '1.7.3'
 
+# Paper API（shade 进最终 jar，排除 org.bukkit——运行时用 Arclight 的）
+paper-api = '1.21.1-R0.1-SNAPSHOT'
+# Paper API 引用的 adventure 组件库（运行时 Arclight 不提供，需随包 shade）
+adventure = '4.17.0'
+examination = '1.3.0'
+# MixinExtras（wrap 系列注入器，降低与 Arclight mixin 的冲突面）
+mixinextras = '0.4.1'
+
 [libraries]
 
 forge = { module = 'net.minecraftforge:forge', version.ref = 'forge' }
@@ -25,3 +33,28 @@ fabric-api = { module = 'net.fabricmc.fabric-api:fabric-api', version.ref = 'fab
 
 spigot-api = { module = 'org.spigotmc:spigot-api', version.ref = 'spigot-api' }
 arclight-api = { module = 'io.izzel.arclight:arclight-api', version.ref = 'arclight-api' }
+
+paper-api = { module = 'io.papermc.paper:paper-api', version.ref = 'paper-api' }
+adventure-api = { module = 'net.kyori:adventure-api', version.ref = 'adventure' }
+adventure-key = { module = 'net.kyori:adventure-key', version.ref = 'adventure' }
+adventure-text-minimessage = { module = 'net.kyori:adventure-text-minimessage', version.ref = 'adventure' }
+adventure-serializer-gson = { module = 'net.kyori:adventure-text-serializer-gson', version.ref = 'adventure' }
+adventure-serializer-json = { module = 'net.kyori:adventure-text-serializer-json', version.ref = 'adventure' }
+adventure-serializer-legacy = { module = 'net.kyori:adventure-text-serializer-legacy', version.ref = 'adventure' }
+adventure-serializer-plain = { module = 'net.kyori:adventure-text-serializer-plain', version.ref = 'adventure' }
+examination-api = { module = 'net.kyori:examination-api', version.ref = 'examination' }
+examination-string = { module = 'net.kyori:examination-string', version.ref = 'examination' }
+
+mixinextras-common = { module = 'io.github.llamalad7:mixinextras-common', version.ref = 'mixinextras' }
+mixinextras-fabric = { module = 'io.github.llamalad7:mixinextras-fabric', version.ref = 'mixinextras' }
+mixinextras-forge = { module = 'io.github.llamalad7:mixinextras-forge', version.ref = 'mixinextras' }
+mixinextras-neoforge = { module = 'io.github.llamalad7:mixinextras-neoforge', version.ref = 'mixinextras' }
+
+[bundles]
+# shade 用：paper-api 类加载所需的完整 adventure 依赖面
+adventure = [
+    'adventure-api', 'adventure-key', 'adventure-text-minimessage',
+    'adventure-serializer-gson', 'adventure-serializer-json',
+    'adventure-serializer-legacy', 'adventure-serializer-plain',
+    'examination-api', 'examination-string',
+]
