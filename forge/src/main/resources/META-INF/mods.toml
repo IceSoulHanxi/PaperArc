@@ -1,0 +1,28 @@
+modLoader="javafml"
+loaderVersion="[52,)"
+license="GPL-3.0-or-later"
+
+[[mods]]
+modId="paperarc"
+version="${version}"
+displayName="PaperArc"
+description='''
+Paper API compatibility layer for Arclight.
+Implements the io.papermc.paper / com.destroystokyo.paper plugin API surface
+on top of Arclight's Bukkit layer, without porting Paper's optimizations.
+'''
+authors="PaperArc Contributors"
+
+[[dependencies.paperarc]]
+    modId="forge"
+    mandatory=true
+    versionRange="[52,)"
+    ordering="NONE"
+    side="SERVER"
+
+[[dependencies.paperarc]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.21.1,1.22)"
+    ordering="NONE"
+    side="SERVER"

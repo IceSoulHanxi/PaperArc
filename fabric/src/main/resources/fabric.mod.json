@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "paperarc",
+  "version": "${version}",
+  "name": "PaperArc",
+  "description": "Paper API compatibility layer for Arclight. Implements the paper plugin API surface without Paper's optimizations.",
+  "authors": [
+    "PaperArc Contributors"
+  ],
+  "license": "GPL-3.0-or-later",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.paperarc.fabric.PaperArcFabric"
+    ]
+  },
+  "mixins": [
+    "paperarc-common.mixins.json",
+    "paperarc-fabric.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "architectury": ">=13.0.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21"
+  }
+}

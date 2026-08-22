@@ -1,0 +1,32 @@
+[versions]
+# 工具链（与 Arclight FeudalKings 对齐）
+architectury-loom = '1.9-SNAPSHOT'
+# architectury-plugin 版本在根 build.gradle 的 plugins 块中声明（3.4-SNAPSHOT）
+
+# Architectury API（MC 1.21.x 对应 13.x 线）
+architectury-api = '13.0.11'
+
+# MC 与加载器
+minecraft = '1.21.1'
+forge = '1.21.1-52.1.14'
+neoforge = '21.1.248'
+fabric-loader = '0.19.3'
+fabric-api = '0.116.15+1.21.1'
+
+# Bukkit / Arclight 层（运行时由 Arclight 提供，仅编译期依赖）
+spigot-api = '1.21.1-R0.1-SNAPSHOT'
+arclight-api = '1.7.3'
+
+[libraries]
+architectury-common = { module = 'dev.architectury:architectury', version.ref = 'architectury-api' }
+architectury-forge = { module = 'dev.architectury:architectury-forge', version.ref = 'architectury-api' }
+architectury-neoforge = { module = 'dev.architectury:architectury-neoforge', version.ref = 'architectury-api' }
+architectury-fabric = { module = 'dev.architectury:architectury-fabric', version.ref = 'architectury-api' }
+
+forge = { module = 'net.minecraftforge:forge', version.ref = 'forge' }
+neoforge = { module = 'net.neoforged:neoforge', version.ref = 'neoforge' }
+fabric-loader = { module = 'net.fabricmc:fabric-loader', version.ref = 'fabric-loader' }
+fabric-api = { module = 'net.fabricmc.fabric-api:fabric-api', version.ref = 'fabric-api' }
+
+spigot-api = { module = 'org.spigotmc:spigot-api', version.ref = 'spigot-api' }
+arclight-api = { module = 'io.izzel.arclight:arclight-api', version.ref = 'arclight-api' }
