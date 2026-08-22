@@ -7,7 +7,18 @@
     "MinecraftServerMixin",
     "ServerGamePacketListenerImplMixin",
     "PlayerMixin",
-    "ConnectionMixin"
+    "ConnectionMixin",
+    "PlayerAttackPreMixin",
+    "LivingEntityArmorChangeMixin",
+    "LivingEntityJumpMixin",
+    "PandaJumpMixin",
+    "RavagerJumpMixin",
+    "MerchantResultSlotTradeMixin",
+    "ServerLevelCallbacksMixin",
+    "item.ExperienceBottleItemMixin",
+    "item.ThrowablePotionItemMixin",
+    "item.WindChargeItemMixin",
+    "item.FireworkRocketItemMixin"
   ],
   "server": [],
   "injectors": {
