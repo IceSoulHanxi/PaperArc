@@ -10,6 +10,14 @@ dependencies {
     compileOnly libs.spigot.api
     compileOnly libs.arclight.api
 
+    // Arclight 本地构建产出的 Spigot（NMS + CraftBukkit，mojang mappings 反混淆版）。
+    // 工件不发布远端，只能从 Arclight 仓库的本地 arclight_repo 拿；
+    // 用于后续 mixin 中引用 Craft* 类与 NMS 精确签名。
+    // 条件启用：Arclight 构建完成后该目录出现工件即自动生效。
+    if (file("${rootDir}/../Arclight/.gradle/arclight/arclight_repo/io/izzel/arclight/generated/spigot/1.21.1").isDirectory()) {
+        compileOnly 'io.izzel.arclight.generated:spigot:1.21.1:deobf'
+    }
+
     // Paper API 表面（实现目标）；shade 由各平台子项目负责
     compileOnly libs.paper.api
 

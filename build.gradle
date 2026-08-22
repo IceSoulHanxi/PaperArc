@@ -34,6 +34,8 @@ subprojects {
         maven { url = 'https://maven.architectury.dev/' }
         // NeoForge 官方仓库
         maven { url = 'https://maven.neoforged.net/releases' }
+        // Arclight 本地构建产出（io.izzel.arclight.generated:spigot 等），不发布远端
+        maven { url = uri("${rootDir}/../Arclight/.gradle/arclight/arclight_repo") }
     }
 
     java {
