@@ -11,5 +11,6 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.inventory.view.EnchantmentView", remap = false)
 public interface EnchantmentViewIfaceMixin {
 
+    @Unique
     public abstract void setEnchantmentSeed(int p0);
 }

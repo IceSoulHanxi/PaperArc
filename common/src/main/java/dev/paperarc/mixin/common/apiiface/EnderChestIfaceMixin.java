@@ -11,5 +11,6 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.block.EnderChest", remap = false)
 public interface EnderChestIfaceMixin {
 
+    @Unique
     public abstract boolean isBlocked();
 }

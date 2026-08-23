@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.TNTPrimed", remap = false)
 public interface TNTPrimedIfaceMixin {
 
+    @Unique
     public abstract void setBlockData(org.bukkit.block.data.BlockData p0);
 
+    @Unique
     public abstract org.bukkit.block.data.BlockData getBlockData();
 }

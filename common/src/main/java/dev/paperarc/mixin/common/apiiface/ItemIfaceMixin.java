@@ -11,19 +11,27 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Item", remap = false)
 public interface ItemIfaceMixin {
 
+    @Unique
     public abstract boolean canMobPickup();
 
+    @Unique
     public abstract void setCanMobPickup(boolean p0);
 
+    @Unique
     public abstract boolean canPlayerPickup();
 
+    @Unique
     public abstract void setCanPlayerPickup(boolean p0);
 
+    @Unique
     public abstract boolean willAge();
 
+    @Unique
     public abstract void setWillAge(boolean p0);
 
+    @Unique
     public abstract int getHealth();
 
+    @Unique
     public abstract void setHealth(int p0);
 }

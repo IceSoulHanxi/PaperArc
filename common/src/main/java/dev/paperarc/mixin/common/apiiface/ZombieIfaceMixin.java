@@ -11,19 +11,27 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Zombie", remap = false)
 public interface ZombieIfaceMixin {
 
+    @Unique
     public abstract boolean isDrowning();
 
+    @Unique
     public abstract void startDrowning(int p0);
 
+    @Unique
     public abstract void stopDrowning();
 
+    @Unique
     public abstract void setArmsRaised(boolean p0);
 
+    @Unique
     public abstract boolean isArmsRaised();
 
+    @Unique
     public abstract boolean shouldBurnInDay();
 
+    @Unique
     public abstract void setShouldBurnInDay(boolean p0);
 
+    @Unique
     public abstract boolean supportsBreakingDoors();
 }

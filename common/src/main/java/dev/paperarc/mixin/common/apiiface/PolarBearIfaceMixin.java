@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.PolarBear", remap = false)
 public interface PolarBearIfaceMixin {
 
+    @Unique
     public abstract boolean isStanding();
 
+    @Unique
     public abstract void setStanding(boolean p0);
 }

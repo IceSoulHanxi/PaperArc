@@ -11,5 +11,6 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Minecart", remap = false)
 public interface MinecartIfaceMixin {
 
+    @Unique
     public abstract org.bukkit.Material getMinecartMaterial();
 }

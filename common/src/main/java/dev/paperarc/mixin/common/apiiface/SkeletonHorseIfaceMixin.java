@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.SkeletonHorse", remap = false)
 public interface SkeletonHorseIfaceMixin {
 
+    @Unique
     public abstract boolean isTrap();
 
+    @Unique
     public abstract void setTrap(boolean p0);
 }

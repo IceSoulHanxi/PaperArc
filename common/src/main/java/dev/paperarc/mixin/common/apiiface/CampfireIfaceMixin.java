@@ -11,13 +11,18 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.block.Campfire", remap = false)
 public interface CampfireIfaceMixin {
 
+    @Unique
     public abstract void stopCooking();
 
+    @Unique
     public abstract void startCooking();
 
+    @Unique
     public abstract boolean stopCooking(int p0);
 
+    @Unique
     public abstract boolean startCooking(int p0);
 
+    @Unique
     public abstract boolean isCookingDisabled(int p0);
 }

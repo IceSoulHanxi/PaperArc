@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Fireball", remap = false)
 public interface FireballIfaceMixin {
 
+    @Unique
     public abstract void setPower(org.bukkit.util.Vector p0);
 
+    @Unique
     public abstract org.bukkit.util.Vector getPower();
 }

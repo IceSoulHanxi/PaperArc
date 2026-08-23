@@ -11,5 +11,6 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.block.data.type.Candle", remap = false)
 public interface CandleIfaceMixin {
 
+    @Unique
     public abstract int getMinimumCandles();
 }

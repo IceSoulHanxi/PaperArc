@@ -11,9 +11,12 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.block.Beacon", remap = false)
 public interface BeaconIfaceMixin {
 
+    @Unique
     public abstract double getEffectRange();
 
+    @Unique
     public abstract void setEffectRange(double p0);
 
+    @Unique
     public abstract void resetEffectRange();
 }

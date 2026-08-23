@@ -11,15 +11,21 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.scoreboard.Score", remap = false)
 public interface ScoreIfaceMixin {
 
+    @Unique
     public abstract boolean isTriggerable();
 
+    @Unique
     public abstract void setTriggerable(boolean p0);
 
+    @Unique
     public abstract net.kyori.adventure.text.Component customName();
 
+    @Unique
     public abstract void customName(net.kyori.adventure.text.Component p0);
 
+    @Unique
     public abstract io.papermc.paper.scoreboard.numbers.NumberFormat numberFormat();
 
+    @Unique
     public abstract void numberFormat(io.papermc.paper.scoreboard.numbers.NumberFormat p0);
 }

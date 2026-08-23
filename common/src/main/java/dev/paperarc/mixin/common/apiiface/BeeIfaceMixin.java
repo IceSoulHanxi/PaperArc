@@ -11,17 +11,24 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Bee", remap = false)
 public interface BeeIfaceMixin {
 
+    @Unique
     public abstract void setRollingOverride(net.kyori.adventure.util.TriState p0);
 
+    @Unique
     public abstract net.kyori.adventure.util.TriState getRollingOverride();
 
+    @Unique
     public abstract boolean isRolling();
 
+    @Unique
     public abstract void setCropsGrownSincePollination(int p0);
 
+    @Unique
     public abstract int getCropsGrownSincePollination();
 
+    @Unique
     public abstract void setTicksSincePollination(int p0);
 
+    @Unique
     public abstract int getTicksSincePollination();
 }

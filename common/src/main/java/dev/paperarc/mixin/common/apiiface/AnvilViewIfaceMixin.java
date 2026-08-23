@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.inventory.view.AnvilView", remap = false)
 public interface AnvilViewIfaceMixin {
 
+    @Unique
     public abstract boolean bypassesEnchantmentLevelRestriction();
 
+    @Unique
     public abstract void bypassEnchantmentLevelRestriction(boolean p0);
 }

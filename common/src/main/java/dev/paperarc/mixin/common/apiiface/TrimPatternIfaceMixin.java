@@ -11,5 +11,6 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.inventory.meta.trim.TrimPattern", remap = false)
 public interface TrimPatternIfaceMixin {
 
+    @Unique
     public abstract net.kyori.adventure.text.Component description();
 }

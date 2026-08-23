@@ -11,13 +11,18 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.FallingBlock", remap = false)
 public interface FallingBlockIfaceMixin {
 
+    @Unique
     public abstract void setBlockData(org.bukkit.block.data.BlockData p0);
 
+    @Unique
     public abstract org.bukkit.block.BlockState getBlockState();
 
+    @Unique
     public abstract void setBlockState(org.bukkit.block.BlockState p0);
 
+    @Unique
     public abstract boolean doesAutoExpire();
 
+    @Unique
     public abstract void shouldAutoExpire(boolean p0);
 }

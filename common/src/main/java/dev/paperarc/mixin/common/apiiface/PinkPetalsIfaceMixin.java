@@ -11,5 +11,6 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.block.data.type.PinkPetals", remap = false)
 public interface PinkPetalsIfaceMixin {
 
+    @Unique
     public abstract int getMinimumFlowerAmount();
 }

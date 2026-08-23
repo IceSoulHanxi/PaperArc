@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.inventory.Inventory", remap = false)
 public interface InventoryIfaceMixin {
 
+    @Unique
     public abstract int close();
 
+    @Unique
     public abstract org.bukkit.inventory.InventoryHolder getHolder(boolean p0);
 }

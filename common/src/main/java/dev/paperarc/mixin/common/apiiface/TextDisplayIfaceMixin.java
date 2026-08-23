@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.TextDisplay", remap = false)
 public interface TextDisplayIfaceMixin {
 
+    @Unique
     public abstract net.kyori.adventure.text.Component text();
 
+    @Unique
     public abstract void text(net.kyori.adventure.text.Component p0);
 }

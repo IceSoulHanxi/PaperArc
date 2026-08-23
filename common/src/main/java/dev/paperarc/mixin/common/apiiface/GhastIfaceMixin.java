@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Ghast", remap = false)
 public interface GhastIfaceMixin {
 
+    @Unique
     public abstract int getExplosionPower();
 
+    @Unique
     public abstract void setExplosionPower(int p0);
 }

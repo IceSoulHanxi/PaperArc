@@ -11,11 +11,15 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Witch", remap = false)
 public interface WitchIfaceMixin {
 
+    @Unique
     public abstract int getPotionUseTimeLeft();
 
+    @Unique
     public abstract void setPotionUseTimeLeft(int p0);
 
+    @Unique
     public abstract org.bukkit.inventory.ItemStack getDrinkingPotion();
 
+    @Unique
     public abstract void setDrinkingPotion(org.bukkit.inventory.ItemStack p0);
 }

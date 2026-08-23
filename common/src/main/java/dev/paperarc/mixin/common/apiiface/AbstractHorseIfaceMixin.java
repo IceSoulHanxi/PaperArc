@@ -11,17 +11,24 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.AbstractHorse", remap = false)
 public interface AbstractHorseIfaceMixin {
 
+    @Unique
     public abstract org.bukkit.entity.Horse.Variant getVariant();
 
+    @Unique
     public abstract boolean isEatingGrass();
 
+    @Unique
     public abstract void setEatingGrass(boolean p0);
 
+    @Unique
     public abstract boolean isRearing();
 
+    @Unique
     public abstract void setRearing(boolean p0);
 
+    @Unique
     public abstract boolean isEating();
 
+    @Unique
     public abstract void setEating(boolean p0);
 }

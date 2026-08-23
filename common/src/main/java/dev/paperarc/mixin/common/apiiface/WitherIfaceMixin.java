@@ -11,15 +11,21 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Wither", remap = false)
 public interface WitherIfaceMixin {
 
+    @Unique
     public abstract boolean isCharged();
 
+    @Unique
     public abstract int getInvulnerableTicks();
 
+    @Unique
     public abstract void setInvulnerableTicks(int p0);
 
+    @Unique
     public abstract boolean canTravelThroughPortals();
 
+    @Unique
     public abstract void setCanTravelThroughPortals(boolean p0);
 
+    @Unique
     public abstract void enterInvulnerabilityPhase();
 }

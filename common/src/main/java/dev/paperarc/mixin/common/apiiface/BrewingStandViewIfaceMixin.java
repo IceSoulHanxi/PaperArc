@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.inventory.view.BrewingStandView", remap = false)
 public interface BrewingStandViewIfaceMixin {
 
+    @Unique
     public abstract void setRecipeBrewTime(int p0);
 
+    @Unique
     public abstract int getRecipeBrewTime();
 }

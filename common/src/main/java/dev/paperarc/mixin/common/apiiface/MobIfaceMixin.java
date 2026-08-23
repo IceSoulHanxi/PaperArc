@@ -11,27 +11,39 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Mob", remap = false)
 public interface MobIfaceMixin {
 
+    @Unique
     public abstract com.destroystokyo.paper.entity.Pathfinder getPathfinder();
 
+    @Unique
     public abstract boolean isInDaylight();
 
-    public abstract void lookAt(org.bukkit.Location p0);
+    @Unique
+    public abstract void lookAt(org.bukkit.entity.Entity p0);
 
-    public abstract void lookAt(org.bukkit.Location p0, float p1, float p2);
+    @Unique
+    public abstract void lookAt(double p0, double p1, double p2);
 
+    @Unique
     public abstract void lookAt(double p0, double p1, double p2, float p3, float p4);
 
+    @Unique
     public abstract int getHeadRotationSpeed();
 
+    @Unique
     public abstract int getMaxHeadPitch();
 
+    @Unique
     public abstract boolean isAggressive();
 
+    @Unique
     public abstract void setAggressive(boolean p0);
 
+    @Unique
     public abstract boolean isLeftHanded();
 
+    @Unique
     public abstract void setLeftHanded(boolean p0);
 
+    @Unique
     public abstract int getPossibleExperienceReward();
 }

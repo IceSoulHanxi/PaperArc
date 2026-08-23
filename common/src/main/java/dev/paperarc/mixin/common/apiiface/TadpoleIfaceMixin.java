@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Tadpole", remap = false)
 public interface TadpoleIfaceMixin {
 
+    @Unique
     public abstract void setAgeLock(boolean p0);
 
+    @Unique
     public abstract boolean getAgeLock();
 }

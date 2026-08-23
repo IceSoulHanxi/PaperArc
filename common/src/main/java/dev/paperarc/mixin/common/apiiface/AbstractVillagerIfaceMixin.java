@@ -11,5 +11,6 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.AbstractVillager", remap = false)
 public interface AbstractVillagerIfaceMixin {
 
+    @Unique
     public abstract void resetOffers();
 }

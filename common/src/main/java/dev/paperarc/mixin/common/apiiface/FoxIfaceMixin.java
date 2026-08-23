@@ -11,17 +11,24 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Fox", remap = false)
 public interface FoxIfaceMixin {
 
+    @Unique
     public abstract void setInterested(boolean p0);
 
+    @Unique
     public abstract boolean isInterested();
 
+    @Unique
     public abstract void setLeaping(boolean p0);
 
+    @Unique
     public abstract boolean isLeaping();
 
+    @Unique
     public abstract void setDefending(boolean p0);
 
+    @Unique
     public abstract boolean isDefending();
 
+    @Unique
     public abstract void setFaceplanted(boolean p0);
 }

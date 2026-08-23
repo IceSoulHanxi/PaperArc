@@ -11,5 +11,6 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Warden", remap = false)
 public interface WardenIfaceMixin {
 
+    @Unique
     public abstract int getHighestAnger();
 }

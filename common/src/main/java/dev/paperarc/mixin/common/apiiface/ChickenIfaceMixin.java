@@ -11,11 +11,15 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Chicken", remap = false)
 public interface ChickenIfaceMixin {
 
+    @Unique
     public abstract boolean isChickenJockey();
 
+    @Unique
     public abstract void setIsChickenJockey(boolean p0);
 
+    @Unique
     public abstract int getEggLayTime();
 
+    @Unique
     public abstract void setEggLayTime(int p0);
 }

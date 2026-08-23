@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.block.data.type.DecoratedPot", remap = false)
 public interface DecoratedPotIfaceMixin {
 
+    @Unique
     public abstract boolean isCracked();
 
+    @Unique
     public abstract void setCracked(boolean p0);
 }

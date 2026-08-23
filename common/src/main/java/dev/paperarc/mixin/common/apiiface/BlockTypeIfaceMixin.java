@@ -11,5 +11,6 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.block.BlockType", remap = false)
 public interface BlockTypeIfaceMixin {
 
+    @Unique
     public abstract boolean hasCollision();
 }

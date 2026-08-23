@@ -11,15 +11,21 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Trident", remap = false)
 public interface TridentIfaceMixin {
 
+    @Unique
     public abstract boolean hasGlint();
 
+    @Unique
     public abstract void setGlint(boolean p0);
 
+    @Unique
     public abstract int getLoyaltyLevel();
 
+    @Unique
     public abstract void setLoyaltyLevel(int p0);
 
+    @Unique
     public abstract boolean hasDealtDamage();
 
+    @Unique
     public abstract void setHasDealtDamage(boolean p0);
 }

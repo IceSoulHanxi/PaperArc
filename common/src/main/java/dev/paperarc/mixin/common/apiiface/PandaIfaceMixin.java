@@ -11,15 +11,21 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Panda", remap = false)
 public interface PandaIfaceMixin {
 
+    @Unique
     public abstract void setSneezeTicks(int p0);
 
+    @Unique
     public abstract int getSneezeTicks();
 
+    @Unique
     public abstract void setEatingTicks(int p0);
 
+    @Unique
     public abstract int getEatingTicks();
 
+    @Unique
     public abstract void setUnhappyTicks(int p0);
 
+    @Unique
     public abstract org.bukkit.entity.Panda.Gene getCombinedGene();
 }

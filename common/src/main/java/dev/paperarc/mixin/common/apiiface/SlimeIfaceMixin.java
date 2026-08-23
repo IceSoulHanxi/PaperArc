@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Slime", remap = false)
 public interface SlimeIfaceMixin {
 
+    @Unique
     public abstract boolean canWander();
 
+    @Unique
     public abstract void setWander(boolean p0);
 }

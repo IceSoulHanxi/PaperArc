@@ -11,9 +11,12 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.attribute.AttributeInstance", remap = false)
 public interface AttributeInstanceIfaceMixin {
 
+    @Unique
     public abstract org.bukkit.attribute.AttributeModifier getModifier(java.util.UUID p0);
 
-    public abstract void removeModifier(java.util.UUID p0);
+    @Unique
+    public abstract void removeModifier(net.kyori.adventure.key.Key p0);
 
+    @Unique
     public abstract void addTransientModifier(org.bukkit.attribute.AttributeModifier p0);
 }

@@ -11,5 +11,6 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.generator.WorldInfo", remap = false)
 public interface WorldInfoIfaceMixin {
 
+    @Unique
     public abstract org.bukkit.generator.BiomeProvider vanillaBiomeProvider();
 }

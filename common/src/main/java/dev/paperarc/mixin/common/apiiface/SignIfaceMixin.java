@@ -11,11 +11,15 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.block.Sign", remap = false)
 public interface SignIfaceMixin {
 
+    @Unique
     public abstract java.util.List lines();
 
+    @Unique
     public abstract java.util.UUID getAllowedEditorUniqueId();
 
+    @Unique
     public abstract void setAllowedEditorUniqueId(java.util.UUID p0);
 
+    @Unique
     public abstract org.bukkit.block.sign.Side getInteractableSideFor(double p0, double p1);
 }

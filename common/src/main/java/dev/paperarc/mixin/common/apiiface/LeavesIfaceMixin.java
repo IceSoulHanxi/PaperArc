@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.block.data.type.Leaves", remap = false)
 public interface LeavesIfaceMixin {
 
+    @Unique
     public abstract int getMaximumDistance();
 
+    @Unique
     public abstract int getMinimumDistance();
 }

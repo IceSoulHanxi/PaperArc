@@ -11,15 +11,21 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.WanderingTrader", remap = false)
 public interface WanderingTraderIfaceMixin {
 
+    @Unique
     public abstract void setCanDrinkPotion(boolean p0);
 
+    @Unique
     public abstract boolean canDrinkPotion();
 
+    @Unique
     public abstract void setCanDrinkMilk(boolean p0);
 
+    @Unique
     public abstract boolean canDrinkMilk();
 
+    @Unique
     public abstract org.bukkit.Location getWanderingTowards();
 
+    @Unique
     public abstract void setWanderingTowards(org.bukkit.Location p0);
 }

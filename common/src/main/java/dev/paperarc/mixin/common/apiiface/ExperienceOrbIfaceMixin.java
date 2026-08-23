@@ -11,13 +11,18 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.ExperienceOrb", remap = false)
 public interface ExperienceOrbIfaceMixin {
 
+    @Unique
     public abstract int getCount();
 
+    @Unique
     public abstract void setCount(int p0);
 
+    @Unique
     public abstract java.util.UUID getTriggerEntityId();
 
+    @Unique
     public abstract java.util.UUID getSourceEntityId();
 
+    @Unique
     public abstract org.bukkit.entity.ExperienceOrb.SpawnReason getSpawnReason();
 }

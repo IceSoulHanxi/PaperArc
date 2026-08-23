@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.inventory.ItemType", remap = false)
 public interface ItemTypeIfaceMixin {
 
+    @Unique
     public abstract com.google.common.collect.Multimap getDefaultAttributeModifiers();
 
+    @Unique
     public abstract org.bukkit.inventory.ItemRarity getItemRarity();
 }

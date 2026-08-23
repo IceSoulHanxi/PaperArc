@@ -11,11 +11,15 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Cat", remap = false)
 public interface CatIfaceMixin {
 
+    @Unique
     public abstract void setLyingDown(boolean p0);
 
+    @Unique
     public abstract boolean isLyingDown();
 
+    @Unique
     public abstract void setHeadUp(boolean p0);
 
+    @Unique
     public abstract boolean isHeadUp();
 }

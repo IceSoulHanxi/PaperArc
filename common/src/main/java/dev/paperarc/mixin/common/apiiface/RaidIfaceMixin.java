@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.Raid", remap = false)
 public interface RaidIfaceMixin {
 
+    @Unique
     public abstract int getId();
 
+    @Unique
     public abstract org.bukkit.boss.BossBar getBossBar();
 }

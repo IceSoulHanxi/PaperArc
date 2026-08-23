@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.block.SculkSensor", remap = false)
 public interface SculkSensorIfaceMixin {
 
+    @Unique
     public abstract int getListenerRange();
 
+    @Unique
     public abstract void setListenerRange(int p0);
 }

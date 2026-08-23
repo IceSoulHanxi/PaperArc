@@ -11,13 +11,18 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.boss.DragonBattle", remap = false)
 public interface DragonBattleIfaceMixin {
 
+    @Unique
     public abstract int getGatewayCount();
 
+    @Unique
     public abstract boolean spawnNewGateway();
 
+    @Unique
     public abstract void spawnNewGateway(io.papermc.paper.math.Position p0);
 
+    @Unique
     public abstract java.util.List getRespawnCrystals();
 
+    @Unique
     public abstract java.util.List getHealingCrystals();
 }

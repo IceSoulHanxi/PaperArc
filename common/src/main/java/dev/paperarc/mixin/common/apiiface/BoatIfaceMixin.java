@@ -11,5 +11,6 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Boat", remap = false)
 public interface BoatIfaceMixin {
 
+    @Unique
     public abstract org.bukkit.Material getBoatMaterial();
 }

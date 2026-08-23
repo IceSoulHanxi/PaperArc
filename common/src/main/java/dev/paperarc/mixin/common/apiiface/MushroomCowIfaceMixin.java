@@ -11,9 +11,12 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.MushroomCow", remap = false)
 public interface MushroomCowIfaceMixin {
 
+    @Unique
     public abstract boolean addEffectToNextStew(io.papermc.paper.potion.SuspiciousEffectEntry p0, boolean p1);
 
+    @Unique
     public abstract java.util.List getStewEffects();
 
+    @Unique
     public abstract void setStewEffects(java.util.List p0);
 }

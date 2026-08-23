@@ -11,5 +11,6 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Skeleton", remap = false)
 public interface SkeletonIfaceMixin {
 
+    @Unique
     public abstract int inPowderedSnowTime();
 }

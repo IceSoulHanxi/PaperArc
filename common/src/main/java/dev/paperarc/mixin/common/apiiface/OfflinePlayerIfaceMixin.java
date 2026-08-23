@@ -11,11 +11,15 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.OfflinePlayer", remap = false)
 public interface OfflinePlayerIfaceMixin {
 
+    @Unique
     public abstract boolean isConnected();
 
+    @Unique
     public abstract long getLastLogin();
 
+    @Unique
     public abstract long getLastSeen();
 
+    @Unique
     public abstract io.papermc.paper.persistence.PersistentDataContainerView getPersistentDataContainer();
 }

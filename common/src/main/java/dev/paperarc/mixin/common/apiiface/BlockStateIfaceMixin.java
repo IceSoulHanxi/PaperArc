@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.block.BlockState", remap = false)
 public interface BlockStateIfaceMixin {
 
+    @Unique
     public abstract boolean isCollidable();
 
+    @Unique
     public abstract java.util.Collection getDrops(org.bukkit.inventory.ItemStack p0, org.bukkit.entity.Entity p1);
 }

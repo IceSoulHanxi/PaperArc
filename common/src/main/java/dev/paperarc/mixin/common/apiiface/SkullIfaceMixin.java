@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.block.Skull", remap = false)
 public interface SkullIfaceMixin {
 
+    @Unique
     public abstract void setPlayerProfile(com.destroystokyo.paper.profile.PlayerProfile p0);
 
+    @Unique
     public abstract com.destroystokyo.paper.profile.PlayerProfile getPlayerProfile();
 }

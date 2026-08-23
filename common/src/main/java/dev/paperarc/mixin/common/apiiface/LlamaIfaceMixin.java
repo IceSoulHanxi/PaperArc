@@ -11,15 +11,21 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Llama", remap = false)
 public interface LlamaIfaceMixin {
 
+    @Unique
     public abstract boolean inCaravan();
 
+    @Unique
     public abstract void joinCaravan(org.bukkit.entity.Llama p0);
 
+    @Unique
     public abstract void leaveCaravan();
 
+    @Unique
     public abstract org.bukkit.entity.Llama getCaravanHead();
 
+    @Unique
     public abstract boolean hasCaravanTail();
 
+    @Unique
     public abstract org.bukkit.entity.Llama getCaravanTail();
 }

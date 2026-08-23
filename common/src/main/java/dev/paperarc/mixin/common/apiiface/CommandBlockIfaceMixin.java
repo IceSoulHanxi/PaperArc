@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.block.CommandBlock", remap = false)
 public interface CommandBlockIfaceMixin {
 
+    @Unique
     public abstract net.kyori.adventure.text.Component name();
 
+    @Unique
     public abstract void name(net.kyori.adventure.text.Component p0);
 }

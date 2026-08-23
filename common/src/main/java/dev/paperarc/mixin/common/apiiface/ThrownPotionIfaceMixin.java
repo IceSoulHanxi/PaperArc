@@ -11,9 +11,12 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.ThrownPotion", remap = false)
 public interface ThrownPotionIfaceMixin {
 
+    @Unique
     public abstract org.bukkit.inventory.meta.PotionMeta getPotionMeta();
 
+    @Unique
     public abstract void setPotionMeta(org.bukkit.inventory.meta.PotionMeta p0);
 
+    @Unique
     public abstract void splash();
 }

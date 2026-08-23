@@ -11,11 +11,15 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Piglin", remap = false)
 public interface PiglinIfaceMixin {
 
+    @Unique
     public abstract void setChargingCrossbow(boolean p0);
 
+    @Unique
     public abstract boolean isChargingCrossbow();
 
+    @Unique
     public abstract void setDancing(boolean p0);
 
+    @Unique
     public abstract boolean isDancing();
 }

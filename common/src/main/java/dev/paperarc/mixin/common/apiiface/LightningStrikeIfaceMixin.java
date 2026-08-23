@@ -11,9 +11,12 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.LightningStrike", remap = false)
 public interface LightningStrikeIfaceMixin {
 
+    @Unique
     public abstract int getFlashCount();
 
+    @Unique
     public abstract void setFlashCount(int p0);
 
+    @Unique
     public abstract org.bukkit.entity.Entity getCausingEntity();
 }

@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Rabbit", remap = false)
 public interface RabbitIfaceMixin {
 
+    @Unique
     public abstract void setMoreCarrotTicks(int p0);
 
+    @Unique
     public abstract int getMoreCarrotTicks();
 }

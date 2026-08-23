@@ -11,5 +11,6 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.block.sign.SignSide", remap = false)
 public interface SignSideIfaceMixin {
 
+    @Unique
     public abstract java.util.List lines();
 }

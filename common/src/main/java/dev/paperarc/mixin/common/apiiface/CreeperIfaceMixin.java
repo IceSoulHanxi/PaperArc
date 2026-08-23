@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Creeper", remap = false)
 public interface CreeperIfaceMixin {
 
+    @Unique
     public abstract void setIgnited(boolean p0);
 
+    @Unique
     public abstract boolean isIgnited();
 }

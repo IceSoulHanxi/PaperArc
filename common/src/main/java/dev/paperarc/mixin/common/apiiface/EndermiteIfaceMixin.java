@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Endermite", remap = false)
 public interface EndermiteIfaceMixin {
 
+    @Unique
     public abstract void setLifetimeTicks(int p0);
 
+    @Unique
     public abstract int getLifetimeTicks();
 }

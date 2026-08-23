@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.EnderDragon", remap = false)
 public interface EnderDragonIfaceMixin {
 
+    @Unique
     public abstract org.bukkit.Location getPodium();
 
+    @Unique
     public abstract void setPodium(org.bukkit.Location p0);
 }

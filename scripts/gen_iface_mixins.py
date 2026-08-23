@@ -63,7 +63,7 @@ for ifqn in sorted(ifaces):
             print(f'  [SKIP-static] {ifqn}.{mn}（静态方法需带体，后续处理）')
             continue
         sig = sig_of(mn, key[1])
-        decls.append('    public abstract ' + sig + ';')
+        decls.append('    @Unique\n    public abstract ' + sig + ';')
     if not decls: continue
     body = (
         f'package {PKG};\n\n'

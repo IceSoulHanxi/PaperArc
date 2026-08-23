@@ -11,11 +11,15 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.FishHook", remap = false)
 public interface FishHookIfaceMixin {
 
+    @Unique
     public abstract int getWaitTime();
 
+    @Unique
     public abstract void setWaitTime(int p0);
 
+    @Unique
     public abstract int getTimeUntilBite();
 
+    @Unique
     public abstract void resetFishingState();
 }

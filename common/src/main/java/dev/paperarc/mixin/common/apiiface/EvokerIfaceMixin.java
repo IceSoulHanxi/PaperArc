@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Evoker", remap = false)
 public interface EvokerIfaceMixin {
 
+    @Unique
     public abstract org.bukkit.entity.Sheep getWololoTarget();
 
+    @Unique
     public abstract void setWololoTarget(org.bukkit.entity.Sheep p0);
 }

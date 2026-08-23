@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.block.Hopper", remap = false)
 public interface HopperIfaceMixin {
 
+    @Unique
     public abstract void setTransferCooldown(int p0);
 
+    @Unique
     public abstract int getTransferCooldown();
 }

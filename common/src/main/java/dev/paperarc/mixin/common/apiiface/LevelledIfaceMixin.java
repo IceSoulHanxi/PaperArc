@@ -11,5 +11,6 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.block.data.Levelled", remap = false)
 public interface LevelledIfaceMixin {
 
+    @Unique
     public abstract int getMinimumLevel();
 }

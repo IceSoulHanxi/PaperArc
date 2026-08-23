@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.inventory.EntityEquipment", remap = false)
 public interface EntityEquipmentIfaceMixin {
 
+    @Unique
     public abstract float getDropChance(org.bukkit.inventory.EquipmentSlot p0);
 
+    @Unique
     public abstract void setDropChance(org.bukkit.inventory.EquipmentSlot p0, float p1);
 }

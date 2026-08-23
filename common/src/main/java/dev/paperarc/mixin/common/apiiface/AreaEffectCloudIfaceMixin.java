@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.AreaEffectCloud", remap = false)
 public interface AreaEffectCloudIfaceMixin {
 
+    @Unique
     public abstract java.util.UUID getOwnerUniqueId();
 
+    @Unique
     public abstract void setOwnerUniqueId(java.util.UUID p0);
 }

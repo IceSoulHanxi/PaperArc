@@ -11,5 +11,6 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.inventory.MenuType", remap = false)
 public interface MenuTypeIfaceMixin {
 
+    @Unique
     public abstract org.bukkit.inventory.InventoryView create(org.bukkit.entity.HumanEntity p0, net.kyori.adventure.text.Component p1);
 }

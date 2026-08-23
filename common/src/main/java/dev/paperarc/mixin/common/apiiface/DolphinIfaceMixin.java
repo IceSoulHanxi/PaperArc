@@ -11,15 +11,21 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Dolphin", remap = false)
 public interface DolphinIfaceMixin {
 
+    @Unique
     public abstract int getMoistness();
 
+    @Unique
     public abstract void setMoistness(int p0);
 
+    @Unique
     public abstract void setHasFish(boolean p0);
 
+    @Unique
     public abstract boolean hasFish();
 
+    @Unique
     public abstract org.bukkit.Location getTreasureLocation();
 
+    @Unique
     public abstract void setTreasureLocation(org.bukkit.Location p0);
 }

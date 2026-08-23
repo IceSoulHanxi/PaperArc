@@ -11,5 +11,6 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.bukkit.entity.Goat", remap = false)
 public interface GoatIfaceMixin {
 
+    @Unique
     public abstract void ram(org.bukkit.entity.LivingEntity p0);
 }
