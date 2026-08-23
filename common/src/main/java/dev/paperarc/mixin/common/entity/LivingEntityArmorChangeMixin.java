@@ -1,4 +1,4 @@
-package dev.paperarc.mixin.common;
+package dev.paperarc.mixin.common.entity;
 
 import com.destroystokyo.paper.event.player.PlayerArmorChangeEvent;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;

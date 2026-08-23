@@ -1,4 +1,4 @@
-package dev.paperarc.mixin.common;
+package dev.paperarc.mixin.common.inventory;
 
 import io.papermc.paper.event.player.PlayerPurchaseEvent;
 import io.papermc.paper.event.player.PlayerTradeEvent;

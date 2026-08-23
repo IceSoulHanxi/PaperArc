@@ -1,4 +1,4 @@
-package dev.paperarc.mixin.common;
+package dev.paperarc.mixin.common.player;
 
 import com.destroystokyo.paper.event.player.PlayerConnectionCloseEvent;
 import com.mojang.authlib.GameProfile;

@@ -1,4 +1,4 @@
-package dev.paperarc.mixin.common;
+package dev.paperarc.mixin.common.server;
 
 import com.destroystokyo.paper.event.server.ServerTickEndEvent;
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;

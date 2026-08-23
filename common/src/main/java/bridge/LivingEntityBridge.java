@@ -1,4 +1,4 @@
-package dev.paperarc.mixin.common;
+package dev.paperarc.bridge;
 
 /**
  * Duck interface exposing {@link net.minecraft.world.entity.LivingEntity}

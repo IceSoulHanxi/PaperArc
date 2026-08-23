@@ -1,4 +1,4 @@
-package dev.paperarc.mixin.common;
+package dev.paperarc.mixin.common.player;
 
 import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;

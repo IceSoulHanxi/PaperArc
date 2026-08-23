@@ -1,4 +1,4 @@
-package dev.paperarc.mixin.common;
+package dev.paperarc.mixin.common.player;
 
 import dev.paperarc.event.PaperArcEvents;
 import io.papermc.paper.event.player.PlayerDeepSleepEvent;

@@ -1,5 +1,6 @@
-package dev.paperarc.mixin.common;
+package dev.paperarc.mixin.common.entity;
 
+import dev.paperarc.bridge.LivingEntityBridge;
 import com.destroystokyo.paper.event.entity.EntityJumpEvent;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
