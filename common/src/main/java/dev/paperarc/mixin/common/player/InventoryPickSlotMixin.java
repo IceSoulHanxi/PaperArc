@@ -1,5 +1,6 @@
 package dev.paperarc.mixin.common.player;
 
+import dev.paperarc.bridge.InventoryPickSlotBridge;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;

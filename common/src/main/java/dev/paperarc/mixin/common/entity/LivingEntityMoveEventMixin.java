@@ -1,5 +1,6 @@
 package dev.paperarc.mixin.common.entity;
 
+import dev.paperarc.bridge.ServerLevelMoveEventBridge;
 import dev.paperarc.bridge.PaperArcBridge;
 import io.papermc.paper.event.entity.EntityMoveEvent;
 import net.minecraft.server.level.ServerLevel;

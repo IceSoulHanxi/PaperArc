@@ -1,5 +1,6 @@
 package dev.paperarc.mixin.common.player;
 
+import dev.paperarc.bridge.InventoryPickSlotBridge;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import dev.paperarc.bridge.PaperArcBridge;

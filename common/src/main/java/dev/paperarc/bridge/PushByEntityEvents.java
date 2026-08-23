@@ -1,4 +1,4 @@
-package dev.paperarc.mixin.common.entity;
+package dev.paperarc.bridge;
 
 import dev.paperarc.bridge.PaperArcBridge;
 import io.papermc.paper.event.entity.EntityPushedByEntityAttackEvent;

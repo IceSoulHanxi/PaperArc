@@ -1,4 +1,4 @@
-package dev.paperarc.mixin.common.entity;
+package dev.paperarc.bridge;
 
 import dev.paperarc.bridge.PaperArcBridge;
 import io.papermc.paper.event.entity.EntityFertilizeEggEvent;
@@ -11,14 +11,14 @@ import net.minecraft.world.entity.animal.Animal;
  * bredWith item (Animal.breedItem is a CraftBukkit-added field that does not
  * exist in this compile-time NMS jar, so null is passed).
  */
-final class FertilizeEggState {
+public final class FertilizeEggState {
 
     /**
      * Experience override for the next ExperienceOrb created by
      * Animal#finalizeSpawnChildFromBreeding, or null to keep the vanilla
      * random amount.
      */
-    static final ThreadLocal<Integer> PENDING_EXPERIENCE = new ThreadLocal<>();
+    public static final ThreadLocal<Integer> PENDING_EXPERIENCE = new ThreadLocal<>();
 
     private FertilizeEggState() {
     }
@@ -27,7 +27,7 @@ final class FertilizeEggState {
      * Fires {@link EntityFertilizeEggEvent}; on cancellation resets the love
      * of both animals so the breed pathfinding stops (Paper behavior).
      */
-    static EntityFertilizeEggEvent call(Animal breeding, Animal other) {
+public static EntityFertilizeEggEvent call(Animal breeding, Animal other) {
         ServerPlayer breeder = breeding.getLoveCause();
         if (breeder == null) {
             breeder = other.getLoveCause();

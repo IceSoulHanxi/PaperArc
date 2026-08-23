@@ -1,5 +1,6 @@
 package dev.paperarc.mixin.common.entity;
 
+import dev.paperarc.bridge.FertilizeEggState;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.server.level.ServerLevel;

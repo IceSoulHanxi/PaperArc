@@ -1,4 +1,4 @@
-package dev.paperarc.mixin.common.block;
+package dev.paperarc.bridge;
 
 import io.papermc.paper.event.block.BlockBreakBlockEvent;
 import net.minecraft.core.BlockPos;

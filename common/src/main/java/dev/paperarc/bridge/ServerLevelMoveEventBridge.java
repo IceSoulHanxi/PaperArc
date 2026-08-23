@@ -1,4 +1,4 @@
-package dev.paperarc.mixin.common.entity;
+package dev.paperarc.bridge;
 
 /**
  * Duck interface exposing Paper's {@code ServerLevel#hasEntityMoveEvent}

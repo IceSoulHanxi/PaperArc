@@ -1,4 +1,4 @@
-package dev.paperarc.mixin.common.player;
+package dev.paperarc.bridge;
 
 /**
  * Duck bridge exposing Paper's added {@code Inventory#pickSlot(int, int)} overload
