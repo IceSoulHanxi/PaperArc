@@ -2,6 +2,11 @@ architectury {
     common(rootProject.enabled_platforms.split(','))
 }
 
+loom {
+    // Access Widener：以 AW 而非反射解决 NMS 成员访问问题（Fox 私有状态、TextDisplay 文本字段等）
+    accessWidenerPath = file('src/main/resources/paperarc.accesswidener')
+}
+
 dependencies {
     // 仅用于 fabric-loader 的 @Environment 注解与 mixin 基础设施，不得使用其他类
     modImplementation libs.fabric.loader

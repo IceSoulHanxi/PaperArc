@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Side-channel storage for paper-api state that vanilla NMS classes have no
  * field for (e.g. Beacon effect range, ArmorStand marker flags added by Paper).
  *
- * Keys are the Craft*/NMS objects themselves (weakly referenced so entries die
+ * Keys are the Craft or NMS objects themselves (weakly referenced so entries die
  * with the object); values are small maps keyed by a string slot name.
  * Thread-safety: ConcurrentHashMap per object, matching typical Bukkit access
  * patterns (main thread writes, any thread reads).

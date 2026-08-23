@@ -9,6 +9,7 @@
   ],
   "license": "GPL-3.0-or-later",
   "environment": "*",
+  "accessWidener": "paperarc.accesswidener",
   "entrypoints": {
     "main": [
       "dev.paperarc.fabric.PaperArcFabric"

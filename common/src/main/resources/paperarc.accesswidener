@@ -1,0 +1,15 @@
+accessWidener v2 named
+
+# Fox: package-private defense/faceplanted state (PlayerRiptideAttackEvent-free API: FoxApiMixin)
+accessible class net/minecraft/world/entity/animal/Fox
+accessible method net/minecraft/world/entity/animal/Fox isDefending ()Z
+accessible method net/minecraft/world/entity/animal/Fox setDefending (Z)V
+accessible method net/minecraft/world/entity/animal/Fox setFaceplanted (Z)V
+
+# Display$TextDisplay: private text state (TextDisplayApiMixin)
+accessible class net/minecraft/world/entity/Display$TextDisplay
+accessible method net/minecraft/world/entity/Display$TextDisplay getText ()Lnet/minecraft/network/chat/Component;
+accessible method net/minecraft/world/entity/Display$TextDisplay setText (Lnet/minecraft/network/chat/Component;)V
+accessible method net/minecraft/world/entity/Display$TextDisplay getTextOpacity ()B
+accessible method net/minecraft/world/entity/Display$TextDisplay setTextOpacity (B)V
+accessible field net/minecraft/nbt/CompoundTag tags Ljava/util/Map;
