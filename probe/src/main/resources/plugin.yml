@@ -1,0 +1,7 @@
+name: PaperArcProbe
+main: dev.paperarc.probe.ProbePlugin
+version: 0.1.0
+api-version: '1.21'
+commands:
+  probe:
+    description: run loader probes
