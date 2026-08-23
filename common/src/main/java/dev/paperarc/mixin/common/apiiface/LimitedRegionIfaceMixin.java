@@ -1,0 +1,25 @@
+package dev.paperarc.mixin.common.apiiface;
+
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
+
+/**
+ * Interface augmentation for {@link org.bukkit.generator.LimitedRegion} (generated).
+ * Adds 6 paper-api method declaration(s); implementations live in
+ * the Craft* @Unique mixins (dev.paperarc.mixin.common.api).*
+ */
+@Mixin(targets = "org.bukkit.generator.LimitedRegion", remap = false)
+public interface LimitedRegionIfaceMixin {
+
+    public abstract void setBlockState(int p0, int p1, int p2, org.bukkit.block.BlockState p3);
+
+    public abstract void scheduleBlockUpdate(int p0, int p1, int p2);
+
+    public abstract void scheduleFluidUpdate(int p0, int p1, int p2);
+
+    public abstract org.bukkit.World getWorld();
+
+    public abstract int getCenterChunkX();
+
+    public abstract int getCenterChunkZ();
+}
