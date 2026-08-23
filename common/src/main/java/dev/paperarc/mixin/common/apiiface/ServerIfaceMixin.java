@@ -105,6 +105,12 @@ public interface ServerIfaceMixin {
     public abstract com.destroystokyo.paper.profile.PlayerProfile createProfileExact(java.util.UUID p0, java.lang.String p1);
 
     @Unique
+    public abstract com.destroystokyo.paper.profile.PlayerProfile createProfile(java.lang.String p0);
+
+    @Unique
+    public abstract com.destroystokyo.paper.profile.PlayerProfile createProfileExact(java.lang.String p1);
+
+    @Unique
     public abstract int getCurrentTick();
 
     @Unique

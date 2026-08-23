@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.bukkit.craftbukkit.v.inventory.CraftInventory;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -21,12 +22,11 @@ import java.util.List;
  * {@code setItem(int, ItemStack)} / {@code clear(int)}, all javap-verified on
  * the base jar), so no NMS types are required.
  *
- * The third slice method {@code getHolder(boolean)} is intentionally NOT
- * ported: Paper delegates to {@code BlockEntity#getOwner(boolean)} (a
- * Paper-added overload) backed by a new TileStateInventoryHolder class.
- * Neither exists in this codebase's base jar and neither may be added under
- * the current task constraints (no new classes outside the mixin), so the
- * non-snapshot path cannot be implemented faithfully — reported as BLOCKED.
+ * The third slice method {@code getHolder(boolean)} delegates to the existing
+ * {@link #getHolder()}: Arclight's CraftInventory#getHolder() already builds a
+ * live holder on every call (no snapshot cache exists), so both flags are
+ * semantically equivalent here — the snapshot distinction only matters for
+ * Paper's TileStateInventoryHolder path, which this base jar lacks.
  */
 @Mixin(CraftInventory.class)
 public abstract class CraftInventoryApiMixin {
@@ -45,6 +45,19 @@ public abstract class CraftInventoryApiMixin {
 
     @Shadow
     public abstract void clear(int index);
+
+    @Shadow
+    public abstract InventoryHolder getHolder();
+
+    /**
+     * Paper: {@code getHolder(boolean useSnapshot)}。Arclight 的 getHolder()
+     * 本就即时构造 live holder（无快照缓存），快照语义在此实现下不存在，
+     * 两种取值返回同一对象 —— 语义等同，直接复用现有逻辑。
+     */
+    @Unique
+    public InventoryHolder getHolder(boolean useSnapshot) {
+        return this.getHolder();
+    }
 
     /**
      * Paper: closes the inventory for all viewers and returns how many

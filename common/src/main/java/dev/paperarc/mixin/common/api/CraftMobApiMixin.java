@@ -115,4 +115,20 @@ public abstract class CraftMobApiMixin {
     public void setLeftHanded(boolean leftHanded) {
         this.getHandle().setLeftHanded(leftHanded);
     }
+
+    /**
+     * Paper Mob Pathfinding API。每个 CraftMob 实例复用同一个 Pathfinder
+     * （Paper 用字段持有；这里用 ApiState 弱键 side-map 缓存），内部委托 NMS
+     * PathNavigation，见 dev.paperarc.bridge.PaperPathfinder。
+     */
+    @Unique
+    public com.destroystokyo.paper.entity.Pathfinder getPathfinder() {
+        com.destroystokyo.paper.entity.Pathfinder pathfinder =
+                dev.paperarc.bridge.ApiState.get(this, "pathfinder", null);
+        if (pathfinder == null) {
+            pathfinder = new dev.paperarc.bridge.PaperPathfinder(this.getHandle());
+            dev.paperarc.bridge.ApiState.put(this, "pathfinder", pathfinder);
+        }
+        return pathfinder;
+    }
 }

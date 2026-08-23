@@ -1,5 +1,8 @@
 package dev.paperarc.mixin.common.api;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,6 +13,7 @@ import java.util.Optional;
 
 import com.destroystokyo.paper.Title;
 import com.google.common.base.Preconditions;
+import com.mojang.authlib.GameProfile;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.util.TriState;
@@ -23,10 +27,15 @@ import net.minecraft.network.protocol.game.ClientboundCustomChatCompletionsPacke
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
 import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
+import net.minecraft.network.protocol.game.ClientboundSetExperiencePacket;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
+import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
+import net.minecraft.world.effect.MobEffectInstance;
+import com.mojang.authlib.GameProfile;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.DyeColor;
 import org.bukkit.EntityEffect;
@@ -345,9 +354,123 @@ public abstract class CraftPlayerApiMixinPart2 {
         updatePlayerListHeaderFooter();
     }
 
-    // setPlayerProfile(PlayerProfile): BLOCKED - Paper's implementation swaps the
-    // GameProfile and performs a full client-side respawn pipeline (respawn packet,
-    // teleport back, attribute/effect re-send); not reproducible safely without it.
+    /**
+     * Paper parity for {@code Player#setPlayerProfile(PlayerProfile)}: swaps
+     * {@code Player.gameProfile} (private final in vanilla NMS — reflective
+     * swap through a cached Field, javap-verified), then replays Paper's
+     * client-sync logic from patches/server/Player.setPlayerProfile-API.patch:
+     * tab-list resync plus entity re-track for every viewer (fresh skins and
+     * nametags), and the {@code refreshPlayer()} respawn pipeline for the
+     * target client itself. Vanilla 1.21.1 has no Paper
+     * {@code ServerPlayer#sentListPacket} flag, so the silent-swap shortcut
+     * guards on {@code connection != null} instead.
+     */
+    @Unique
+    public void setPlayerProfile(com.destroystokyo.paper.profile.PlayerProfile profile) {
+        Preconditions.checkNotNull(profile, "profile");
+        ServerPlayer self = getHandle();
+        // asAuthlibCopy accepts ANY paper-api PlayerProfile implementation
+        // (Paper parity): deep-copies id/name/properties into a GameProfile.
+        GameProfile gameProfile = dev.paperarc.bridge.CraftPlayerProfile.asAuthlibCopy(profile);
+        try {
+            paperarc$gameProfileField().set(self, gameProfile);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Failed to swap ServerPlayer GameProfile", e);
+        }
+        if (self.connection == null) {
+            return;
+        }
+        // Refresh other viewers: new tab-list entry + entity re-track.
+        for (ServerPlayer other : paperarc$nmsServer().getPlayerList().getPlayers()) {
+            if (other == self || other.connection == null) {
+                continue;
+            }
+            other.connection.send(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(java.util.List.of(self)));
+            // ChunkMap.TrackedEntity is a private nested type in vanilla 1.21.1
+            // (javap-verified) — hold it as Object and invoke reflectively.
+            Object entry = paperarc$trackedEntity(other, self.getId());
+            if (entry != null) {
+                paperarc$invokeTracker(entry, "removePlayer", other);
+                paperarc$invokeTracker(entry, "updatePlayer", other);
+            }
+        }
+        // Refresh the target client: Paper's refreshPlayer() respawn pipeline.
+        net.minecraft.server.level.ServerLevel worldserver = self.serverLevel();
+        self.connection.send(new ClientboundRespawnPacket(
+                self.createCommonSpawnInfo(worldserver), ClientboundRespawnPacket.KEEP_ALL_DATA));
+        self.onUpdateAbilities();
+        Location loc = ((CraftPlayer) (Object) this).getLocation();
+        self.connection.teleport(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch(),
+                java.util.Collections.emptySet());
+        net.minecraft.server.players.PlayerList playerList = paperarc$nmsServer().getPlayerList();
+        playerList.sendPlayerPermissionLevel(self);
+        playerList.sendLevelInfo(self, worldserver);
+        playerList.sendAllPlayerInfo(self);
+        self.connection.send(new net.minecraft.network.protocol.game.ClientboundSetExperiencePacket(
+                self.experienceProgress, self.totalExperience, self.experienceLevel));
+        for (net.minecraft.world.effect.MobEffectInstance mobEffect : self.getActiveEffects()) {
+            self.connection.send(new net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket(
+                    self.getId(), mobEffect, false));
+        }
+    }
+
+    /** Cached reflection handle on the private-final {@code Player.gameProfile} field. */
+    private static volatile Field PAPERARC$GAME_PROFILE_FIELD;
+
+    @Unique
+    private static Field paperarc$gameProfileField() throws ReflectiveOperationException {
+        Field field = PAPERARC$GAME_PROFILE_FIELD;
+        if (field == null) {
+            field = net.minecraft.world.entity.player.Player.class.getDeclaredField("gameProfile");
+            field.setAccessible(true);
+            PAPERARC$GAME_PROFILE_FIELD = field;
+        }
+        return field;
+    }
+
+    private static volatile Field PAPERARC$ENTITY_MAP_FIELD;
+
+    @Unique
+    private static Field paperarc$entityMapField() throws ReflectiveOperationException {
+        Field field = PAPERARC$ENTITY_MAP_FIELD;
+        if (field == null) {
+            field = net.minecraft.server.level.ChunkMap.class.getDeclaredField("entityMap");
+            field.setAccessible(true);
+            PAPERARC$ENTITY_MAP_FIELD = field;
+        }
+        return field;
+    }
+
+    /**
+     * The tracker entry of {@code target} inside {@code viewer}'s level chunk
+     * map (private fastutil map, reflectively read once cached); null when
+     * the target is not tracked by that viewer.
+     */
+    @Unique
+    private static Object paperarc$trackedEntity(
+            ServerPlayer viewer, int targetId) {
+        try {
+            Object map = paperarc$entityMapField().get(
+                    ((net.minecraft.server.level.ServerLevel) viewer.level()).getChunkSource().chunkMap);
+            Object entry = ((it.unimi.dsi.fastutil.ints.Int2ObjectMap<?>) map).get(targetId);
+            return entry;
+        } catch (ReflectiveOperationException | ClassCastException e) {
+            return null;
+        }
+    }
+
+    /** Reflective {@code ChunkMap.TrackedEntity#removePlayer/updatePlayer} (private nested class). */
+    @Unique
+    private static void paperarc$invokeTracker(Object entry, String name, ServerPlayer viewer) {
+        try {
+            java.lang.reflect.Method method = entry.getClass()
+                    .getMethod(name, net.minecraft.server.level.ServerPlayer.class);
+            method.setAccessible(true);
+            method.invoke(entry, viewer);
+        } catch (ReflectiveOperationException ignored) {
+            // viewer no longer tracks the target — nothing to refresh
+        }
+    }
 
     @Unique
     public void setResourcePack(java.util.UUID id, String url, byte[] hash,

@@ -2,6 +2,7 @@ package dev.paperarc.mixin.common.api;
 
 import com.google.common.base.Preconditions;
 import dev.paperarc.bridge.ApiState;
+import dev.paperarc.bridge.scheduler.SimpleEntityScheduler;
 import io.papermc.paper.entity.TeleportFlag;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.network.protocol.game.ClientboundHurtAnimationPacket;
@@ -470,5 +471,26 @@ public abstract class CraftEntityApiMixin {
                                                     TeleportFlag... flags) {
         // sync-fallback: Arclight has no Folia chunk-load-on-move pipeline
         return CompletableFuture.completedFuture(teleport(location, cause, flags));
+    }
+
+    // ===== batch blocked-1 addition: EntityScheduler sync-fallback =====
+
+    @Unique
+    private io.papermc.paper.threadedregions.scheduler.EntityScheduler PAPERARC_ENTITY_SCHEDULER;
+
+    /**
+     * Sync-fallback {@link io.papermc.paper.threadedregions.scheduler.EntityScheduler}:
+     * tasks run on the main server thread via the classic Bukkit scheduler; the
+     * retired callback fires when the entity is no longer valid at execution
+     * time. NOT truly asynchronous / Folia region-based.
+     */
+    @Unique
+    public io.papermc.paper.threadedregions.scheduler.EntityScheduler getScheduler() {
+        io.papermc.paper.threadedregions.scheduler.EntityScheduler scheduler = this.PAPERARC_ENTITY_SCHEDULER;
+        if (scheduler == null) {
+            scheduler = new SimpleEntityScheduler((org.bukkit.entity.Entity) (Object) this);
+            this.PAPERARC_ENTITY_SCHEDULER = scheduler;
+        }
+        return scheduler;
     }
 }

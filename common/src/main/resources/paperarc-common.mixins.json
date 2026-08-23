@@ -329,7 +329,10 @@
     "apiiface.CampfireIfaceMixin",
     "apiiface.ScoreIfaceMixin",
     "apiiface.TrimPatternIfaceMixin",
-    "apiiface.AbstractHorseIfaceMixin"
+    "apiiface.AbstractHorseIfaceMixin",
+    "api.CraftObjectiveApiMixin",
+    "api.CraftScoreApiMixin",
+    "api.CraftWorldInfoApiMixin"
   ],
   "server": [],
   "injectors": {
