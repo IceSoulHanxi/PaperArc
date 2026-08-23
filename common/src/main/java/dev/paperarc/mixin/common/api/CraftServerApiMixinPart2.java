@@ -3,6 +3,8 @@ package dev.paperarc.mixin.common.api;
 import dev.paperarc.bridge.ApiState;
 import io.papermc.paper.math.Position;
 import io.papermc.paper.potion.PotionMix;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -57,15 +59,52 @@ public abstract class CraftServerApiMixinPart2 {
     @Shadow
     public abstract net.minecraft.server.dedicated.DedicatedServer getServer();
 
+    /**
+     * Spigot-patched {@code MinecraftServer.recentTps} (1m/5m/15m averages);
+     * absent from the vanilla compile jar, so resolved through privateLookupIn.
+     */
+    @Unique
+    private static final MethodHandle PAPERARC$RECENT_TPS = paperarc$buildRecentTpsHandle();
+
+    /**
+     * Spigot-patched {@code MinecraftServer.tickTimes} ring buffer. Not present
+     * in current Arclight builds -> null, degrading getTickTimes() to an empty
+     * array.
+     */
+    @Unique
+    private static final MethodHandle PAPERARC$TICK_TIMES = paperarc$buildTickTimesHandle();
+
+    @Unique
+    private static MethodHandle paperarc$buildRecentTpsHandle() {
+        try {
+            return MethodHandles.privateLookupIn(net.minecraft.server.MinecraftServer.class, MethodHandles.lookup())
+                    .findGetter(net.minecraft.server.MinecraftServer.class, "recentTps", double[].class);
+        } catch (ReflectiveOperationException e) {
+            return null; // getTPS() degrades to {20, 20, 20}
+        }
+    }
+
+    @Unique
+    private static MethodHandle paperarc$buildTickTimesHandle() {
+        try {
+            return MethodHandles.privateLookupIn(net.minecraft.server.MinecraftServer.class, MethodHandles.lookup())
+                    .findGetter(net.minecraft.server.MinecraftServer.class, "tickTimes", long[].class);
+        } catch (ReflectiveOperationException e) {
+            return null; // getTickTimes() degrades to an empty array
+        }
+    }
+
     @Unique
     public double[] getTPS() {
         // Spigot-added MinecraftServer.recentTps keeps 1m/5m/15m averages; the
         // field is spigot-patched and absent from the vanilla mojmap jar, so it
-        // is read reflectively.
+        // is read through a MethodHandle.
+        if (PAPERARC$RECENT_TPS == null) {
+            return new double[]{20.0D, 20.0D, 20.0D};
+        }
         try {
-            java.lang.reflect.Field f = this.getServer().getClass().getField("recentTps");
-            return (double[]) f.get(this.getServer());
-        } catch (ReflectiveOperationException e) {
+            return (double[]) PAPERARC$RECENT_TPS.invoke(this.getServer());
+        } catch (Throwable t) {
             return new double[]{20.0D, 20.0D, 20.0D};
         }
     }
@@ -73,17 +112,17 @@ public abstract class CraftServerApiMixinPart2 {
     @Unique
     public long[] getTickTimes() {
         // Spigot MinecraftServer.tickTimes ring buffer of the last tick
-        // durations in nanoseconds; read reflectively like getTPS.
+        // durations in nanoseconds; read through a MethodHandle like getTPS.
+        if (PAPERARC$TICK_TIMES == null) {
+            return new long[0];
+        }
         try {
-            java.lang.reflect.Field f = this.getServer().getClass().getField("tickTimes");
-            Object value = f.get(this.getServer());
+            Object value = PAPERARC$TICK_TIMES.invoke(this.getServer());
             if (value instanceof long[] ticks) {
                 return ticks;
             }
-            // Spigot wraps the ring buffer in TickTimes in some builds.
-            java.lang.reflect.Method m = value.getClass().getMethod("lastFiveTicks");
-            return (long[]) m.invoke(value);
-        } catch (ReflectiveOperationException e) {
+            return new long[0];
+        } catch (Throwable t) {
             return new long[0];
         }
     }

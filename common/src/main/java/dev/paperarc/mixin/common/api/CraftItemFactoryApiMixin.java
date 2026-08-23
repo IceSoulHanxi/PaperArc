@@ -1,6 +1,8 @@
 package dev.paperarc.mixin.common.api;
 
-import java.lang.reflect.Method;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -52,6 +54,33 @@ import dev.paperarc.bridge.PaperArcBridge;
 @Mixin(org.bukkit.craftbukkit.v.inventory.CraftItemFactory.class)
 public abstract class CraftItemFactoryApiMixin {
 
+    /**
+     * Accessor for the NMS stack behind a CraftItemStack: Paper's package-private
+     * {@code getHandle()} is tried first; current Arclight builds omit the method,
+     * so the equivalent package-private {@code handle} field is read instead.
+     * Null -> callers fall back to {@link CraftItemStack#asNMSCopy(ItemStack)}.
+     */
+    @Unique
+    private static final MethodHandle PAPERARC$GET_HANDLE = paperarc$buildGetHandleHandle();
+
+    @Unique
+    private static MethodHandle paperarc$buildGetHandleHandle() {
+        MethodHandles.Lookup lookup = MethodHandles.lookup();
+        try {
+            return MethodHandles.privateLookupIn(CraftItemStack.class, lookup)
+                    .findVirtual(CraftItemStack.class, "getHandle",
+                            MethodType.methodType(net.minecraft.world.item.ItemStack.class));
+        } catch (ReflectiveOperationException ignored) {
+            // this Arclight build has no CraftItemStack#getHandle(); use the field
+        }
+        try {
+            return MethodHandles.privateLookupIn(CraftItemStack.class, lookup)
+                    .findGetter(CraftItemStack.class, "handle", net.minecraft.world.item.ItemStack.class);
+        } catch (ReflectiveOperationException e) {
+            return null; // caller degrades to asNMSCopy
+        }
+    }
+
     @Unique
     public net.kyori.adventure.text.event.HoverEvent<net.kyori.adventure.text.event.HoverEvent.ShowItem> asHoverEvent(
             ItemStack item, UnaryOperator<net.kyori.adventure.text.event.HoverEvent.ShowItem> op) {
@@ -100,13 +129,11 @@ public abstract class CraftItemFactoryApiMixin {
     @Unique
     public String getI18NDisplayName(ItemStack item) {
         net.minecraft.world.item.ItemStack nms = null;
-        if (item instanceof CraftItemStack craftStack) {
-            // CraftItemStack#getHandle() is package-private -> reflective access.
+        if (item instanceof CraftItemStack craftStack && PAPERARC$GET_HANDLE != null) {
+            // CraftItemStack#getHandle()/handle are package-private -> MethodHandle access.
             try {
-                java.lang.reflect.Method m = craftStack.getClass().getDeclaredMethod("getHandle");
-                m.setAccessible(true);
-                nms = (net.minecraft.world.item.ItemStack) m.invoke(craftStack);
-            } catch (ReflectiveOperationException ignored) {
+                nms = (net.minecraft.world.item.ItemStack) PAPERARC$GET_HANDLE.invokeExact(craftStack);
+            } catch (Throwable ignored) {
                 // fall through to copy
             }
         }

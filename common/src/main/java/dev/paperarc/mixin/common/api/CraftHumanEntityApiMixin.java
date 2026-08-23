@@ -3,8 +3,6 @@ package dev.paperarc.mixin.common.api;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Optional;
 
 import com.google.common.base.Preconditions;
@@ -86,17 +84,56 @@ public abstract class CraftHumanEntityApiMixin {
         }
     }
 
+    /**
+     * Spigot-patched {@code AbstractContainerMenu.checkReachable} (runtime-only,
+     * absent from the vanilla compile jar); null -> degraded path below.
+     */
     @Unique
-    private static volatile Field PAPERARC$CHECK_REACHABLE_FIELD;
+    private static final MethodHandle PAPERARC$CHECK_REACHABLE_FIELD = paperarc$buildCheckReachableHandle();
+
+    /** Spigot-patched {@code AbstractContainerMenu#getBukkitView} (runtime-only). */
+    @Unique
+    private static final MethodHandle PAPERARC$GET_BUKKIT_VIEW_METHOD = paperarc$buildGetBukkitViewHandle();
+
+    /** Protected vanilla/spigot {@code Player#setShoulderEntityLeft(CompoundTag)}. */
+    @Unique
+    private static final MethodHandle PAPERARC$SET_SHOULDER_LEFT_METHOD = paperarc$buildShoulderHandle(false);
+
+    /** Protected vanilla/spigot {@code Player#setShoulderEntityRight(CompoundTag)}. */
+    @Unique
+    private static final MethodHandle PAPERARC$SET_SHOULDER_RIGHT_METHOD = paperarc$buildShoulderHandle(true);
 
     @Unique
-    private static volatile Method PAPERARC$GET_BUKKIT_VIEW_METHOD;
+    private static MethodHandle paperarc$buildCheckReachableHandle() {
+        try {
+            return MethodHandles.privateLookupIn(AbstractContainerMenu.class, MethodHandles.lookup())
+                    .findSetter(AbstractContainerMenu.class, "checkReachable", boolean.class);
+        } catch (ReflectiveOperationException e) {
+            return null; // caller degrades with IllegalStateException
+        }
+    }
 
     @Unique
-    private static volatile Method PAPERARC$SET_SHOULDER_LEFT_METHOD;
+    private static MethodHandle paperarc$buildGetBukkitViewHandle() {
+        try {
+            return MethodHandles.privateLookupIn(AbstractContainerMenu.class, MethodHandles.lookup())
+                    .findVirtual(AbstractContainerMenu.class, "getBukkitView",
+                            MethodType.methodType(InventoryView.class));
+        } catch (ReflectiveOperationException e) {
+            return null; // caller degrades with IllegalStateException
+        }
+    }
 
     @Unique
-    private static volatile Method PAPERARC$SET_SHOULDER_RIGHT_METHOD;
+    private static MethodHandle paperarc$buildShoulderHandle(boolean right) {
+        try {
+            return MethodHandles.privateLookupIn(Player.class, MethodHandles.lookup())
+                    .findVirtual(Player.class, right ? "setShoulderEntityRight" : "setShoulderEntityLeft",
+                            MethodType.methodType(void.class, CompoundTag.class));
+        } catch (ReflectiveOperationException e) {
+            return null; // caller degrades with IllegalStateException
+        }
+    }
 
     @Unique
     public void closeInventory(InventoryCloseEvent.Reason reason) {
@@ -246,18 +283,15 @@ public abstract class CraftHumanEntityApiMixin {
                 (containerId, inventory, pl) -> paperarc$menu(material, containerId, inventory, access),
                 net.minecraft.network.chat.Component.translatable(paperarc$titleKey(material)));
         player.openMenu(provider);
+        if (PAPERARC$CHECK_REACHABLE_FIELD == null || PAPERARC$GET_BUKKIT_VIEW_METHOD == null) {
+            throw new IllegalStateException("PaperArc: CraftBukkit container members unavailable");
+        }
         AbstractContainerMenu menu = player.containerMenu;
         try {
-            if (PAPERARC$CHECK_REACHABLE_FIELD == null) {
-                PAPERARC$CHECK_REACHABLE_FIELD = AbstractContainerMenu.class.getField("checkReachable");
-            }
-            PAPERARC$CHECK_REACHABLE_FIELD.setBoolean(menu, !force);
-            if (PAPERARC$GET_BUKKIT_VIEW_METHOD == null) {
-                PAPERARC$GET_BUKKIT_VIEW_METHOD = AbstractContainerMenu.class.getMethod("getBukkitView");
-            }
-            return (InventoryView) PAPERARC$GET_BUKKIT_VIEW_METHOD.invoke(menu);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("PaperArc: CraftBukkit container members unavailable", e);
+            PAPERARC$CHECK_REACHABLE_FIELD.invokeExact(menu, !force);
+            return (InventoryView) PAPERARC$GET_BUKKIT_VIEW_METHOD.invokeExact(menu);
+        } catch (Throwable t) {
+            throw new IllegalStateException("PaperArc: CraftBukkit container members unavailable", t);
         }
     }
 
@@ -305,24 +339,14 @@ public abstract class CraftHumanEntityApiMixin {
 
     @Unique
     private static void paperarc$setShoulder(Player player, boolean right, CompoundTag value) {
+        MethodHandle handle = right ? PAPERARC$SET_SHOULDER_RIGHT_METHOD : PAPERARC$SET_SHOULDER_LEFT_METHOD;
+        if (handle == null) {
+            throw new IllegalStateException("PaperArc: Player shoulder setter not found");
+        }
         try {
-            if (right) {
-                if (PAPERARC$SET_SHOULDER_RIGHT_METHOD == null) {
-                    PAPERARC$SET_SHOULDER_RIGHT_METHOD = Player.class.getDeclaredMethod(
-                            "setShoulderEntityRight", CompoundTag.class);
-                    PAPERARC$SET_SHOULDER_RIGHT_METHOD.setAccessible(true);
-                }
-                PAPERARC$SET_SHOULDER_RIGHT_METHOD.invoke(player, value);
-            } else {
-                if (PAPERARC$SET_SHOULDER_LEFT_METHOD == null) {
-                    PAPERARC$SET_SHOULDER_LEFT_METHOD = Player.class.getDeclaredMethod(
-                            "setShoulderEntityLeft", CompoundTag.class);
-                    PAPERARC$SET_SHOULDER_LEFT_METHOD.setAccessible(true);
-                }
-                PAPERARC$SET_SHOULDER_LEFT_METHOD.invoke(player, value);
-            }
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("PaperArc: Player shoulder setter not found", e);
+            handle.invokeExact(player, value);
+        } catch (Throwable t) {
+            throw new IllegalStateException("PaperArc: Player shoulder setter not found", t);
         }
     }
 }

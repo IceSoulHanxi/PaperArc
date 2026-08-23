@@ -5,6 +5,9 @@ import dev.paperarc.bridge.PaperArcBridge;
 import io.papermc.paper.scoreboard.numbers.FixedFormat;
 import io.papermc.paper.scoreboard.numbers.NumberFormat;
 import io.papermc.paper.scoreboard.numbers.StyledFormat;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.minecraft.network.chat.Component.Serializer;
@@ -31,7 +34,7 @@ import org.spongepowered.asm.mixin.Unique;
  * #resetSinglePlayerScore(ScoreHolder, Objective).
  *
  * CraftObjective#getHandle()/checkState() are package-private, so the NMS handle is fetched
- * reflectively and the unregistered-check is replicated inline
+ * through a privateLookupIn MethodHandle and the unregistered-check is replicated inline
  * ({@link #paperarc$checkBoard()}), mirroring checkState semantics.
  */
 @Mixin(targets = "org.bukkit.craftbukkit.v.scoreboard.CraftScore")
@@ -41,17 +44,62 @@ public abstract class CraftScoreApiMixin {
     @Final
     private net.minecraft.world.scores.ScoreHolder entry;
 
+    /**
+     * Package-private {@code CraftScore.objective}, resolved against the runtime
+     * CraftBukkit class (not compile-visible); null -> degraded path below.
+     */
     @Unique
-    private static volatile java.lang.reflect.Method PAPERARC$OBJ_GET_HANDLE;
+    private static final MethodHandle PAPERARC$OBJ_FIELD = paperarc$buildObjectiveGetter();
+
+    /** Package-private {@code CraftObjective#getHandle()}. */
+    @Unique
+    private static final MethodHandle PAPERARC$OBJ_GET_HANDLE = paperarc$buildGetHandleInvoker();
+
+    /** Package-private {@code FixedFormat.value} NMS component backing field. */
+    @Unique
+    private static final MethodHandle PAPERARC$FIXED_VALUE_FIELD = paperarc$buildNumberFormatGetter(
+            net.minecraft.network.chat.numbers.FixedFormat.class, "value",
+            net.minecraft.network.chat.Component.class);
+
+    /** Package-private {@code StyledFormat.style} NMS style backing field. */
+    @Unique
+    private static final MethodHandle PAPERARC$STYLED_STYLE_FIELD = paperarc$buildNumberFormatGetter(
+            net.minecraft.network.chat.numbers.StyledFormat.class, "style",
+            net.minecraft.network.chat.Style.class);
 
     @Unique
-    private static volatile java.lang.reflect.Field PAPERARC$OBJ_FIELD;
+    private static MethodHandle paperarc$buildObjectiveGetter() {
+        try {
+            Class<?> craftScore = Class.forName("org.bukkit.craftbukkit.v.scoreboard.CraftScore");
+            Class<?> craftObjective = Class.forName("org.bukkit.craftbukkit.v.scoreboard.CraftObjective");
+            return MethodHandles.privateLookupIn(craftScore, MethodHandles.lookup())
+                    .findGetter(craftScore, "objective", craftObjective);
+        } catch (ReflectiveOperationException e) {
+            return null; // caller degrades with IllegalStateException
+        }
+    }
 
     @Unique
-    private static volatile java.lang.reflect.Field PAPERARC$FIXED_VALUE_FIELD;
+    private static MethodHandle paperarc$buildGetHandleInvoker() {
+        try {
+            Class<?> craftObjective = Class.forName("org.bukkit.craftbukkit.v.scoreboard.CraftObjective");
+            return MethodHandles.privateLookupIn(craftObjective, MethodHandles.lookup())
+                    .findVirtual(craftObjective, "getHandle",
+                            MethodType.methodType(net.minecraft.world.scores.Objective.class));
+        } catch (ReflectiveOperationException e) {
+            return null; // caller degrades with IllegalStateException
+        }
+    }
 
     @Unique
-    private static volatile java.lang.reflect.Field PAPERARC$STYLED_STYLE_FIELD;
+    private static MethodHandle paperarc$buildNumberFormatGetter(Class<?> owner, String name, Class<?> type) {
+        try {
+            return MethodHandles.privateLookupIn(owner, MethodHandles.lookup())
+                    .findGetter(owner, name, type);
+        } catch (ReflectiveOperationException e) {
+            return null; // caller degrades with IllegalStateException
+        }
+    }
 
     // ------------------------------------------------------------------ API
 
@@ -124,26 +172,16 @@ public abstract class CraftScoreApiMixin {
 
     // -------------------------------------------------------------- helpers
 
-    /** Reflective accessor for package-private {@code CraftScore.objective}. */
+    /** MethodHandle accessor for package-private {@code CraftScore.objective}. */
     @Unique
     private static Object paperarc$craftObjectiveOf(CraftScoreApiMixin self) {
+        if (PAPERARC$OBJ_FIELD == null) {
+            throw new IllegalStateException("CraftScore.objective not accessible");
+        }
         try {
-            java.lang.reflect.Field f = PAPERARC$OBJ_FIELD;
-            if (f == null) {
-                synchronized (CraftScoreApiMixin.class) {
-                    if ((f = PAPERARC$OBJ_FIELD) == null) {
-                        java.lang.reflect.Field resolved = Class.forName(
-                                        "org.bukkit.craftbukkit.v.scoreboard.CraftScore")
-                                .getDeclaredField("objective");
-                        resolved.setAccessible(true);
-                        PAPERARC$OBJ_FIELD = resolved;
-                    }
-                }
-                f = PAPERARC$OBJ_FIELD;
-            }
-            return f.get(self);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("CraftScore.objective not accessible", e);
+            return PAPERARC$OBJ_FIELD.invoke(self);
+        } catch (Throwable t) {
+            throw new IllegalStateException("CraftScore.objective not accessible", t);
         }
     }
 
@@ -169,26 +207,17 @@ public abstract class CraftScoreApiMixin {
                 .equals(paperarc$nmsObjective().getCriteria().getName());
     }
 
-    /** Reflective accessor for package-private CraftObjective#getHandle(). */
+    /** MethodHandle accessor for package-private CraftObjective#getHandle(). */
     @Unique
     private net.minecraft.world.scores.Objective paperarc$nmsObjective() {
+        if (PAPERARC$OBJ_GET_HANDLE == null) {
+            throw new IllegalStateException("CraftObjective.getHandle not accessible");
+        }
         try {
-            java.lang.reflect.Method m = PAPERARC$OBJ_GET_HANDLE;
-            if (m == null) {
-                synchronized (CraftScoreApiMixin.class) {
-                    if ((m = PAPERARC$OBJ_GET_HANDLE) == null) {
-                        java.lang.reflect.Method resolved = Class.forName(
-                                        "org.bukkit.craftbukkit.v.scoreboard.CraftObjective")
-                                .getDeclaredMethod("getHandle");
-                        resolved.setAccessible(true);
-                        PAPERARC$OBJ_GET_HANDLE = resolved;
-                    }
-                }
-                m = PAPERARC$OBJ_GET_HANDLE;
-            }
-            return (net.minecraft.world.scores.Objective) m.invoke(paperarc$craftObjectiveOf(this));
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("CraftObjective.getHandle not accessible", e);
+            return (net.minecraft.world.scores.Objective) PAPERARC$OBJ_GET_HANDLE
+                    .invoke(paperarc$craftObjectiveOf(this));
+        } catch (Throwable t) {
+            throw new IllegalStateException("CraftObjective.getHandle not accessible", t);
         }
     }
 
@@ -248,22 +277,13 @@ public abstract class CraftScoreApiMixin {
     @Unique
     private static net.minecraft.network.chat.Component paperarc$fixedValue(
             net.minecraft.network.chat.numbers.FixedFormat format) {
+        if (PAPERARC$FIXED_VALUE_FIELD == null) {
+            throw new IllegalStateException("FixedFormat.value not readable");
+        }
         try {
-            java.lang.reflect.Field f = PAPERARC$FIXED_VALUE_FIELD;
-            if (f == null) {
-                synchronized (CraftScoreApiMixin.class) {
-                    if ((f = PAPERARC$FIXED_VALUE_FIELD) == null) {
-                        java.lang.reflect.Field resolved =
-                                net.minecraft.network.chat.numbers.FixedFormat.class.getDeclaredField("value");
-                        resolved.setAccessible(true);
-                        PAPERARC$FIXED_VALUE_FIELD = resolved;
-                    }
-                }
-                f = PAPERARC$FIXED_VALUE_FIELD;
-            }
-            return (net.minecraft.network.chat.Component) f.get(format);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("FixedFormat.value not readable", e);
+            return (net.minecraft.network.chat.Component) PAPERARC$FIXED_VALUE_FIELD.invokeExact(format);
+        } catch (Throwable t) {
+            throw new IllegalStateException("FixedFormat.value not readable", t);
         }
     }
 
@@ -271,22 +291,13 @@ public abstract class CraftScoreApiMixin {
     @Unique
     private static net.minecraft.network.chat.Style paperarc$styledStyle(
             net.minecraft.network.chat.numbers.StyledFormat format) {
+        if (PAPERARC$STYLED_STYLE_FIELD == null) {
+            throw new IllegalStateException("StyledFormat.style not readable");
+        }
         try {
-            java.lang.reflect.Field f = PAPERARC$STYLED_STYLE_FIELD;
-            if (f == null) {
-                synchronized (CraftScoreApiMixin.class) {
-                    if ((f = PAPERARC$STYLED_STYLE_FIELD) == null) {
-                        java.lang.reflect.Field resolved =
-                                net.minecraft.network.chat.numbers.StyledFormat.class.getDeclaredField("style");
-                        resolved.setAccessible(true);
-                        PAPERARC$STYLED_STYLE_FIELD = resolved;
-                    }
-                }
-                f = PAPERARC$STYLED_STYLE_FIELD;
-            }
-            return (net.minecraft.network.chat.Style) f.get(format);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("StyledFormat.style not readable", e);
+            return (net.minecraft.network.chat.Style) PAPERARC$STYLED_STYLE_FIELD.invokeExact(format);
+        } catch (Throwable t) {
+            throw new IllegalStateException("StyledFormat.style not readable", t);
         }
     }
 }
