@@ -36,7 +36,7 @@ public abstract class CraftEventFactoryBellRingMixin {
                     remap = false
             )
     )
-    private org.bukkit.event.block.BellRingEvent paperarc$useModernBellRingEvent(org.bukkit.block.Block block,
+    private static org.bukkit.event.block.BellRingEvent paperarc$useModernBellRingEvent(org.bukkit.block.Block block,
                                                                                 BlockFace direction,
                                                                                 Entity entity,
                                                                                 Operation<org.bukkit.event.block.BellRingEvent> original) {

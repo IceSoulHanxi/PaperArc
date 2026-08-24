@@ -96,6 +96,7 @@
     "api.CraftAbstractVillagerApiMixin",
     "api.CraftAdvancementApiMixin",
     "api.CraftAnvilViewApiMixin",
+    "api.PaperEventApiMixin",
     "api.CraftBlockStateBridgeProviderMixin",
     "api.CraftBlockEntityStateBridgeProviderMixin",
     "api.CraftEntityBridgeProviderMixin",
