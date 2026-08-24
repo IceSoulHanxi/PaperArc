@@ -37,7 +37,9 @@ jobs:
       - name: Cache Arclight spigot deps
         id: arclight-cache
         uses: actions/cache@v4
+        # 失败的 run 默认不落盘缓存；开启后即使后续步骤失败也保存，避免重复跑 BuildTools
         with:
+          save-always: true
           path: Arclight/.gradle
           key: arclight-spigotdeps-${{ env.ARCLIGHT_REF }}-v1
 
