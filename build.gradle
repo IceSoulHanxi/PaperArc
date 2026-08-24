@@ -22,6 +22,8 @@ subprojects {
     }
 
     repositories {
+        // CI/离线：Arclight spigot-deobf 工件的本地落点（由 workflow 预先下载）
+        flatDir { dirs "${rootDir}/vendor/maven-flat" }
         mavenCentral()
         // Bukkit / Spigot API 快照仓库
         maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }

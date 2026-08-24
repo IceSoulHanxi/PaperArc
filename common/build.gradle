@@ -19,7 +19,8 @@ dependencies {
     // 工件不发布远端，只能从 Arclight 仓库的本地 arclight_repo 拿；
     // 用于后续 mixin 中引用 Craft* 类与 NMS 精确签名。
     // 条件启用：Arclight 构建完成后该目录出现工件即自动生效。
-    if (file("${rootDir}/../Arclight/.gradle/arclight/arclight_repo/io/izzel/arclight/generated/spigot/1.21.1").isDirectory()) {
+    if (file("${rootDir}/../Arclight/.gradle/arclight/arclight_repo/io/izzel/arclight/generated/spigot/1.21.1").isDirectory()
+            || file("${rootDir}/vendor/maven-flat/spigot-1.21.1-deobf.jar").isFile()) {
         compileOnly 'io.izzel.arclight.generated:spigot:1.21.1:deobf'
     }
 

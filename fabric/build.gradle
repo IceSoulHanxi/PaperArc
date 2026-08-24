@@ -22,7 +22,11 @@ dependencies {
     compileOnly libs.spigot.api
     compileOnly libs.paper.api
     // deobf spigot：CB 类引用（CraftBlock 等）编译需要，运行时由 versionCraftBukkit 版本化
-    compileOnly "io.izzel.arclight.generated:spigot:1.21.1:deobf"
+    def arclightSpigotDeobf = file("${rootDir}/../Arclight/.gradle/arclight/arclight_repo/io/izzel/arclight/generated/spigot/1.21.1").isDirectory()
+            || file("${rootDir}/vendor/maven-flat/spigot-1.21.1-deobf.jar").isFile()
+    if (arclightSpigotDeobf) {
+        compileOnly "io.izzel.arclight.generated:spigot:1.21.1:deobf"
+    }
 
     // MixinExtras：loom include 自动嵌套 jar 并引导初始化
     implementation libs.mixinextras.fabric

@@ -22,6 +22,12 @@ jobs:
       - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v3
 
+      - name: Fetch arclight spigot-deobf
+        run: |
+          mkdir -p vendor/maven-flat
+          curl -fsSL -o vendor/maven-flat/spigot-1.21.1-deobf.jar \
+            https://github.com/IceSoulHanxi/PaperArc/releases/download/arclight-deps/spigot-1.21.1-deobf.jar
+
       - name: Build
         run: ./gradlew build --no-daemon
 
