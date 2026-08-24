@@ -2,7 +2,7 @@
   "required": true,
   "minVersion": "0.8",
   "priority": 1100,
-  "package": "dev.paperarc.mixin.common",
+  "package": "com.ixnah.mc.paperarc.mixin.common",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "item.ExperienceBottleItemMixin",

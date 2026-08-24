@@ -1,0 +1,19 @@
+package com.ixnah.mc.paperarc.mixin.common.bukkit;
+
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
+
+/**
+ * Interface augmentation for {@link org.bukkit.inventory.EntityEquipment} (generated).
+ * Adds 2 paper-api method declaration(s); implementations live in
+ * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
+ */
+@Mixin(targets = "org.bukkit.inventory.EntityEquipment", remap = false)
+public interface EntityEquipmentIfaceMixin {
+
+    @Unique
+    public abstract float getDropChance(org.bukkit.inventory.EquipmentSlot p0);
+
+    @Unique
+    public abstract void setDropChance(org.bukkit.inventory.EquipmentSlot p0, float p1);
+}

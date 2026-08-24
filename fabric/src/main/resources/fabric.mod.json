@@ -12,7 +12,7 @@
   "accessWidener": "paperarc.accesswidener",
   "entrypoints": {
     "main": [
-      "dev.paperarc.fabric.PaperArcFabric"
+      "com.ixnah.mc.paperarc.fabric.PaperArcFabric"
     ]
   },
   "mixins": [
