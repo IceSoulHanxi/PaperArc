@@ -2,9 +2,8 @@ package dev.paperarc.mixin.common.api;
 
 import net.minecraft.world.inventory.BrewingStandMenu;
 import org.bukkit.craftbukkit.v.inventory.view.CraftBrewingStandView;
-import org.spongepowered.asm.mixin.Final;
+import dev.paperarc.bridge.craft.CraftInventoryViewBridge;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 /**
@@ -22,18 +21,19 @@ public abstract class CraftBrewingStandViewApiMixin {
     @Unique
     private static final String PAPERARC$RECIPE_BREW_TIME = "paperarc:recipeBrewTime";
 
-    @Shadow
-    @Final
-    private BrewingStandMenu container;
+    @Unique
+    private BrewingStandMenu paperarc$menu() {
+        return (BrewingStandMenu) ((CraftInventoryViewBridge) (Object) this).paperarc$menu();
+    }
 
     @Unique
     public int getRecipeBrewTime() {
-        return dev.paperarc.bridge.ApiState.get(container, PAPERARC$RECIPE_BREW_TIME, 400);
+        return dev.paperarc.bridge.ApiState.get(paperarc$menu(), PAPERARC$RECIPE_BREW_TIME, 400);
     }
 
     @Unique
     public void setRecipeBrewTime(int recipeBrewTime) {
         com.google.common.base.Preconditions.checkArgument(recipeBrewTime > 0, "recipeBrewTime must be positive");
-        dev.paperarc.bridge.ApiState.put(container, PAPERARC$RECIPE_BREW_TIME, recipeBrewTime);
+        dev.paperarc.bridge.ApiState.put(paperarc$menu(), PAPERARC$RECIPE_BREW_TIME, recipeBrewTime);
     }
 }

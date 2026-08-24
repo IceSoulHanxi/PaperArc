@@ -1,6 +1,7 @@
 package dev.paperarc.mixin.common.api;
 
 import org.bukkit.craftbukkit.v.block.CraftBlockType;
+import dev.paperarc.bridge.craft.CraftEntityBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -16,7 +17,8 @@ import net.minecraft.world.level.block.Block;
  *  not accessible here -> approximated via default state collision shape).
  */
 @Mixin(CraftBlockType.class)
-public abstract class CraftBlockTypeApiMixin {
+    @Shadow
+    public abstract Block getHandle();
 
     @Shadow
     public abstract Block getHandle();

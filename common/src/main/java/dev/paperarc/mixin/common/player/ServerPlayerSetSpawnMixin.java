@@ -62,21 +62,6 @@ public abstract class ServerPlayerSetSpawnMixin {
     @Shadow
     public abstract void sendSystemMessage(net.minecraft.network.chat.Component message);
 
-    @Unique
-    private static final ThreadLocal<PlayerSetSpawnEvent.Cause> paperarc$cause = new ThreadLocal<>();
-
-    /** Caller mixins mark the Paper spawn-cause before invoking setRespawnPosition. */
-    @Unique
-    public static void paperarc$pushSpawnCause(PlayerSetSpawnEvent.Cause cause) {
-        paperarc$cause.set(cause);
-    }
-
-    /** Clears any stale cause marker; also used defensively at caller exits. */
-    @Unique
-    public static void paperarc$clearSpawnCause() {
-        paperarc$cause.remove();
-    }
-
     @Inject(
         method = "setRespawnPosition(Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/core/BlockPos;FZZ)V",
         at = @At("HEAD"),
@@ -84,8 +69,8 @@ public abstract class ServerPlayerSetSpawnMixin {
     )
     private void paperarc$fireSetSpawn(ResourceKey<Level> dimension, BlockPos pos, float angle,
                                        boolean forced, boolean sendMessage, CallbackInfo ci) {
-        PlayerSetSpawnEvent.Cause cause = paperarc$cause.get();
-        paperarc$cause.remove();
+        PlayerSetSpawnEvent.Cause cause = dev.paperarc.bridge.SpawnCauseSupport.peek();
+        dev.paperarc.bridge.SpawnCauseSupport.clear();
 
         ServerPlayer self = (ServerPlayer) (Object) this;
         MinecraftServer server = self.server;
@@ -147,13 +132,13 @@ public abstract class ServerPlayerSetSpawnMixin {
     @Inject(method = "startSleepInBed", at = @At("HEAD"))
     private void paperarc$sleepPushCause(BlockPos pos,
                                          CallbackInfoReturnable<Either<BedSleepingProblem, net.minecraft.util.Unit>> cir) {
-        paperarc$cause.set(PlayerSetSpawnEvent.Cause.BED);
+        dev.paperarc.bridge.SpawnCauseSupport.push(PlayerSetSpawnEvent.Cause.BED);
     }
 
     @Inject(method = "startSleepInBed", at = @At("RETURN"))
     private void paperarc$sleepPopCause(BlockPos pos,
                                         CallbackInfoReturnable<Either<BedSleepingProblem, net.minecraft.util.Unit>> cir) {
-        paperarc$cause.remove();
+        dev.paperarc.bridge.SpawnCauseSupport.clear();
     }
 
     /**

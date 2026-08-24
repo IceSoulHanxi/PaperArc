@@ -39,11 +39,11 @@ public abstract class LivingEntityJumpMixin implements LivingEntityBridge {
             method = "aiStep",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;jumpFromGround()V")
     )
-    private void paperarc$entityJump(Operation<Void> original) {
+    private void paperarc$entityJump(LivingEntity instance, Operation<Void> original) {
         EntityJumpEvent event = new EntityJumpEvent(
-                PaperArcBridge.bukkitEntity((Entity) (Object) this));
+                PaperArcBridge.bukkitEntity(instance));
         if (event.callEvent()) {
-            original.call();
+            original.call(instance);
         } else {
             this.setJumping(false);
         }

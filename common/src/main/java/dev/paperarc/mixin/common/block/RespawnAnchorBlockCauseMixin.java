@@ -29,12 +29,12 @@ public class RespawnAnchorBlockCauseMixin {
     @Inject(method = "useWithoutItem", at = @At("HEAD"))
     private void paperarc$pushAnchorCause(BlockState state, Level world, BlockPos pos, Player player,
                                           BlockHitResult hit, CallbackInfoReturnable<InteractionResult> cir) {
-        ServerPlayerSetSpawnMixin.paperarc$pushSpawnCause(PlayerSetSpawnEvent.Cause.RESPAWN_ANCHOR);
+        dev.paperarc.bridge.SpawnCauseSupport.push(PlayerSetSpawnEvent.Cause.RESPAWN_ANCHOR);
     }
 
     @Inject(method = "useWithoutItem", at = @At("RETURN"))
     private void paperarc$clearAnchorCause(BlockState state, Level world, BlockPos pos, Player player,
                                            BlockHitResult hit, CallbackInfoReturnable<InteractionResult> cir) {
-        ServerPlayerSetSpawnMixin.paperarc$clearSpawnCause();
+        dev.paperarc.bridge.SpawnCauseSupport.clear();
     }
 }

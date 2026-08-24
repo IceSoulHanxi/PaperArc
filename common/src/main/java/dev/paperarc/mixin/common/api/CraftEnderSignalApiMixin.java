@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v.entity.CraftEnderSignal;
 import org.bukkit.craftbukkit.v.util.CraftLocation;
+import dev.paperarc.bridge.craft.CraftEntityBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -21,8 +22,10 @@ import net.minecraft.world.entity.projectile.EyeOfEnder;
 @Mixin(CraftEnderSignal.class)
 public abstract class CraftEnderSignalApiMixin {
 
-    @Shadow
-    public abstract org.bukkit.World getWorld();
+    @Unique
+    private org.bukkit.World getWorld() {
+        return (org.bukkit.World) ((CraftEntityBridge) (Object) this).paperarc$getWorld();
+    }
 
     @Unique
     public void setTargetLocation(Location location, boolean update) {

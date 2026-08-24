@@ -37,11 +37,12 @@ public abstract class LivingEntityArmorChangeMixin {
                     target = "Lnet/minecraft/world/entity/LivingEntity;equipmentHasChanged(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z"
             )
     )
-    private boolean paperarc$armorChange(ItemStack oldItem, ItemStack newItem, Operation<Boolean> original,
+    private boolean paperarc$armorChange(LivingEntity entity, ItemStack oldItem, ItemStack newItem,
+                                         Operation<Boolean> original,
                                          @Local EquipmentSlot slot) {
-        boolean changed = original.call(oldItem, newItem);
+        boolean changed = original.call(entity, oldItem, newItem);
         if (changed
-                && (Object) this instanceof ServerPlayer serverPlayer
+                && entity instanceof ServerPlayer serverPlayer
                 && slot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
             PlayerArmorChangeEvent event = new PlayerArmorChangeEvent(
                     PaperArcBridge.bukkitPlayer(serverPlayer),

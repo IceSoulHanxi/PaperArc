@@ -25,12 +25,12 @@ public class SetSpawnCommandMixin {
     @Inject(method = "setSpawn", at = @At("HEAD"))
     private static void paperarc$pushCommandCause(CommandSourceStack source, Collection<ServerPlayer> targets,
                                                   BlockPos pos, float angle, CallbackInfoReturnable<Integer> cir) {
-        ServerPlayerSetSpawnMixin.paperarc$pushSpawnCause(PlayerSetSpawnEvent.Cause.COMMAND);
+        dev.paperarc.bridge.SpawnCauseSupport.push(PlayerSetSpawnEvent.Cause.COMMAND);
     }
 
     @Inject(method = "setSpawn", at = @At("RETURN"))
     private static void paperarc$popCommandCause(CommandSourceStack source, Collection<ServerPlayer> targets,
                                                  BlockPos pos, float angle, CallbackInfoReturnable<Integer> cir) {
-        ServerPlayerSetSpawnMixin.paperarc$clearSpawnCause();
+        dev.paperarc.bridge.SpawnCauseSupport.clear();
     }
 }

@@ -4,6 +4,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 import org.bukkit.craftbukkit.v.entity.CraftTrident;
+import dev.paperarc.bridge.craft.CraftEntityBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -21,10 +22,7 @@ import java.lang.reflect.Field;
  * to {@code dealtDamage}. Vanilla already owns those private members, so the
  * Craft-host mixin resolves them reflectively and mirrors the exact semantics.
  */
-@Mixin(CraftTrident.class)
-public abstract class CraftTridentApiMixin {
-
-    @Shadow
+@Mixin(CraftTrident.classhadow
     public abstract ThrownTrident getHandle();
 
     @Unique

@@ -30,11 +30,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(net.minecraft.world.entity.projectile.ThrownEgg.class)
 public abstract class ThrownEggHatchMixin {
 
+    /**
+     * NOTE(require=0): Arclight @Overwrites ThrownEgg.onHit entirely (its
+     * ThrownEggMixin replaces the vanilla body), so the vanilla super.onHit
+     * callsite this anchors on does not exist at runtime. Kept dormant until
+     * the overwrite is accounted for.
+     */
     @Inject(method = "onHit(Lnet/minecraft/world/phys/HitResult;)V",
         at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/entity/projectile/ThrowableItemProjectile;onHit(Lnet/minecraft/world/phys/HitResult;)V",
             shift = At.Shift.AFTER),
-        cancellable = true)
+        cancellable = true,
+        require = 0)
     private void paperarc$thrownEggHatch(HitResult result, CallbackInfo ci) {
         Entity egg = (Entity) (Object) this;
         Level level = egg.level();

@@ -3,6 +3,7 @@ package dev.paperarc.mixin.common.api;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Bell;
 import org.bukkit.craftbukkit.v.block.CraftBell;
+import dev.paperarc.bridge.craft.CraftBlockStateBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -17,11 +18,15 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(CraftBell.class)
 public abstract class CraftBellApiMixin {
 
-    @Shadow
-    public abstract BlockData getBlockData();
+    @Unique
+    private BlockData getBlockData() {
+        return (BlockData) ((CraftBlockStateBridge) (Object) this).paperarc$getBlockData();
+    }
 
-    @Shadow
-    public abstract void setBlockData(BlockData data);
+    @Unique
+    private void setBlockData(BlockData data) {
+        ((CraftBlockStateBridge) (Object) this).paperarc$setBlockData(data);
+    }
 
     @Unique
     public Bell.Attachment getAttachment() {

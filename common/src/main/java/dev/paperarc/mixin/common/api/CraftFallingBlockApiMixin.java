@@ -10,6 +10,7 @@ import org.bukkit.craftbukkit.v.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.v.block.CraftBlockEntityState;
 import org.bukkit.craftbukkit.v.block.CraftBlockStates;
 import org.bukkit.craftbukkit.v.entity.CraftFallingBlock;
+import dev.paperarc.bridge.craft.CraftEntityBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -23,53 +24,20 @@ import org.spongepowered.asm.mixin.Unique;
  * keyed by the NMS entity (default {@code true}, matching Paper's default).</p>
  *
  * <p>{@code FallingBlockEntity.blockState} is private in vanilla 1.21.1 with no
- * public setter, so {@link #setBlockData(BlockState)} writes it reflectively
- * (mojmap runtime name: {@code blockState}).</p>
+ * public setter; it is opened up via the access widener.</p>
  */
 @Mixin(CraftFallingBlock.class)
 public abstract class CraftFallingBlockApiMixin {
 
-    @Shadow
-    public abstract FallingBlockEntity getHandle();
-
+    
     // Inherited from CraftEntity (protected); resolved through the target hierarchy.
-    @Shadow
-    protected abstract void update();
+    @Unique
+    private void update() {
+        ((CraftEntityBridge) (Object) this).paperarc$update();
+    }
 
     @Unique
     private static final String PAPERARC$AUTO_EXPIRE_KEY = "autoExpire";
-
-    @Unique
-    private static volatile java.lang.reflect.Field PAPERARC$BLOCK_STATE_FIELD;
-
-    @Unique
-    private static java.lang.reflect.Field paperarc$blockStateField() {
-        java.lang.reflect.Field f = PAPERARC$BLOCK_STATE_FIELD;
-        if (f == null) {
-            synchronized (CraftFallingBlockApiMixin.class) {
-                if (PAPERARC$BLOCK_STATE_FIELD == null) {
-                    try {
-                        java.lang.reflect.Field resolved = FallingBlockEntity.class.getDeclaredField("blockState");
-                        resolved.setAccessible(true);
-                        PAPERARC$BLOCK_STATE_FIELD = resolved;
-                    } catch (ReflectiveOperationException e) {
-                        throw new IllegalStateException("NMS FallingBlockEntity.blockState field not found", e);
-                    }
-                    f = PAPERARC$BLOCK_STATE_FIELD;
-                }
-            }
-        }
-        return f;
-    }
-
-    @Unique
-    private void paperarc$setNmsBlockState(BlockState newState) {
-        try {
-            paperarc$blockStateField().set(getHandle(), newState);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Failed to set NMS FallingBlockEntity.blockState", e);
-        }
-    }
 
     @Unique
     public boolean doesAutoExpire() {
@@ -89,14 +57,10 @@ public abstract class CraftFallingBlockApiMixin {
     @Unique
     public void setBlockData(final BlockData blockData) {
         Preconditions.checkArgument(blockData != null, "blockData");
-        BlockState oldState;
-        try {
-            oldState = (BlockState) paperarc$blockStateField().get(getHandle());
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Failed to read NMS FallingBlockEntity.blockState", e);
-        }
+        FallingBlockEntity handle = getHandle();
+        BlockState oldState = handle.blockState;
         BlockState newState = ((CraftBlockData) blockData).getState();
-        paperarc$setNmsBlockState(newState);
+        handle.blockState = newState;
         this.getHandle().blockData = null;
 
         if (oldState != newState) {

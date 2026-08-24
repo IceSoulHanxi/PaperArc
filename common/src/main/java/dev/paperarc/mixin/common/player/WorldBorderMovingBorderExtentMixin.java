@@ -53,7 +53,7 @@ public abstract class WorldBorderMovingBorderExtentMixin {
 
     @Inject(method = "update", at = @At("HEAD"))
     private void paperarc$onBoundsChangeFinish(CallbackInfoReturnable<Object> cir) {
-        World bukkitWorld = WorldBorderMixin.paperarc$findWorld(this.paperarc$outer);
+        World bukkitWorld = dev.paperarc.bridge.WorldBorderSupport.findWorld(this.paperarc$outer);
         if (bukkitWorld == null || this.getLerpRemainingTime() > 0L) {
             return;
         }

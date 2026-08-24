@@ -6,6 +6,8 @@ import net.minecraft.world.level.block.entity.HopperBlockEntity;
 
 import org.bukkit.block.data.type.Hopper;
 import org.bukkit.craftbukkit.v.block.CraftHopper;
+import dev.paperarc.bridge.craft.CraftBlockStateBridge;
+import dev.paperarc.bridge.craft.CraftBlockEntityStateBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -18,14 +20,20 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(CraftHopper.class)
 public abstract class CraftHopperApiMixin {
 
-    @Shadow
-    protected abstract HopperBlockEntity getSnapshot();
+    @Unique
+    private HopperBlockEntity getSnapshot() {
+        return (HopperBlockEntity) ((CraftBlockEntityStateBridge) (Object) this).paperarc$getSnapshot();
+    }
 
-    @Shadow
-    public abstract org.bukkit.block.data.BlockData getBlockData();
+    @Unique
+    private org.bukkit.block.data.BlockData getBlockData() {
+        return (org.bukkit.block.data.BlockData) ((CraftBlockStateBridge) (Object) this).paperarc$getBlockData();
+    }
 
-    @Shadow
-    public abstract void setBlockData(org.bukkit.block.data.BlockData blockData);
+    @Unique
+    private void setBlockData(org.bukkit.block.data.BlockData blockData) {
+        ((CraftBlockStateBridge) (Object) this).paperarc$setBlockData(blockData);
+    }
 
     // Paper start - Expanded Hopper API
     @Unique

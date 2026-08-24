@@ -5,6 +5,7 @@ import java.util.UUID;
 import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.LivingEntity;
 import org.bukkit.craftbukkit.v.entity.CraftAreaEffectCloud;
+import dev.paperarc.bridge.craft.CraftEntityBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -18,9 +19,7 @@ import org.spongepowered.asm.mixin.Unique;
  * reflectively (runtime mappings are mojmap, where the field is named ownerUUID).
  */
 @Mixin(CraftAreaEffectCloud.class)
-public abstract class CraftAreaEffectCloudApiMixin {
-
-    @Shadow
+publicdow
     public abstract AreaEffectCloud getHandle();
 
     @Unique

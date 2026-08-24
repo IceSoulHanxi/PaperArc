@@ -1,6 +1,7 @@
 package dev.paperarc.mixin.common.api;
 
 import org.bukkit.craftbukkit.v.inventory.view.CraftEnchantmentView;
+import dev.paperarc.bridge.craft.CraftInventoryViewBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -15,8 +16,10 @@ import net.minecraft.world.inventory.EnchantmentMenu;
 @Mixin(CraftEnchantmentView.class)
 public abstract class CraftEnchantmentViewApiMixin {
 
-    @Shadow
-    public abstract AbstractContainerMenu getHandle();
+    @Unique
+    private AbstractContainerMenu getHandle() {
+        return (AbstractContainerMenu) ((CraftInventoryViewBridge) (Object) this).paperarc$menu();
+    }
 
     @Unique
     public void setEnchantmentSeed(int seed) {

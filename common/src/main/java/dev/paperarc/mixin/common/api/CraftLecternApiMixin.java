@@ -1,6 +1,7 @@
 package dev.paperarc.mixin.common.api;
 
 import org.bukkit.craftbukkit.v.block.CraftLectern;
+import dev.paperarc.bridge.craft.CraftBlockStateBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -16,11 +17,15 @@ import net.minecraft.world.level.block.entity.LecternBlockEntity;
 @Mixin(CraftLectern.class)
 public abstract class CraftLecternApiMixin {
 
-    @Shadow
-    public abstract net.minecraft.world.level.LevelAccessor getWorldHandle();
+    @Unique
+    private net.minecraft.world.level.LevelAccessor getWorldHandle() {
+        return (net.minecraft.world.level.LevelAccessor) ((CraftBlockStateBridge) (Object) this).paperarc$getWorldHandle();
+    }
 
-    @Shadow
-    public abstract net.minecraft.core.BlockPos getPosition();
+    @Unique
+    private net.minecraft.core.BlockPos getPosition() {
+        return (net.minecraft.core.BlockPos) ((CraftBlockStateBridge) (Object) this).paperarc$getPosition();
+    }
 
     @Unique
     public boolean hasBook() {

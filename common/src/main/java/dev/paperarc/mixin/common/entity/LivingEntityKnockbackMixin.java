@@ -30,7 +30,8 @@ public abstract class LivingEntityKnockbackMixin {
     @Inject(
             method = "knockback(DDLnet/minecraft/world/entity/Entity;Lorg/bukkit/event/entity/EntityKnockbackEvent$KnockbackCause;)V",
             at = @At("HEAD"),
-            cancellable = true
+            cancellable = true,
+            require = 0
     )
     private void paperarc$knockbackEvents(double strength, double x, double z, Entity attacker,
                                           org.bukkit.event.entity.EntityKnockbackEvent.KnockbackCause cause,

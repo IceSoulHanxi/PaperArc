@@ -22,9 +22,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * at the tail of checkBurnOut (only reachable when the burned block is TNT)
  * and cancel the rest of the method when the event is cancelled.
  *
- * NOTE: mojmap names this method TntBlock#explode (Yarn calls it prime,
- * intermediary method_10738) — using the Yarn name here breaks refmap
- * generation silently (types map, member name stays unmapped).
+ * NOTE: runtime server is VANILLA 1.21.1 (fabric intermediary): vanilla
+ * checkBurnOut primes TNT via static explode; the NeoForge-style
+ * BlockState#onCaughtFire hook seen in the compile-time merged jar does NOT
+ * exist at runtime — anchoring on it silently misses.
  *
  * Conflict notes vs Arclight: FireBlockMixin only redirects setBlock/
  * removeBlock in tick() and defaultBlockState in updateShape(); checkBurnOut

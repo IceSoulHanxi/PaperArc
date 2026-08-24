@@ -8,6 +8,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.entity.SculkCatalystBlockEntity;
 import org.bukkit.craftbukkit.v.block.CraftSculkCatalyst;
+import dev.paperarc.bridge.craft.CraftBlockEntityStateBridge;
+import dev.paperarc.bridge.craft.CraftBlockStateBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -30,14 +32,20 @@ public abstract class CraftSculkCatalystApiMixin {
     @Unique
     private static volatile Method paperarc$catalystBloom;
 
-    @Shadow
-    public abstract boolean isPlaced();
+    @Unique
+    private boolean isPlaced() {
+        return (boolean) ((CraftBlockStateBridge) (Object) this).paperarc$isPlaced();
+    }
 
-    @Shadow
-    public abstract org.bukkit.World getWorld();
+    @Unique
+    private org.bukkit.World getWorld() {
+        return (org.bukkit.World) ((CraftBlockStateBridge) (Object) this).paperarc$getWorld();
+    }
 
-    @Shadow
-    public abstract net.minecraft.world.level.block.entity.BlockEntity getTileEntityFromWorld();
+    @Unique
+    private net.minecraft.world.level.block.entity.BlockEntity getTileEntityFromWorld() {
+        return (net.minecraft.world.level.block.entity.BlockEntity) ((CraftBlockEntityStateBridge) (Object) this).paperarc$getTileEntityFromWorld();
+    }
 
     @Unique
     public void bloom(Position position, int charge) {

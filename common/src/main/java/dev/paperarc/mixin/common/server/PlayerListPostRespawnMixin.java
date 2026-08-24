@@ -22,21 +22,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /**
  * Port of Paper's Add-PlayerPostRespawnEvent patch.
  * <p>
- * Host: {@code PlayerList#respawn(ServerPlayer, boolean, RemovalReason)} (the
- * vanilla/CB 3-arg overload; full signature is used in every target so
- * Arclight's added 4/5-arg overloads are never matched).
- * <p>
- * Conflict avoidance vs Arclight's PlayerListMixin:
+ * Host: Arclight REPLACES the respawn flow at runtime with its CB-style
+ * re-implementation {@code PlayerListMixin#respawn(ServerPlayer, boolean,
+ * RemovalReason, PlayerRespawnEvent.RespawnReason, Location)} (plain merged
+ * overload; the vanilla 3-arg body never executes), so both anchors target
+ * that 5-arg handler:
  * <ul>
- *   <li>it @Decorate's the same findRespawnPositionAndUseSpawnBlock call — we use
- *       a different handler type (@WrapOperation), allowed by conventions;</li>
- *   <li>it @Inject'es at HEAD and RETURN of respawn — our fire point anchors on the
- *       sendAllPlayerInfo INVOKE instead of RETURN.</li>
+ *   <li>WrapOperation around its findRespawnPositionAndUseSpawnBlock INVOKE
+ *       records natural-respawn state (only runs when location == null);</li>
+ *   <li>Inject AFTER its sendAllPlayerInfo INVOKE fires the event once all
+ *       teleport/bed-spawn state is final — matching Paper's placement.</li>
  * </ul>
- * Deviation: Paper fires the event after the disconnected-save check at the very
- * end; we fire right after sendAllPlayerInfo (slightly earlier, but all teleport
- * and bed-spawn state is already final). The event only fires for natural respawns
- * (no CraftBukkit-forced location), matching Paper's isRespawn flag.
+ * require = 0 keeps boot safe if Arclight refactors the handler.
  */
 @Mixin(PlayerList.class)
 public abstract class PlayerListPostRespawnMixin {
@@ -52,12 +49,19 @@ public abstract class PlayerListPostRespawnMixin {
         DimensionTransition transition;
     }
 
+    private static final String PAPERARC$RESPAWN =
+            "respawn(Lnet/minecraft/server/level/ServerPlayer;ZLnet/minecraft/world/entity/Entity$RemovalReason;"
+            + "Lorg/bukkit/event/player/PlayerRespawnEvent$RespawnReason;Lorg/bukkit/Location;)"
+            + "Lnet/minecraft/server/level/ServerPlayer;";
+
     @WrapOperation(
-        method = "respawn(Lnet/minecraft/server/level/ServerPlayer;ZLnet/minecraft/world/entity/Entity$RemovalReason;)Lnet/minecraft/server/level/ServerPlayer;",
+        method = PAPERARC$RESPAWN,
         at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/server/level/ServerPlayer;findRespawnPositionAndUseSpawnBlock(ZLnet/minecraft/world/level/portal/DimensionTransition$PostDimensionTransition;)Lnet/minecraft/world/level/portal/DimensionTransition;"
-        )
+            target = "Lnet/minecraft/server/level/ServerPlayer;findRespawnPositionAndUseSpawnBlock(ZLnet/minecraft/world/level/portal/DimensionTransition$PostDimensionTransition;)Lnet/minecraft/world/level/portal/DimensionTransition;",
+            remap = false
+        ),
+        require = 0
     )
     private DimensionTransition paperarc$recordRespawn(ServerPlayer player, boolean flag,
                                                        DimensionTransition.PostDimensionTransition postTransition,
@@ -81,12 +85,14 @@ public abstract class PlayerListPostRespawnMixin {
     }
 
     @Inject(
-        method = "respawn(Lnet/minecraft/server/level/ServerPlayer;ZLnet/minecraft/world/entity/Entity$RemovalReason;)Lnet/minecraft/server/level/ServerPlayer;",
+        method = PAPERARC$RESPAWN,
         at = @At(
             value = "INVOKE",
             shift = At.Shift.AFTER,
-            target = "Lnet/minecraft/server/players/PlayerList;sendAllPlayerInfo(Lnet/minecraft/server/level/ServerPlayer;)V"
-        )
+            target = "Lnet/minecraft/server/players/PlayerList;sendAllPlayerInfo(Lnet/minecraft/server/level/ServerPlayer;)V",
+            remap = false
+        ),
+        require = 0
     )
     private void paperarc$onPostRespawn(ServerPlayer player, boolean flag, Entity.RemovalReason reason,
                                         CallbackInfoReturnable<ServerPlayer> cir) {

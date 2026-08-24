@@ -35,14 +35,15 @@ public abstract class CreeperIgniteMixin {
             method = "ignite",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/network/syncher/SynchedEntityData;set(Lnet/minecraft/network/syncher/EntityDataAccessor;Ljava/lang/Object;)V")
     )
-    private void paperarc$ignite(SynchedEntityData instance, EntityDataAccessor<Boolean> accessor, Boolean value,
+    private void paperarc$ignite(SynchedEntityData instance, EntityDataAccessor<Boolean> accessor, Object value,
                                  Operation<Void> original) {
-        if (paperarc$suppressIgniteEvent || this.isIgnited() == value) {
+        boolean ignited = (Boolean) value;
+        if (paperarc$suppressIgniteEvent || this.isIgnited() == ignited) {
             original.call(instance, accessor, value);
             return;
         }
         CreeperIgniteEvent event = new CreeperIgniteEvent(
-                (org.bukkit.entity.Creeper) PaperArcBridge.bukkitEntity((Creeper) (Object) this), value);
+                (org.bukkit.entity.Creeper) PaperArcBridge.bukkitEntity((Creeper) (Object) this), ignited);
         if (event.callEvent()) {
             original.call(instance, DATA_IS_IGNITED, event.isIgnited());
         }
@@ -57,10 +58,10 @@ public abstract class CreeperIgniteMixin {
             method = "readAdditionalSaveData",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/monster/Creeper;ignite()V")
     )
-    private void paperarc$nbtIgnite(Operation<Void> original) {
+    private void paperarc$nbtIgnite(Creeper instance, Operation<Void> original) {
         paperarc$suppressIgniteEvent = true;
         try {
-            original.call();
+            original.call(instance);
         } finally {
             paperarc$suppressIgniteEvent = false;
         }

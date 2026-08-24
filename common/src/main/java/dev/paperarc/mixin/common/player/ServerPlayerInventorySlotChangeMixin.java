@@ -42,7 +42,7 @@ public class ServerPlayerInventorySlotChangeMixin {
             return; // matches vanilla no-op conditions; original body does nothing either way
         }
 
-        ItemStack oldStack = AbstractContainerMenuSlotChangeMixin.PAPERARC_OLD_STACK.get();
+        ItemStack oldStack = dev.paperarc.bridge.MenuSlotState.OLD_STACK.get();
         if (oldStack == null) {
             oldStack = newStack;
         }

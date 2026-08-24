@@ -37,8 +37,8 @@ public abstract class ServerGamePacketListenerImplCartographyMixin {
         return result != null && !result.isEmpty();
     }
 
-    @WrapOperation(method = "handleContainerClick", at = @At(value = "INVOKE",
-        target = "Lorg/bukkit/event/inventory/InventoryClickEvent;<init>(Lorg/bukkit/inventory/InventoryView;Lorg/bukkit/event/inventory/InventoryType$SlotType;ILorg/bukkit/event/inventory/ClickType;Lorg/bukkit/event/inventory/InventoryAction;)V"))
+    @WrapOperation(method = "handleContainerClick", at = @At(value = "NEW", remap = false,
+        target = "(Lorg/bukkit/inventory/InventoryView;Lorg/bukkit/event/inventory/InventoryType$SlotType;ILorg/bukkit/event/inventory/ClickType;Lorg/bukkit/event/inventory/InventoryAction;)Lorg/bukkit/event/inventory/InventoryClickEvent;"))
     private InventoryClickEvent paperarc$cartographyItemEvent(InventoryView view, InventoryType.SlotType type, int slotNum,
                                                              ClickType click, InventoryAction action,
                                                              Operation<InventoryClickEvent> original) {
@@ -48,8 +48,8 @@ public abstract class ServerGamePacketListenerImplCartographyMixin {
         return original.call(view, type, slotNum, click, action);
     }
 
-    @WrapOperation(method = "handleContainerClick", at = @At(value = "INVOKE",
-        target = "Lorg/bukkit/event/inventory/InventoryClickEvent;<init>(Lorg/bukkit/inventory/InventoryView;Lorg/bukkit/event/inventory/InventoryType$SlotType;ILorg/bukkit/event/inventory/ClickType;Lorg/bukkit/event/inventory/InventoryAction;I)V"))
+    @WrapOperation(method = "handleContainerClick", at = @At(value = "NEW", remap = false,
+        target = "(Lorg/bukkit/inventory/InventoryView;Lorg/bukkit/event/inventory/InventoryType$SlotType;ILorg/bukkit/event/inventory/ClickType;Lorg/bukkit/event/inventory/InventoryAction;I)Lorg/bukkit/event/inventory/InventoryClickEvent;"))
     private InventoryClickEvent paperarc$cartographyItemEventNumberKey(InventoryView view, InventoryType.SlotType type, int slotNum,
                                                                       ClickType click, InventoryAction action, int button,
                                                                       Operation<InventoryClickEvent> original) {

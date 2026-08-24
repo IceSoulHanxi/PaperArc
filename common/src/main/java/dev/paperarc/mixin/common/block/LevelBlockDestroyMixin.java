@@ -92,10 +92,10 @@ public abstract class LevelBlockDestroyMixin {
 
     @WrapOperation(method = PAPERARC$DESTROY_BLOCK, at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/level/Level;levelEvent(ILnet/minecraft/core/BlockPos;I)V"))
-    private void paperarc$destroyEffect(int type, BlockPos pos, int data, Operation<Void> original) {
+    private void paperarc$destroyEffect(Level instance, int type, BlockPos pos, int data, Operation<Void> original) {
         if (this.paperarc$effectType == null) {
             // Event was not fired (no listeners) — vanilla behavior.
-            original.call(type, pos, data);
+            original.call(instance, type, pos, data);
             return;
         }
         // Paper: if (playEffect && !(effectType.getBlock() instanceof BaseFireBlock))
@@ -103,7 +103,7 @@ public abstract class LevelBlockDestroyMixin {
         if (!this.paperarc$playEffect || this.paperarc$effectType.getBlock() instanceof BaseFireBlock) {
             return;
         }
-        original.call(type, pos, Block.getId(this.paperarc$effectType));
+        original.call(instance, type, pos, Block.getId(this.paperarc$effectType));
     }
 
     @WrapOperation(method = PAPERARC$DESTROY_BLOCK, at = @At(value = "INVOKE",

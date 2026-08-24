@@ -21,7 +21,7 @@ public abstract class AnimalFinalizeSpawnMixin {
 
     @WrapOperation(
             method = "finalizeSpawnChildFromBreeding",
-            at = @At(value = "NEW", target = "Lnet/minecraft/world/entity/experience/ExperienceOrb;<init>(Lnet/minecraft/world/level/Level;DDDI)V")
+            at = @At(value = "NEW", target = "Lnet/minecraft/class_1303;", remap = false)
     )
     private ExperienceOrb paperarc$fertilizeXp(Level level, double x, double y, double z, int amount,
                                                Operation<ExperienceOrb> original) {

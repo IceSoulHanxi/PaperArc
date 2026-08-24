@@ -4,6 +4,7 @@ import dev.paperarc.bridge.ApiState;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
 import org.bukkit.craftbukkit.v.entity.CraftAbstractSkeleton;
 import org.bukkit.entity.Skeleton;
+import dev.paperarc.bridge.craft.CraftEntityBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -23,8 +24,11 @@ public abstract class CraftAbstractSkeletonApiMixin {
     @Unique
     private static final String PAPERARC_BURN_KEY = "paperarc:shouldBurnInDay";
 
-    @Shadow
-    public abstract AbstractSkeleton getHandle();
+    /** narrowed covariant handle */
+    @Unique
+    private AbstractSkeleton getHandle() {
+        return (AbstractSkeleton) ((CraftEntityBridge) (Object) this).paperarc$getHandle();
+    }
 
     @Unique
     public Skeleton.SkeletonType getSkeletonType() {

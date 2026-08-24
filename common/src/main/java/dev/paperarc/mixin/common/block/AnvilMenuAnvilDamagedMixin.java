@@ -3,6 +3,7 @@ package dev.paperarc.mixin.common.block;
 import com.destroystokyo.paper.event.block.AnvilDamagedEvent;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AnvilMenu;
@@ -24,17 +25,19 @@ import java.lang.reflect.Method;
  * Port of Paper's AnvilDamageEvent
  * (AnvilDamageEvent.patch).
  *
- * The anvil damage roll lives in AnvilMenu's private static lambda
- * lambda$onTake$2(Player, float, Level, BlockPos), called from onTake. Because
- * the lambda is static it cannot see the menu instance, so we stash the menu
+ * The anvil damage roll lives in AnvilMenu's private static damage helper
+ * (runtime intermediary name method_24922, signature (Player, Level, BlockPos)
+ * — the compile-jar shape lambda$onTake$2(Player, float, Level, BlockPos)
+ * returning BlockState does NOT exist at runtime), called from onTake. Because
+ * that helper is static it cannot see the menu instance, so we stash the menu
  * in a ThreadLocal at onTake HEAD and resolve the Bukkit InventoryView via
  * reflection (CraftBukkit's getBukkitView() exists at runtime under Arclight
  * but not against the mojmap compile jar).
  *
- * We wrap the INVOKE of AnvilBlock#damage inside the lambda:
- *  - cancelled  -> return the input state unchanged, so vanilla's
- *                 {@code iblockdata1 != iblockdata} branch never fires and the
- *                 anvil is left intact (Paper returns early from the method;
+ * We wrap the INVOKE of AnvilBlock#damage inside the helper:
+ *  - cancelled  -> return the input state unchanged, so the vanilla
+ *                 {@code damaged == null / != state} logic leaves the anvil
+ *                 visually intact (Paper returns early from the method;
  *                 letting the rest of onTake/createResult run is a minor
  *                 timing deviation).
  *  - BROKEN     -> return null so vanilla removes the block.
@@ -63,10 +66,13 @@ public abstract class AnvilMenuAnvilDamagedMixin {
         PAPERARC$MENU.remove();
     }
 
-    @WrapOperation(method = "lambda$onTake$2", at = @At(value = "INVOKE",
+    @WrapOperation(method = "method_24922(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V",
+            at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/level/block/AnvilBlock;damage(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/world/level/block/state/BlockState;"))
-    private static BlockState paperarc$anvilDamaged(Player player, float chance, Level level, BlockPos pos,
-                                                    BlockState state, Operation<BlockState> original) {
+    private static BlockState paperarc$anvilDamaged(BlockState state, Operation<BlockState> original,
+                                                    @Local(argsOnly = true) Player player,
+                                                    @Local(argsOnly = true) Level level,
+                                                    @Local(argsOnly = true) BlockPos pos) {
         BlockState damaged = original.call(state);
         AnvilMenu menu = PAPERARC$MENU.get();
         InventoryView view = paperarc$bukkitView(menu);

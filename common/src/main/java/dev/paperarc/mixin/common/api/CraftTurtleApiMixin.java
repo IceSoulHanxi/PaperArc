@@ -5,6 +5,7 @@ import net.minecraft.world.entity.animal.Turtle;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v.entity.CraftTurtle;
 import org.bukkit.craftbukkit.v.util.CraftLocation;
+import dev.paperarc.bridge.craft.CraftEntityBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -17,10 +18,7 @@ import org.spongepowered.asm.mixin.Unique;
  * they are reached via cached reflective lookups (mojmap runtime names); the
  * remaining calls use the public NMS accessors.</p>
  */
-@Mixin(CraftTurtle.class)
-public abstract class CraftTurtleApiMixin {
-
-    @Shadow
+@Mixin(CraftTurtle.clas    @Shadow
     public abstract Turtle getHandle();
 
     @Unique

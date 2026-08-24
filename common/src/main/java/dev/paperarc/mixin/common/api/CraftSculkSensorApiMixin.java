@@ -5,6 +5,8 @@ import dev.paperarc.bridge.ApiState;
 import net.minecraft.world.level.block.entity.SculkSensorBlockEntity;
 import org.bukkit.block.data.type.SculkSensor;
 import org.bukkit.craftbukkit.v.block.CraftSculkSensor;
+import dev.paperarc.bridge.craft.CraftBlockStateBridge;
+import dev.paperarc.bridge.craft.CraftBlockEntityStateBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -25,14 +27,20 @@ public abstract class CraftSculkSensorApiMixin {
     @Unique
     private static final String PAPERARC_LISTENER_RANGE_KEY = "paperarc:listenerRange";
 
-    @Shadow
-    protected abstract SculkSensorBlockEntity getSnapshot();
+    @Unique
+    private SculkSensorBlockEntity getSnapshot() {
+        return (SculkSensorBlockEntity) ((CraftBlockEntityStateBridge) (Object) this).paperarc$getSnapshot();
+    }
 
-    @Shadow
-    public abstract org.bukkit.block.data.BlockData getBlockData();
+    @Unique
+    private org.bukkit.block.data.BlockData getBlockData() {
+        return (org.bukkit.block.data.BlockData) ((CraftBlockStateBridge) (Object) this).paperarc$getBlockData();
+    }
 
-    @Shadow
-    public abstract void setBlockData(org.bukkit.block.data.BlockData blockData);
+    @Unique
+    private void setBlockData(org.bukkit.block.data.BlockData blockData) {
+        ((CraftBlockStateBridge) (Object) this).paperarc$setBlockData(blockData);
+    }
 
     // Paper start - Configurable sculk sensor listener range
     @Unique

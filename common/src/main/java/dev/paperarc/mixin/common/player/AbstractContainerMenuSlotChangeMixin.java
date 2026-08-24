@@ -23,7 +23,7 @@ public class AbstractContainerMenuSlotChangeMixin {
 
     /** Old (pre-change) item stack for the slot-change currently being broadcast. */
     @Unique
-    static final ThreadLocal<ItemStack> PAPERARC_OLD_STACK = new ThreadLocal<>();
+    private static final ThreadLocal<ItemStack> PAPERARC_OLD_STACK = new ThreadLocal<>();
 
     @WrapOperation(
         method = "triggerSlotListeners",
@@ -34,7 +34,7 @@ public class AbstractContainerMenuSlotChangeMixin {
     )
     private Object paperarc$captureOldStack(NonNullList<ItemStack> remoteSlots, int slotId, Object newStack,
                                             Operation<Object> original) {
-        PAPERARC_OLD_STACK.set(remoteSlots.get(slotId));
+        dev.paperarc.bridge.MenuSlotState.OLD_STACK.set(remoteSlots.get(slotId));
         return original.call(remoteSlots, slotId, newStack);
     }
 }

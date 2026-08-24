@@ -7,6 +7,8 @@ import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.CommandBlock;
 import org.bukkit.craftbukkit.v.block.CraftCommandBlock;
+import dev.paperarc.bridge.craft.CraftBlockStateBridge;
+import dev.paperarc.bridge.craft.CraftBlockEntityStateBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -21,14 +23,20 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(CraftCommandBlock.class)
 public abstract class CraftCommandBlockApiMixin {
 
-    @Shadow
-    protected abstract CommandBlockEntity getSnapshot();
+    @Unique
+    private CommandBlockEntity getSnapshot() {
+        return (CommandBlockEntity) ((CraftBlockEntityStateBridge) (Object) this).paperarc$getSnapshot();
+    }
 
-    @Shadow
-    public abstract BlockData getBlockData();
+    @Unique
+    private BlockData getBlockData() {
+        return (BlockData) ((CraftBlockStateBridge) (Object) this).paperarc$getBlockData();
+    }
 
-    @Shadow
-    public abstract void setBlockData(BlockData blockData);
+    @Unique
+    private void setBlockData(BlockData blockData) {
+        ((CraftBlockStateBridge) (Object) this).paperarc$setBlockData(blockData);
+    }
 
     @Unique
     public Component name() {

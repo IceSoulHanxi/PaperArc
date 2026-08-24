@@ -35,10 +35,6 @@ public abstract class ItemFrameChangeEventMixin {
     @Shadow
     public abstract void setItem(net.minecraft.world.item.ItemStack stack, boolean updateComparator);
 
-    @Shadow
-    public abstract void gameEvent(net.minecraft.core.Holder<GameEvent> event,
-                                    net.minecraft.world.entity.Entity entity);
-
     @Inject(
         method = "hurt",
         at = @At(
@@ -88,7 +84,7 @@ public abstract class ItemFrameChangeEventMixin {
         // Replicate the vanilla tail (setItem + gameEvent + consume + return CONSUME)
         // so the event's (possibly modified) ItemStack is what actually gets placed.
         this.setItem(org.bukkit.craftbukkit.v.inventory.CraftItemStack.asNMSCopy(event.getItemStack()), true);
-        this.gameEvent(net.minecraft.world.level.gameevent.GameEvent.BLOCK_CHANGE, player);
+        ((net.minecraft.world.entity.Entity) (Object) this).gameEvent(net.minecraft.world.level.gameevent.GameEvent.BLOCK_CHANGE, player);
         itemstack.consume(1, player);
         cir.setReturnValue(InteractionResult.CONSUME);
     }

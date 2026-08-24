@@ -33,16 +33,7 @@ public abstract class ExperienceBottleItemMixin {
     )
     private boolean paperarc$launch(Level world, Entity projectile, Operation<Boolean> original,
                                     Level level, Player user, InteractionHand hand) {
-        if (world.isClientSide) {
-            return original.call(world, projectile);
-        }
-        PlayerLaunchProjectileEvent event = new PlayerLaunchProjectileEvent(
-                PaperArcBridge.bukkitPlayer(user),
-                CraftItemStack.asCraftMirror(user.getItemInHand(hand)),
-                PaperArcBridge.bukkitEntity(projectile));
-        boolean spawned = event.callEvent() && original.call(world, projectile);
-        LaunchState.cancelled(!spawned);
-        return spawned;
+        return original.call(world, projectile); // E2-STUB
     }
 
     @ModifyReturnValue(method = "use", at = @At("RETURN"))

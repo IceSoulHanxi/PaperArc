@@ -2,6 +2,7 @@ package dev.paperarc.mixin.common.api;
 
 import org.bukkit.block.data.type.SculkShrieker;
 import org.bukkit.craftbukkit.v.block.CraftSculkShrieker;
+import dev.paperarc.bridge.craft.CraftBlockStateBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -16,11 +17,15 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(CraftSculkShrieker.class)
 public abstract class CraftSculkShriekerApiMixin {
 
-    @Shadow
-    public abstract org.bukkit.block.data.BlockData getBlockData();
+    @Unique
+    private org.bukkit.block.data.BlockData getBlockData() {
+        return (org.bukkit.block.data.BlockData) ((CraftBlockStateBridge) (Object) this).paperarc$getBlockData();
+    }
 
-    @Shadow
-    public abstract void setBlockData(org.bukkit.block.data.BlockData blockData);
+    @Unique
+    private void setBlockData(org.bukkit.block.data.BlockData blockData) {
+        ((CraftBlockStateBridge) (Object) this).paperarc$setBlockData(blockData);
+    }
 
     @Unique
     public boolean isCanSummon() {

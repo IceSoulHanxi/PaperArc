@@ -3,6 +3,7 @@ package dev.paperarc.mixin.common.entity;
 import io.papermc.paper.event.entity.EntityDyeEvent;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import dev.paperarc.bridge.PaperArcBridge;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.player.Player;
@@ -28,8 +29,9 @@ public abstract class WolfDyeMixin {
             method = "mobInteract",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/DyeItem;getDyeColor()Lnet/minecraft/world/item/DyeColor;")
     )
-    private DyeColor paperarc$dye(Player player, InteractionHand hand, DyeItem item, Operation<DyeColor> original) {
-        DyeColor color = original.call(item);
+    private DyeColor paperarc$dye(DyeItem dyeItem, Operation<DyeColor> original,
+                                  @Local Player player, @Local InteractionHand hand) {
+        DyeColor color = original.call(dyeItem);
         EntityDyeEvent event = new EntityDyeEvent(
                 PaperArcBridge.bukkitEntity((Wolf) (Object) this),
                 org.bukkit.DyeColor.getByWoolData((byte) color.getId()),

@@ -46,7 +46,7 @@ public abstract class BeaconBlockEntityMixin {
         }
         LockCode lock = ((LockCodeAccessor) blockEntity).paperarc$getLockKey();
         Component containerName = ((BeaconBlockEntity) blockEntity).getDisplayName();
-        if (BaseContainerBlockEntityMixin.paperarc$canUnlockWithEvent(serverPlayer, lock, containerName, blockEntity)) {
+        if (dev.paperarc.bridge.ContainerUnlockSupport.canUnlockWithEvent(serverPlayer, lock, containerName, blockEntity)) {
             cir.setReturnValue(new BeaconMenu(syncId, playerInventory, this.dataAccess,
                     ContainerLevelAccess.create(blockEntity.getLevel(), blockEntity.getBlockPos())));
         } else {

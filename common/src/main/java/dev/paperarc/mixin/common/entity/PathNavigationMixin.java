@@ -44,7 +44,7 @@ public abstract class PathNavigationMixin {
     private static final ThreadLocal<Boolean> paperarc$repathing = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
     @Inject(
-            method = "createPath(Ljava/util/Set;IIIF)Lnet/minecraft/world/level/pathfinder/Path;",
+            method = "createPath(Ljava/util/Set;IZIF)Lnet/minecraft/world/level/pathfinder/Path;",
             at = @At("HEAD"),
             cancellable = true
     )

@@ -18,17 +18,24 @@ import org.spongepowered.asm.mixin.injection.At;
 /**
  * Port of Paper's Add-EntityTeleportEndGatewayEvent.patch.
  *
- * <p>Paper branches the CraftBukkit teleport-event block inside
- * {@code Entity#changeDimension(DimensionTransition)}: when the entity is going
- * through an End Gateway, it fires a dedicated
- * {@link EntityTeleportEndGatewayEvent} (carrying the gateway block) instead of
- * the generic {@code EntityTeleportEvent}. We wrap the
- * {@code CraftEventFactory#callEntityTeleportEvent} invocation and substitute
- * the Paper event when the gateway condition matches; because
- * {@code EntityTeleportEndGatewayEvent extends EntityTeleportEvent}, the
- * surrounding CraftBukkit logic (cancel check + destination adoption) keeps
- * working unchanged. Arclight's EntityMixin only decorates changeDimension at
- * HEAD and at {@code addDuringTeleport}, both outside this site.
+ * <p>In Paper, the CraftBukkit teleport-event block inside
+ * {@code Entity#changeDimension(DimensionTransition)} branches on the End
+ * Gateway condition and fires a dedicated {@link EntityTeleportEndGatewayEvent}
+ * (carrying the gateway block) instead of the generic
+ * {@code EntityTeleportEvent}.
+ *
+ * <p>On Arclight there is no such call site in vanilla bytecode: Arclight's own
+ * {@code EntityMixin} decorates {@code changeDimension} at HEAD via a handler
+ * method {@code arclight$changeDim}, and the
+ * {@code CraftEventFactory#callEntityTeleportEvent} invocation lives inside
+ * that merged handler. We therefore wrap the invocation inside
+ * {@code arclight$changeDim} and substitute the Paper event when the gateway
+ * condition matches; because {@code EntityTeleportEndGatewayEvent extends
+ * EntityTeleportEvent}, the surrounding logic (cancel check + destination
+ * adoption) keeps working unchanged.
+ *
+ * <p>{@code require = 0} keeps boot safe if the handler is absent (config order
+ * or upstream refactor): the event simply won't fire instead of crashing.
  */
 @Mixin(Entity.class)
 public abstract class EntityTeleportEndGatewayMixin {
@@ -40,12 +47,13 @@ public abstract class EntityTeleportEndGatewayMixin {
     public abstract Level level();
 
     @WrapOperation(
-            method = "changeDimension(Lnet/minecraft/world/level/portal/DimensionTransition;)Lnet/minecraft/world/entity/Entity;",
+            method = "arclight$changeDim(Lnet/minecraft/world/level/portal/DimensionTransition;)V",
             at = @At(
                     value = "INVOKE",
                     target = "Lorg/bukkit/craftbukkit/v/event/CraftEventFactory;callEntityTeleportEvent(Lnet/minecraft/world/entity/Entity;Lorg/bukkit/Location;)Lorg/bukkit/event/entity/EntityTeleportEvent;",
                     remap = false
-            )
+            ),
+            require = 0
     )
     private EntityTeleportEvent paperarc$fireGatewayTeleportEvent(Entity instance, Location to,
                                                                  Operation<EntityTeleportEvent> original) {

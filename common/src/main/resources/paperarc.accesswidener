@@ -13,3 +13,24 @@ accessible method net/minecraft/world/entity/Display$TextDisplay setText (Lnet/m
 accessible method net/minecraft/world/entity/Display$TextDisplay getTextOpacity ()B
 accessible method net/minecraft/world/entity/Display$TextDisplay setTextOpacity (B)V
 accessible field net/minecraft/nbt/CompoundTag tags Ljava/util/Map;
+
+# Zombie: drowning/conversion state (CraftZombieApiMixin)
+accessible method net/minecraft/world/entity/monster/Zombie supportsBreakDoorGoal ()Z
+accessible method net/minecraft/world/entity/monster/Zombie isSunSensitive ()Z
+accessible field net/minecraft/world/entity/monster/Zombie conversionTime I
+accessible field net/minecraft/world/entity/monster/Zombie DATA_DROWNED_CONVERSION_ID Lnet/minecraft/network/syncher/EntityDataAccessor;
+
+# Villager: restock/trade internals (CraftVillagerApiMixin)
+accessible field net/minecraft/world/entity/npc/Villager numberOfRestocksToday I
+accessible method net/minecraft/world/entity/npc/Villager updateTrades ()V
+
+# Projectile: persistence fields (CraftProjectileApiMixin)
+accessible field net/minecraft/world/entity/projectile/Projectile ownerUUID Ljava/util/UUID;
+accessible field net/minecraft/world/entity/projectile/Projectile leftOwner Z
+
+# Projectile: protected collision helpers (CraftProjectileApiMixin)
+accessible method net/minecraft/world/entity/projectile/Projectile canHitEntity (Lnet/minecraft/world/entity/Entity;)Z
+accessible method net/minecraft/world/entity/projectile/Projectile onHit (Lnet/minecraft/world/phys/HitResult;)V
+
+# FallingBlockEntity: private block state mirror (CraftFallingBlockApiMixin)
+accessible field net/minecraft/world/entity/item/FallingBlockEntity blockState Lnet/minecraft/world/level/block/state/BlockState;

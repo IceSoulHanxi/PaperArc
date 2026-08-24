@@ -24,7 +24,7 @@ public class CrossbowItemMixin {
      * ProjectileWeaponItemMixin inside draw(). Defaults to {@code true}
      * so any path that never fires the event keeps vanilla behavior.
      */
-    public static final ThreadLocal<Boolean> paperarc$consumeItem = ThreadLocal.withInitial(() -> Boolean.TRUE);
+    
 
     @WrapOperation(
         method = "releaseUsing",
@@ -43,7 +43,7 @@ public class CrossbowItemMixin {
             paperarc$syncInventory(shooter);
             return false;
         }
-        paperarc$consumeItem.set(event.shouldConsumeItem());
+        dev.paperarc.bridge.CrossbowState.CONSUME_ITEM.set(event.shouldConsumeItem());
         try {
             boolean loaded = original.call(shooter, crossbow);
             if (!loaded || !event.shouldConsumeItem()) {
@@ -54,11 +54,11 @@ public class CrossbowItemMixin {
             }
             return true;
         } finally {
-            paperarc$consumeItem.remove();
+            dev.paperarc.bridge.CrossbowState.CONSUME_ITEM.remove();
         }
     }
 
-    private void paperarc$syncInventory(LivingEntity user) {
+    private static void paperarc$syncInventory(LivingEntity user) {
         if (((Object) user) instanceof ServerPlayer player) {
             player.containerMenu.sendAllDataToRemote();
         }

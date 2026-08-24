@@ -1,6 +1,7 @@
 package dev.paperarc.mixin.common.api;
 
 import org.bukkit.craftbukkit.v.block.CraftEnderChest;
+import dev.paperarc.bridge.craft.CraftBlockStateBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -14,14 +15,20 @@ import net.minecraft.core.BlockPos;
 @Mixin(CraftEnderChest.class)
 public abstract class CraftEnderChestApiMixin {
 
-    @Shadow
-    public abstract net.minecraft.world.level.LevelAccessor getWorldHandle();
+    @Unique
+    private net.minecraft.world.level.LevelAccessor getWorldHandle() {
+        return (net.minecraft.world.level.LevelAccessor) ((CraftBlockStateBridge) (Object) this).paperarc$getWorldHandle();
+    }
 
-    @Shadow
-    public abstract BlockPos getPosition();
+    @Unique
+    private BlockPos getPosition() {
+        return (BlockPos) ((CraftBlockStateBridge) (Object) this).paperarc$getPosition();
+    }
 
-    @Shadow
-    public abstract boolean isPlaced();
+    @Unique
+    private boolean isPlaced() {
+        return (boolean) ((CraftBlockStateBridge) (Object) this).paperarc$isPlaced();
+    }
 
     @Unique
     public boolean isBlocked() {

@@ -26,7 +26,7 @@ public class ProjectileWeaponItemMixin {
         )
     )
     private static ItemStack paperarc$useAmmo(ItemStack weapon, ItemStack candidate, LivingEntity shooter, boolean bl, Operation<ItemStack> original) {
-        boolean consume = CrossbowItemMixin.paperarc$consumeItem.get();
+        boolean consume = dev.paperarc.bridge.CrossbowState.CONSUME_ITEM.get();
         return original.call(weapon, candidate, shooter, bl || !consume);
     }
 }

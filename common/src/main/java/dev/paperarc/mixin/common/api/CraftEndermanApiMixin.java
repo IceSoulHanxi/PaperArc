@@ -3,6 +3,7 @@ package dev.paperarc.mixin.common.api;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.world.entity.monster.EnderMan;
 import org.bukkit.craftbukkit.v.entity.CraftEnderman;
+import dev.paperarc.bridge.craft.CraftEntityBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -20,8 +21,6 @@ import java.lang.reflect.Method;
  * so direct access would not compile).
  */
 @Mixin(CraftEnderman.class)
-public abstract class CraftEndermanApiMixin {
-
     @Shadow
     public abstract EnderMan getHandle();
 

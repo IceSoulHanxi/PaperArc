@@ -21,15 +21,15 @@ public abstract class RavagerJumpMixin {
 
     @WrapOperation(
             method = "aiStep",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;jumpFromGround()V")
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/class_1584;method_6043()V", remap = false)
     )
-    private void paperarc$entityJump(Operation<Void> original) {
+    private void paperarc$entityJump(Ravager instance, Operation<Void> original) {
         EntityJumpEvent event = new EntityJumpEvent(
-                PaperArcBridge.bukkitEntity((Entity) (Object) this));
+                PaperArcBridge.bukkitEntity(instance));
         if (event.callEvent()) {
-            original.call();
+            original.call(instance);
         } else {
-            ((LivingEntityBridge) (Object) this).bridge$setJumping(false);
+            ((LivingEntityBridge) instance).bridge$setJumping(false);
         }
     }
 }

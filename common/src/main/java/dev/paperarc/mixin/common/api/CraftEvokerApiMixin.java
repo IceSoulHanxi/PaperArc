@@ -7,6 +7,7 @@ import org.bukkit.craftbukkit.v.entity.CraftEntity;
 import org.bukkit.craftbukkit.v.entity.CraftEvoker;
 import org.bukkit.craftbukkit.v.entity.CraftSheep;
 import org.jetbrains.annotations.Nullable;
+import dev.paperarc.bridge.craft.CraftEntityBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -24,9 +25,7 @@ import org.spongepowered.asm.mixin.Unique;
 public abstract class CraftEvokerApiMixin {
 
     @Unique
-    private static final String PAPERARC$WOLOLO_KEY = "paperarc.wololoTarget";
-
-    @Shadow
+    private static final String     @Shadow
     public abstract Evoker getHandle();
 
     @Unique

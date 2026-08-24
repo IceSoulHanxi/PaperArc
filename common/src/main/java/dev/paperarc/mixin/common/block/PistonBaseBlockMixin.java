@@ -27,7 +27,10 @@ public abstract class PistonBaseBlockMixin {
             method = "moveBlocks",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/level/block/Block;dropResources(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/entity/BlockEntity;)V"
+                    // runtime CP owner is PistonBaseBlock itself (unqualified inherited-static call);
+                    // intermediary literal bypasses refmap (tiny cannot map this site)
+                    target = "Lnet/minecraft/class_2665;method_9610(Lnet/minecraft/class_2680;Lnet/minecraft/class_1936;Lnet/minecraft/class_2338;Lnet/minecraft/class_2586;)V",
+                    remap = false
             )
     )
     private void paperarc$pistonBreakWithEvent(BlockState state, LevelAccessor accessor, BlockPos destroyedPos,

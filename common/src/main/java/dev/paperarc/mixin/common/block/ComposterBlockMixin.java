@@ -47,8 +47,8 @@ public abstract class ComposterBlockMixin {
     public static Object2FloatMap<ItemLike> COMPOSTABLES;
 
     @Inject(method = "addItem", at = @At("HEAD"), cancellable = true)
-    private void paperarc$compostItem(Entity entity, BlockState state, LevelAccessor level, BlockPos pos,
-                                      ItemStack stack, CallbackInfoReturnable<BlockState> cir) {
+    private static void paperarc$compostItem(Entity entity, BlockState state, LevelAccessor level, BlockPos pos,
+                                             ItemStack stack, CallbackInfoReturnable<BlockState> cir) {
         int i = state.getValue(LEVEL);
         float f = COMPOSTABLES.getFloat((ItemLike) stack.getItem());
         double rand = level.getRandom().nextDouble();
@@ -77,7 +77,7 @@ public abstract class ComposterBlockMixin {
 
     @WrapOperation(method = "addItem",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/util/RandomSource;nextDouble()D"))
-    private double paperarc$fixedRoll(RandomSource instance, Operation<Double> original) {
+    private static double paperarc$fixedRoll(RandomSource instance, Operation<Double> original) {
         return 0.0D;
     }
 }

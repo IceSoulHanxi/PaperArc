@@ -41,14 +41,6 @@ public abstract class WorldBorderMixin {
     private boolean paperarc$silent;
 
     /** 反查 WorldBorder 宿主 Bukkit 世界；无宿主（未注册/虚拟）返回 null。 */
-    static World paperarc$findWorld(WorldBorder handle) {
-        for (World world : PaperArcBridge.getServer().getWorlds()) {
-            if (((CraftWorldBorder) world.getWorldBorder()).getHandle() == handle) {
-                return world;
-            }
-        }
-        return null;
-    }
 
     @Inject(method = "setCenter", at = @At("HEAD"), cancellable = true)
     private void paperarc$onSetCenter(double x, double z, CallbackInfo ci) {
@@ -56,7 +48,7 @@ public abstract class WorldBorderMixin {
             paperarc$silent = false;
             return;
         }
-        World bukkitWorld = paperarc$findWorld((WorldBorder) (Object) this);
+        World bukkitWorld = dev.paperarc.bridge.WorldBorderSupport.findWorld((WorldBorder) (Object) this);
         if (bukkitWorld == null) {
             return;
         }
@@ -84,7 +76,7 @@ public abstract class WorldBorderMixin {
             paperarc$silent = false;
             return;
         }
-        World bukkitWorld = paperarc$findWorld((WorldBorder) (Object) this);
+        World bukkitWorld = dev.paperarc.bridge.WorldBorderSupport.findWorld((WorldBorder) (Object) this);
         if (bukkitWorld == null) {
             return;
         }
@@ -119,7 +111,7 @@ public abstract class WorldBorderMixin {
             paperarc$silent = false;
             return;
         }
-        World bukkitWorld = paperarc$findWorld((WorldBorder) (Object) this);
+        World bukkitWorld = dev.paperarc.bridge.WorldBorderSupport.findWorld((WorldBorder) (Object) this);
         if (bukkitWorld == null) {
             return;
         }

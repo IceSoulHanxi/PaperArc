@@ -49,7 +49,7 @@ public abstract class ElderGuardianAppearanceMixin {
         List<ServerPlayer> result = new ArrayList<>(list.size());
         for (ServerPlayer player : list) {
             ElderGuardianAppearanceEvent event = new ElderGuardianAppearanceEvent(
-                    (org.bukkit.entity.ElderGuardian) PaperArcBridge.bukkitEntity((ElderGuardian) (Object) this),
+                    (org.bukkit.entity.ElderGuardian) PaperArcBridge.bukkitEntity((Entity) entity),
                     PaperArcBridge.bukkitPlayer(player));
             if (event.callEvent()) {
                 result.add(player);

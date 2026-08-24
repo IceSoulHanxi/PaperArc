@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * Port of Paper's EndermanEscapeEvent.
@@ -62,7 +63,7 @@ public abstract class EnderManEscapeMixin {
     }
 
     @Inject(method = "hurt", at = @At("HEAD"))
-    private void paperarc$resetIndirect(DamageSource source, float amount, CallbackInfo ci) {
+    private void paperarc$resetIndirect(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         paperarc$indirectFired = false;
         paperarc$indirectBlocked = false;
     }
