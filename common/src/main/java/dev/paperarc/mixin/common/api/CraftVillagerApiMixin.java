@@ -40,12 +40,6 @@ public abstract class CraftVillagerApiMixin {
     @Shadow
     public abstract Villager getHandle();
 
-    @Shadow
-    protected abstract void updateTrades();
-
-    @Shadow
-    private int numberOfRestocksToday;
-
     @Unique
     private static final String PAPERARC$KEY_REPUTATIONS = "villager$reputations";
 
@@ -54,7 +48,7 @@ public abstract class CraftVillagerApiMixin {
         // 参考 Paper：updateTrades() 会向当前 offers 列表按当前等级追加新交易，
         // 数量参数由 Paper 的补丁用于控制追加数量；vanilla 的 updateTrades()
         // 无数量参数，这里等价于追加一批当前等级可解锁的新交易。
-        this.updateTrades();
+        this.getHandle().updateTrades();
         return true;
     }
 
@@ -73,12 +67,12 @@ public abstract class CraftVillagerApiMixin {
 
     @Unique
     public int getRestocksToday() {
-        return this.numberOfRestocksToday;
+        return this.getHandle().numberOfRestocksToday;
     }
 
     @Unique
     public void setRestocksToday(int restocksToday) {
-        this.numberOfRestocksToday = restocksToday;
+        this.getHandle().numberOfRestocksToday = restocksToday;
     }
 
     @Unique

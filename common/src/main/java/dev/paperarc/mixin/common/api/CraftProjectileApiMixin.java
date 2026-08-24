@@ -12,7 +12,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
-import java.lang.reflect.Method;
 import java.util.UUID;
 
 /**
@@ -40,36 +39,17 @@ public abstract class CraftProjectileApiMixin {
     @Shadow
     public abstract Projectile getHandle();
 
-    @Shadow
-    private UUID ownerUUID;
-
-    @Shadow
-    private boolean leftOwner;
-
     @Unique
     private static final String PAPERARC$KEY_HAS_BEEN_SHOT = "hasBeenShot";
 
-    /**
-     * Cached reflective handles into protected vanilla helpers:
-     * [0] Projectile#canHitEntity(Entity),
-     * [1] Projectile#onHit(HitResult).
-     */
-    @Unique
-    private static volatile Method[] PAPERARC$PROJ_HELPERS;
-
     @Unique
     public boolean canHitEntity(org.bukkit.entity.Entity entity) {
-        try {
-            return (Boolean) paperarc$helpers()[0]
-                .invoke(this.getHandle(), ((CraftEntity) entity).getHandle());
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Failed to invoke Projectile#canHitEntity", e);
-        }
+        return this.getHandle().canHitEntity(((CraftEntity) entity).getHandle());
     }
 
     @Unique
     public UUID getOwnerUniqueId() {
-        return this.ownerUUID;
+        return this.getHandle().ownerUUID;
     }
 
     @Unique
@@ -79,20 +59,15 @@ public abstract class CraftProjectileApiMixin {
 
     @Unique
     public boolean hasLeftShooter() {
-        return this.leftOwner;
+        return this.getHandle().leftOwner;
     }
 
     @Unique
     public void hitEntity(org.bukkit.entity.Entity entity) {
         Preconditions.checkState(!this.getHandle().isRemoved(),
             "Cannot hit entity on a removed projectile");
-        EntityHitResult hitResult =
-            new EntityHitResult(((CraftEntity) entity).getHandle());
-        try {
-            paperarc$helpers()[1].invoke(this.getHandle(), hitResult);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Failed to invoke Projectile#onHit", e);
-        }
+        this.getHandle()
+            .onHit(new EntityHitResult(((CraftEntity) entity).getHandle()));
     }
 
     @Unique
@@ -110,30 +85,6 @@ public abstract class CraftProjectileApiMixin {
 
     @Unique
     public void setHasLeftShooter(boolean hasLeftShooter) {
-        this.leftOwner = hasLeftShooter;
-    }
-
-    /**
-     * Resolves the protected vanilla helpers once:
-     * [0] canHitEntity(Entity), [1] onHit(HitResult).
-     */
-    @Unique
-    private static Method[] paperarc$helpers() throws NoSuchMethodException {
-        Method[] helpers = PAPERARC$PROJ_HELPERS;
-        if (helpers == null) {
-            synchronized (CraftProjectileApiMixin.class) {
-                if (PAPERARC$PROJ_HELPERS == null) {
-                    Method canHit = Projectile.class.getDeclaredMethod("canHitEntity",
-                        net.minecraft.world.entity.Entity.class);
-                    canHit.setAccessible(true);
-                    Method onHit = Projectile.class.getDeclaredMethod("onHit",
-                        HitResult.class);
-                    onHit.setAccessible(true);
-                    PAPERARC$PROJ_HELPERS = new Method[]{canHit, onHit};
-                }
-                helpers = PAPERARC$PROJ_HELPERS;
-            }
-        }
-        return helpers;
+        this.getHandle().leftOwner = hasLeftShooter;
     }
 }

@@ -1,5 +1,6 @@
 package dev.paperarc.mixin.common.api;
 
+import dev.paperarc.bridge.craft.CraftBlockStateBridge;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.LevelAccessor;
@@ -9,61 +10,71 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Chest;
 import org.bukkit.craftbukkit.v.block.CraftChest;
-import dev.paperarc.bridge.craft.CraftBlockStateBridge;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 /**
  * Port of Paper's More-Chest-Block-API.patch additions on
  * {@link CraftChest}: {@code Chest#isBlocked()} and
  * {@code Chest#setType(Chest.Type)}.
+ *
+ * <p>State internals (worldHandle/position/data/blockData) live on the
+ * ancestor CraftBlockState and cannot be @Shadow'ed from a child-target mixin
+ * against Arclight's runtime-generated CB classes, so everything goes through
+ * the {@link CraftBlockStateBridge} duck interface.</p>
  */
 @Mixin(CraftChest.class)
 public abstract class CraftChestApiMixin {
 
-    @Shadow
-    protected BlockState data;
-
     @Unique
-    private LevelAccessor getWorldHandle() {
-        return (LevelAccessor) ((CraftBlockStateBridge) (Object) this).paperarc$getWorldHandle();
+    private LevelAccessor paperarc$worldHandle() {
+        return ((CraftBlockStateBridge) (Object) this).paperarc$getWorldHandle();
     }
 
     @Unique
-    private BlockPos getPosition() {
-        return (BlockPos) ((CraftBlockStateBridge) (Object) this).paperarc$getPosition();
+    private BlockPos paperarc$position() {
+        return ((CraftBlockStateBridge) (Object) this).paperarc$getPosition();
     }
 
     @Unique
-    private BlockData getBlockData() {
-        return (BlockData) ((CraftBlockStateBridge) (Object) this).paperarc$getBlockData();
+    private BlockState paperarc$data() {
+        return ((CraftBlockStateBridge) (Object) this).paperarc$data();
     }
 
     @Unique
-    private void setBlockData(BlockData blockData) {
+    private BlockData paperarc$getBlockData() {
+        return ((CraftBlockStateBridge) (Object) this).paperarc$getBlockData();
+    }
+
+    @Unique
+    private void paperarc$setBlockData(BlockData blockData) {
         ((CraftBlockStateBridge) (Object) this).paperarc$setBlockData(blockData);
     }
 
     @Unique
     public boolean isBlocked() {
         // Mimics vanilla logic in ChestBlock/DoubleBlockCombiner when opening the container, as in Paper
-        if (this.paperarc$isUnplaced()) {
+        if (!((CraftBlockStateBridge) (Object) this).paperarc$isPlaced()) {
             return false;
         }
-        LevelAccessor world = this.getWorldHandle();
-        if (ChestBlock.isChestBlockedAt(world, this.getPosition())) {
+        LevelAccessor world = this.paperarc$worldHandle();
+        if (world == null) {
+            return false;
+        }
+        BlockPos position = this.paperarc$position();
+        if (ChestBlock.isChestBlockedAt(world, position)) {
             return true;
         }
-        if (ChestBlock.getBlockType(this.data) == DoubleBlockCombiner.BlockType.SINGLE) {
+        BlockState data = this.paperarc$data();
+        if (ChestBlock.getBlockType(data) == DoubleBlockCombiner.BlockType.SINGLE) {
             return false;
         }
-        Direction direction = ChestBlock.getConnectedDirection(this.data);
-        BlockPos neighbourBlockPos = this.getPosition().relative(direction);
+        Direction direction = ChestBlock.getConnectedDirection(data);
+        BlockPos neighbourBlockPos = position.relative(direction);
         // getBlockStateIfLoaded is not present in these mappings: emulate via chunk-load check
         BlockState neighbourBlockState = world.hasChunkAt(neighbourBlockPos) ? world.getBlockState(neighbourBlockPos) : null;
         return neighbourBlockState != null
-            && neighbourBlockState.is(this.data.getBlock())
+            && neighbourBlockState.is(data.getBlock())
             && ChestBlock.getBlockType(neighbourBlockState) != DoubleBlockCombiner.BlockType.SINGLE
             && ChestBlock.getConnectedDirection(neighbourBlockState) == direction.getOpposite()
             && ChestBlock.isChestBlockedAt(world, neighbourBlockPos);
@@ -71,17 +82,8 @@ public abstract class CraftChestApiMixin {
 
     @Unique
     public void setType(Chest.Type type) {
-        Chest blockData = (Chest) this.getBlockData();
+        Chest blockData = (Chest) this.paperarc$getBlockData();
         blockData.setType(type);
-        this.setBlockData(blockData);
-    }
-
-    /**
-     * Inverse of Paper's {@code isPlaced()} helper; CraftBukkit tracks
-     * placement via the nullable world/world-handle fields.
-     */
-    @Unique
-    private boolean paperarc$isUnplaced() {
-        return this.getWorldHandle() == null; // unplaced states have no world handle
+        this.paperarc$setBlockData(blockData);
     }
 }

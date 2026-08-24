@@ -46,7 +46,7 @@ public abstract class PhantomSpawnerMixin {
         this.paperarc$abortSpawn = false;
     }
 
-    @WrapOperation(
+    @WrapOperation(require = 0,
             method = "tick",
             at = @At(
                     value = "INVOKE",
