@@ -42,10 +42,6 @@ Paper API 的插件可以像在 Paper 服务端上一样正常加载与运行。
    你的插件照常放在 `plugins/` 目录。
 3. 启动服务器，日志出现 `Done (` 即安装成功。
 
-> 可选自检：仓库另提供一个极小的探针插件 **PaperArcProbe**
-> （独立目录 `../PaperArcProbe/`），放入 `plugins/` 后启动，日志中应输出多条
-> `PASS:` 与 `PASS(P3)`，代表 Paper 类可见且服务端侧注入生效。
-
 ## 构建
 
 环境要求：**JDK 21**，Git。
@@ -77,7 +73,7 @@ paperarc/
 ├── fabric/    # Fabric 入口 + Fabric 专属 Mixin
 ├── neoforge/  # NeoForge 入口 + 共享 Mojang 映射 Mixin
 ├── forge/     # Forge 入口（复用共享 Mixin）
-└── probe -> 见根工作区独立仓库 PaperArcProbe（可选自检插件）
+└── buildSrc  # 构建辅助任务（CraftBukkit 包版本化）
 ```
 
 ## 反馈与兼容性报告
