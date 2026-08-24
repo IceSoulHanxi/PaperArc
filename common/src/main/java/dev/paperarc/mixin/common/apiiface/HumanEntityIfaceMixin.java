@@ -30,9 +30,6 @@ public interface HumanEntityIfaceMixin {
     public abstract org.bukkit.inventory.InventoryView openStonecutter(org.bukkit.Location p0, boolean p1);
 
     @Unique
-    public abstract void closeInventory(org.bukkit.event.inventory.InventoryCloseEvent.Reason p0);
-
-    @Unique
     public abstract void setHurtDirection(float p0);
 
     @Unique

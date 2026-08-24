@@ -1,4 +1,4 @@
-package dev.paperarc.mixin.common.entity;
+package dev.paperarc.mixin.neoforge.entity;
 
 import dev.paperarc.bridge.FertilizeEggState;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -21,7 +21,7 @@ public abstract class FrogFertilizeMixin {
 
     @WrapOperation(
             method = "spawnChildFromBreeding",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/class_7102;method_49794(Lnet/minecraft/class_3218;Lnet/minecraft/class_1429;Lnet/minecraft/class_1296;)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/animal/frog/Frog;finalizeSpawnChildFromBreeding(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/animal/Animal;Lnet/minecraft/world/entity/AgeableMob;)V",
                     remap = false)
     )
     private void paperarc$fertilize(Frog instance, ServerLevel level, Animal other, net.minecraft.world.entity.AgeableMob child,

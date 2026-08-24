@@ -1,4 +1,4 @@
-package dev.paperarc.mixin.common.block;
+package dev.paperarc.mixin.fabric.block;
 
 import com.destroystokyo.paper.event.block.TNTPrimeEvent;
 import dev.paperarc.bridge.PaperArcBridge;

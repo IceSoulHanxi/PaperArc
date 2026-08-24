@@ -4,6 +4,7 @@ import net.minecraft.server.players.PlayerList;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import dev.paperarc.bridge.PaperArcBridge;
+import dev.paperarc.bridge.RespawnCapture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
@@ -39,15 +40,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class PlayerListPostRespawnMixin {
 
     @Unique
-    private static final ThreadLocal<State> paperarc$state = new ThreadLocal<>();
-
-    @Unique
-    private static final class State {
-        boolean respawn;
-        boolean bedSpawn;
-        Location location;
-        DimensionTransition transition;
-    }
+    private static final ThreadLocal<RespawnCapture> paperarc$state = new ThreadLocal<>();
 
     private static final String PAPERARC$RESPAWN =
             "respawn(Lnet/minecraft/server/level/ServerPlayer;ZLnet/minecraft/world/entity/Entity$RemovalReason;"
@@ -69,7 +62,7 @@ public abstract class PlayerListPostRespawnMixin {
         paperarc$state.remove();
         DimensionTransition transition = original.call(player, flag, postTransition);
         if (transition != null) {
-            State state = new State();
+            RespawnCapture state = new RespawnCapture();
             state.respawn = true;
             state.transition = transition;
             Vec3 pos = transition.pos();
@@ -95,8 +88,10 @@ public abstract class PlayerListPostRespawnMixin {
         require = 0
     )
     private void paperarc$onPostRespawn(ServerPlayer player, boolean flag, Entity.RemovalReason reason,
+                                        org.bukkit.event.player.PlayerRespawnEvent.RespawnReason respawnReason,
+                                        Location bukkitLocation,
                                         CallbackInfoReturnable<ServerPlayer> cir) {
-        State state = paperarc$state.get();
+        RespawnCapture state = paperarc$state.get();
         paperarc$state.remove();
         if (state == null || !state.respawn) {
             return;

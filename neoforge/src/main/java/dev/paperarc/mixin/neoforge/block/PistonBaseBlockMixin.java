@@ -1,4 +1,4 @@
-package dev.paperarc.mixin.common.block;
+package dev.paperarc.mixin.neoforge.block;
 
 import dev.paperarc.bridge.BlockBreakBlockEventSupport;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -29,7 +29,7 @@ public abstract class PistonBaseBlockMixin {
                     value = "INVOKE",
                     // runtime CP owner is PistonBaseBlock itself (unqualified inherited-static call);
                     // intermediary literal bypasses refmap (tiny cannot map this site)
-                    target = "Lnet/minecraft/class_2665;method_9610(Lnet/minecraft/class_2680;Lnet/minecraft/class_1936;Lnet/minecraft/class_2338;Lnet/minecraft/class_2586;)V",
+                    target = "Lnet/minecraft/world/level/block/piston/PistonBaseBlock;dropResources(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/entity/BlockEntity;)V",
                     remap = false
             )
     )

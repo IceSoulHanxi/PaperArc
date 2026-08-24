@@ -45,9 +45,6 @@ public interface PlayerIfaceMixin {
     public abstract void kick(net.kyori.adventure.text.Component p0);
 
     @Unique
-    public abstract void kick(net.kyori.adventure.text.Component p0, org.bukkit.event.player.PlayerKickEvent.Cause p1);
-
-    @Unique
     public abstract void showWinScreen();
 
     @Unique

@@ -1,4 +1,4 @@
-package dev.paperarc.mixin.common.entity;
+package dev.paperarc.mixin.fabric.entity;
 
 import dev.paperarc.bridge.FertilizeEggState;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -8,6 +8,7 @@ import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.ai.goal.BreedGoal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.level.Level;
+import dev.paperarc.mixin.common.entity.BreedGoalAccessor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;

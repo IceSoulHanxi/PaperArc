@@ -20,6 +20,8 @@ dependencies {
 
     compileOnly libs.spigot.api
     compileOnly libs.paper.api
+    // deobf spigot：CB 类引用（CraftBlock 等）编译需要，运行时由 versionCraftBukkit 版本化
+    compileOnly "io.izzel.arclight.generated:spigot:1.21.1:deobf"
 
     // MixinExtras：NeoForge 20.4+ 运行时自带，仅需编译期 + 注解处理器
     compileOnly libs.mixinextras.neoforge
@@ -45,6 +47,8 @@ shadowJar {
     exclude 'fabric.mod.json'
     exclude 'architectury.common.json'
     exclude 'org/bukkit/**'
+    // arclight 自身导出 org.spigotmc，重复导出会触发 JPMS ResolutionException
+    exclude 'org/spigotmc/**'
     exclude 'module-info.class'
 
     configurations = [project.configurations.shadowCommon]
@@ -66,4 +70,17 @@ components.java {
     withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
         skip()
     }
+}
+
+// CraftBukkit 包版本化：deobf v/ -> 运行时 v1_21_R1（含 mixin refmap）
+tasks.register('versionCraftBukkit', dev.paperarc.build.VersionCraftBukkitTask) {
+    jar.set(tasks.named('remapJar').flatMap { it.archiveFile })
+    revision.set('v1_21_R1')
+}
+tasks.matching { it.name == 'versionCraftBukkit' }.configureEach {
+    mustRunAfter tasks.named('remapJar')
+    outputs.upToDateWhen { false }
+}
+tasks.named('build') {
+    dependsOn 'versionCraftBukkit'
 }

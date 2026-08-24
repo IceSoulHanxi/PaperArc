@@ -1,4 +1,4 @@
-package dev.paperarc.mixin.common.entity;
+package dev.paperarc.mixin.neoforge.entity;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -23,7 +23,7 @@ public abstract class SonicBoomMixin {
 
     @WrapOperation(
             // The push happens inside a lambda captured from tick(Warden,...); warden is its first param.
-            method = "method_43265(Lnet/minecraft/class_7260;Lnet/minecraft/class_3218;Lnet/minecraft/class_1309;)V",
+            method = "method_43265(Lnet/minecraft/world/entity/monster/warden/Warden;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;)V",
             remap = false,
             at = @At(
                     value = "INVOKE",

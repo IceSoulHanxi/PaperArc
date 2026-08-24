@@ -3,7 +3,19 @@
   "minVersion": "0.8",
   "package": "dev.paperarc.mixin.neoforge",
   "compatibilityLevel": "JAVA_21",
-  "mixins": [],
+  "mixins": [
+    "block.AnvilMenuAnvilDamagedMixin",
+    "block.FireBlockPrimeMixin",
+    "block.PistonBaseBlockMixin",
+    "block.TntBlockPrimeMixin",
+    "entity.AnimalFinalizeSpawnMixin",
+    "entity.FrogFertilizeMixin",
+    "entity.PandaJumpMixin",
+    "entity.RavagerJumpMixin",
+    "entity.SnifferFertilizeMixin",
+    "entity.SonicBoomMixin",
+    "entity.TurtleBreedGoalMixin"
+  ],
   "server": [],
   "injectors": {
     "defaultRequire": 1

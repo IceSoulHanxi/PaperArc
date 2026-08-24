@@ -1,4 +1,4 @@
-package dev.paperarc.mixin.common.entity;
+package dev.paperarc.mixin.fabric.entity;
 
 import dev.paperarc.bridge.FertilizeEggState;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;

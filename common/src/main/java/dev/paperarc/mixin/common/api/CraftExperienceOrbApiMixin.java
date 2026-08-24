@@ -81,8 +81,4 @@ public abstract class CraftExperienceOrbApiMixin {
         return ApiState.get(paperarc$owner(), PAPERARC$KEY_TRIGGER, null);
     }
 
-    @Unique
-    public ExperienceOrb.SpawnReason getSpawnReason() {
-        return ApiState.get(paperarc$owner(), PAPERARC$KEY_REASON, null);
-    }
 }

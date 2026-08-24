@@ -34,7 +34,6 @@ import org.bukkit.block.sign.Side;
 import org.bukkit.craftbukkit.v.CraftWorld;
 import org.bukkit.craftbukkit.v.block.CraftBlock;
 import org.bukkit.craftbukkit.v.entity.CraftEntity;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.InventoryView;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -132,21 +131,6 @@ public abstract class CraftHumanEntityApiMixin {
                             MethodType.methodType(void.class, CompoundTag.class));
         } catch (ReflectiveOperationException e) {
             return null; // caller degrades with IllegalStateException
-        }
-    }
-
-    @Unique
-    public void closeInventory(InventoryCloseEvent.Reason reason) {
-        // degraded: spigot NMS lacks ServerPlayer.closeContainer(Reason); the reason is not
-        // plumbed into the internally-fired InventoryCloseEvent.
-        // Player.closeContainer() is public in vanilla but protected in spigot NMS, so a
-        // plain call does not compile against both. Per project rule (prefer MethodHandles
-        // over reflection), a single MethodHandle is built once via privateLookupIn and is
-        // fully JIT-inlinable at the call site.
-        try {
-            PAPERARC$CLOSE_CONTAINER.invokeExact(this.getHandle());
-        } catch (Throwable t) {
-            throw new IllegalStateException("Cannot invoke Player.closeContainer", t);
         }
     }
 
