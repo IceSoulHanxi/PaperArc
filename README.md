@@ -64,8 +64,8 @@ cd paperarc
 | NeoForge | `neoforge/build/libs/paperarc-<version>.jar` |
 | Forge | `forge/build/libs/paperarc-<version>.jar` |
 
-> 若你的网络访问 spigotmc / maven.izzel.io 等仓库受限，可在命令行追加代理参数，
-> 例如 `-Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=10808`。
+> 构建需要访问 spigotmc / maven.izzel.io 等 Maven 仓库；网络受限时请自行
+> 为 Gradle/JVM 配置代理后再执行。
 
 ## 项目结构
 
