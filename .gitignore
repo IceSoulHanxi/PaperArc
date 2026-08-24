@@ -15,4 +15,15 @@ out/
 # Fabric/Loom 运行时
 run/
 remappedSrc/
-probe/build/
+
+# JVM/运行产物
+*.log
+hs_err_*.log
+replay_*.log
+.mixin.out/
+crash-reports/
+logs/
+
+# 系统
+.DS_Store
+Thumbs.db
