@@ -57,8 +57,10 @@ jobs:
         run: |
           mkdir -p out
           for m in fabric neoforge forge; do
-            cp "$m"/build/libs/paperarc-*[0-9].jar out/
+            # 版本号含 SNAPSHOT 后缀，不能按结尾数字匹配；改为拷贝后剔除分类器产物
+            cp "$m"/build/libs/paperarc-*.jar out/ 2>/dev/null || true
           done
+          rm -f out/*-dev-shadow.jar out/*-sources.jar
           ls -l out/
 
       - name: Upload artifacts
