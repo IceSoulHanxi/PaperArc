@@ -1,6 +1,6 @@
 modLoader="javafml"
 loaderVersion="[52,)"
-license="GPL-3.0-or-later"
+license="MIT"
 
 [[mods]]
 modId="paperarc"

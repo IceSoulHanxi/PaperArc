@@ -7,7 +7,7 @@
   "authors": [
     "PaperArc Contributors"
   ],
-  "license": "GPL-3.0-or-later",
+  "license": "MIT",
   "environment": "*",
   "accessWidener": "paperarc.accesswidener",
   "entrypoints": {
