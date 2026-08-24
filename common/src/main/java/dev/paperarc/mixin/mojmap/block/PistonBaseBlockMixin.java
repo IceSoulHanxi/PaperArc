@@ -1,4 +1,4 @@
-package dev.paperarc.mixin.neoforge.block;
+package dev.paperarc.mixin.mojmap.block;
 
 import dev.paperarc.bridge.BlockBreakBlockEventSupport;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;

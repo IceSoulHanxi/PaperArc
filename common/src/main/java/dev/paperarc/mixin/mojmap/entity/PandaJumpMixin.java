@@ -1,4 +1,4 @@
-package dev.paperarc.mixin.neoforge.entity;
+package dev.paperarc.mixin.mojmap.entity;
 
 import dev.paperarc.bridge.LivingEntityBridge;
 import com.destroystokyo.paper.event.entity.EntityJumpEvent;

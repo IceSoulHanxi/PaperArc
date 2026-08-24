@@ -1,4 +1,4 @@
-package dev.paperarc.mixin.neoforge.entity;
+package dev.paperarc.mixin.mojmap.entity;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;

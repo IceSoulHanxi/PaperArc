@@ -17,7 +17,7 @@ authors="PaperArc Contributors"
 config="paperarc-common.mixins.json"
 
 [[mixins]]
-config="paperarc-neoforge.mixins.json"
+config="paperarc-mojmap.mixins.json"
 
 [[dependencies.paperarc]]
     modId="neoforge"

@@ -13,6 +13,15 @@ on top of Arclight's Bukkit layer, without porting Paper's optimizations.
 '''
 authors="PaperArc Contributors"
 
+[[mixins]]
+config="paperarc-common.mixins.json"
+
+[[mixins]]
+config="paperarc-mojmap.mixins.json"
+
+[[mixins]]
+config="paperarc-forge.mixins.json"
+
 [[dependencies.paperarc]]
     modId="forge"
     mandatory=true

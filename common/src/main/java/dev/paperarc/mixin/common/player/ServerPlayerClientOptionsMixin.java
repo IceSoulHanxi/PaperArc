@@ -22,9 +22,10 @@ import java.util.Map;
  * 对照 Paper 补丁：ServerPlayer#updateOptions 开头发事件（携带全部客户端选项
  * 构造的 Map），登录路径改走 updateOptionsNoEvents 不发事件。
  * <p>
- * 实现差异：vanilla 无 updateOptionsNoEvents 拆分。为复现"登录不发事件"，
- * 在构造器内 INVOKE updateOptions 处置 paperarc$login 标志；HEAD handler 见
- * 标志则跳过发事件并清标志。其余调用（玩家在设置界面改动后）正常发事件。
+ * 实现差异：vanilla 无 updateOptionsNoEvents 拆分。登录路径判定不依赖构造器
+ * 注入（Forge 的 sponge mixin 禁止以构造器为注入目标，fabric fork 允许）：
+ * vanilla 构造器调用 updateOptions 时 {@code connection} 尚未赋值，而玩家在
+ * 设置界面改动时连接必然已建立——据此区分两条路径。
  * <p>
  * SkinParts 用 dev.paperarc.util.PaperArcSkinParts（Paper 的 PaperSkinParts 是
  * 服务端内部类不可用）；插件若 instanceof PaperSkinParts 会失败，见报告。
@@ -34,25 +35,15 @@ import java.util.Map;
 @Mixin(ServerPlayer.class)
 public abstract class ServerPlayerClientOptionsMixin {
 
-    /** 构造器（登录）路径标志：跳过一次性事件发射。 */
+    /** 构造器（登录）路径：connection 尚未建立。 */
     @Unique
-    private boolean paperarc$login;
-
-    @Inject(
-            method = "<init>",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/server/level/ServerPlayer;updateOptions(Lnet/minecraft/server/level/ClientInformation;)V"
-            )
-    )
-    private void paperarc$markLogin(CallbackInfo ci) {
-        this.paperarc$login = true;
+    private boolean paperarc$isLoginPath() {
+        return ((ServerPlayer) (Object) this).connection == null;
     }
 
     @Inject(method = "updateOptions", at = @At("HEAD"))
     private void paperarc$onUpdateOptions(ClientInformation clientOptions, CallbackInfo ci) {
-        if (paperarc$login) {
-            paperarc$login = false;
+        if (paperarc$isLoginPath()) {
             return;
         }
         Map<ClientOption<?>, Object> newValues = new HashMap<>();

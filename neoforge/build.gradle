@@ -76,6 +76,7 @@ components.java {
 tasks.register('versionCraftBukkit', dev.paperarc.build.VersionCraftBukkitTask) {
     jar.set(tasks.named('remapJar').flatMap { it.archiveFile })
     revision.set('v1_21_R1')
+    mixinConfigs.set('')
 }
 tasks.matching { it.name == 'versionCraftBukkit' }.configureEach {
     mustRunAfter tasks.named('remapJar')
