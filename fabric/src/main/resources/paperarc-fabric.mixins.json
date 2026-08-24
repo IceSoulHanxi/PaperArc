@@ -6,9 +6,9 @@
   "mixins": [
     "api.CraftExperienceOrbSpawnReasonMixin",
     "api.CraftHumanEntityCloseInventoryMixin",
-    "apiiface.ExperienceOrbSpawnReasonIfaceMixin",
-    "apiiface.HumanEntityCloseInventoryIfaceMixin",
-    "apiiface.PlayerKickCauseIfaceMixin",
+    "bukkit.ExperienceOrbSpawnReasonIfaceMixin",
+    "bukkit.HumanEntityCloseInventoryIfaceMixin",
+    "bukkit.PlayerKickCauseIfaceMixin",
     "block.AnvilMenuAnvilDamagedMixin",
     "block.FireBlockPrimeMixin",
     "block.PistonBaseBlockMixin",
