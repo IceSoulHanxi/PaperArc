@@ -2,7 +2,6 @@ package dev.paperarc.mixin.common.api;
 
 import net.minecraft.world.entity.animal.Panda;
 import org.bukkit.craftbukkit.v.entity.CraftPanda;
-import dev.paperarc.bridge.craft.CraftEntityBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -16,7 +15,9 @@ import org.spongepowered.asm.mixin.Unique;
  * those two are invoked reflectively; Paper reaches them via its own access
  * widener, which a Craft-host mixin cannot replicate.
  */
-@Mixin(CraftPanda.cla
+@Mixin(CraftPanda.class)
+public abstract class CraftPandaApiMixin {
+
     @Shadow
     public abstract Panda getHandle();
 

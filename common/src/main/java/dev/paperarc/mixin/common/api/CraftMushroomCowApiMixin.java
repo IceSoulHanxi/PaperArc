@@ -7,7 +7,6 @@ import net.minecraft.world.item.component.SuspiciousStewEffects;
 import org.bukkit.craftbukkit.v.entity.CraftMushroomCow;
 import org.bukkit.craftbukkit.v.potion.CraftPotionEffectType;
 import org.bukkit.potion.PotionEffectType;
-import dev.paperarc.bridge.craft.CraftEntityBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -29,7 +28,10 @@ import java.util.List;
 public abstract class CraftMushroomCowApiMixin {
 
     @Unique
-    private statnecraft.world.entity.animal.MushroomCow getHandle();
+    private static volatile Field PAPERARC$STEW_EFFECTS_FIELD;
+
+    @Shadow
+    public abstract net.minecraft.world.entity.animal.MushroomCow getHandle();
 
     @Shadow
     public abstract boolean hasEffectForNextStew(PotionEffectType type);

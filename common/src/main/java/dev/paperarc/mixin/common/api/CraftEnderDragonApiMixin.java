@@ -8,7 +8,6 @@ import org.bukkit.World;
 import org.bukkit.craftbukkit.v.entity.CraftEnderDragon;
 import org.bukkit.craftbukkit.v.entity.CraftEntity;
 import org.jetbrains.annotations.Nullable;
-import dev.paperarc.bridge.craft.CraftEntityBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -25,7 +24,9 @@ import org.spongepowered.asm.mixin.Unique;
 public abstract class CraftEnderDragonApiMixin {
 
     @Unique
-    private static final S@Shadow
+    private static final String PAPERARC$PODIUM_KEY = "paperarc.podium";
+
+    @Shadow
     public abstract EnderDragon getHandle();
 
     @Unique

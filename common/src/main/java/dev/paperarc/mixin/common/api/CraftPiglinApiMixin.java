@@ -3,7 +3,6 @@ package dev.paperarc.mixin.common.api;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.monster.piglin.Piglin;
 import org.bukkit.craftbukkit.v.entity.CraftPiglin;
-import dev.paperarc.bridge.craft.CraftEntityBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -16,7 +15,10 @@ import org.spongepowered.asm.mixin.Unique;
  * {@code Piglin#setChargingCrossbow(boolean)}. The dancing setters follow
  * Paper's implementation by manipulating brain memories.</p>
  */
-@Mixin(CraftPiglin.clas    @Shadow
+@Mixin(CraftPiglin.class)
+public abstract class CraftPiglinApiMixin {
+
+    @Shadow
     public abstract Piglin getHandle();
 
     @Unique

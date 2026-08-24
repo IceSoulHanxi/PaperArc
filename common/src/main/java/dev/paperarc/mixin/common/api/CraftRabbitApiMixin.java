@@ -2,7 +2,6 @@ package dev.paperarc.mixin.common.api;
 
 import net.minecraft.world.entity.animal.Rabbit;
 import org.bukkit.craftbukkit.v.entity.CraftRabbit;
-import dev.paperarc.bridge.craft.CraftEntityBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -14,7 +13,10 @@ import org.spongepowered.asm.mixin.Unique;
  * access transformer; a Craft-host mixin cannot shadow NMS privates, so the
  * field is accessed reflectively (mojmap runtime name: moreCarrotTicks).
  */
-@Mixin(CraftRabbit.clas    @Shadow
+@Mixin(CraftRabbit.class)
+public abstract class CraftRabbitApiMixin {
+
+    @Shadow
     public abstract Rabbit getHandle();
 
     @Unique

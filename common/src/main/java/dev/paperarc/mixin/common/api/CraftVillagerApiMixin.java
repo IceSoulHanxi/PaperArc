@@ -6,7 +6,6 @@ import dev.paperarc.bridge.ApiState;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.VillagerData;
 import org.bukkit.craftbukkit.v.entity.CraftVillager;
-import dev.paperarc.bridge.craft.CraftEntityBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -36,8 +35,16 @@ import java.util.UUID;
  * </ul>
  */
 @Mixin(CraftVillager.class)
+public abstract class CraftVillagerApiMixin {
+
     @Shadow
     public abstract Villager getHandle();
+
+    @Shadow
+    protected abstract void updateTrades();
+
+    @Shadow
+    private int numberOfRestocksToday;
 
     @Unique
     private static final String PAPERARC$KEY_REPUTATIONS = "villager$reputations";
@@ -47,7 +54,7 @@ import java.util.UUID;
         // 参考 Paper：updateTrades() 会向当前 offers 列表按当前等级追加新交易，
         // 数量参数由 Paper 的补丁用于控制追加数量；vanilla 的 updateTrades()
         // 无数量参数，这里等价于追加一批当前等级可解锁的新交易。
-        this.getHandle().updateTrades();
+        this.updateTrades();
         return true;
     }
 
@@ -66,12 +73,12 @@ import java.util.UUID;
 
     @Unique
     public int getRestocksToday() {
-        return this.getHandle().numberOfRestocksToday;
+        return this.numberOfRestocksToday;
     }
 
     @Unique
     public void setRestocksToday(int restocksToday) {
-        this.getHandle().numberOfRestocksToday = restocksToday;
+        this.numberOfRestocksToday = restocksToday;
     }
 
     @Unique

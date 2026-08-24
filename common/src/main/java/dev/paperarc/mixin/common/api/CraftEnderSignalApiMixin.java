@@ -24,7 +24,7 @@ public abstract class CraftEnderSignalApiMixin {
 
     @Unique
     private org.bukkit.World getWorld() {
-        return (org.bukkit.World) ((CraftEntityBridge) (Object) this).paperarc$getWorld();
+        return ((CraftEntityBridge) (Object) this).paperarc$getWorld();
     }
 
     @Unique

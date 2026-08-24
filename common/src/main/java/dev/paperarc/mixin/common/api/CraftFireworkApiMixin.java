@@ -11,7 +11,6 @@ import net.minecraft.world.item.Items;
 import org.bukkit.craftbukkit.v.entity.CraftFirework;
 import org.bukkit.craftbukkit.v.inventory.CraftItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
-import dev.paperarc.bridge.craft.CraftEntityBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -26,7 +25,11 @@ import org.spongepowered.asm.mixin.Unique;
  * and persists via NBT — that storage does not exist at runtime, so the value is
  * derived from the projectile owner instead.
  */
-@Mixin(CraftFirework.class)   public abstract FireworkRocketEntity getHandle();
+@Mixin(CraftFirework.class)
+public abstract class CraftFireworkApiMixin {
+
+    @Shadow
+    public abstract FireworkRocketEntity getHandle();
 
     @Shadow
     public abstract FireworkMeta getFireworkMeta();

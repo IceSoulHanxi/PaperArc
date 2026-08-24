@@ -19,12 +19,12 @@ public abstract class CraftLecternApiMixin {
 
     @Unique
     private net.minecraft.world.level.LevelAccessor getWorldHandle() {
-        return (net.minecraft.world.level.LevelAccessor) ((CraftBlockStateBridge) (Object) this).paperarc$getWorldHandle();
+        return ((CraftBlockStateBridge) (Object) this).paperarc$getWorldHandle();
     }
 
     @Unique
     private net.minecraft.core.BlockPos getPosition() {
-        return (net.minecraft.core.BlockPos) ((CraftBlockStateBridge) (Object) this).paperarc$getPosition();
+        return ((CraftBlockStateBridge) (Object) this).paperarc$getPosition();
     }
 
     @Unique

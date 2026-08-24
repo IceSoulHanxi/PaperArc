@@ -17,7 +17,7 @@ public abstract class CraftEnderChestApiMixin {
 
     @Unique
     private net.minecraft.world.level.LevelAccessor getWorldHandle() {
-        return (net.minecraft.world.level.LevelAccessor) ((CraftBlockStateBridge) (Object) this).paperarc$getWorldHandle();
+        return ((CraftBlockStateBridge) (Object) this).paperarc$getWorldHandle();
     }
 
     @Unique
@@ -27,7 +27,7 @@ public abstract class CraftEnderChestApiMixin {
 
     @Unique
     private boolean isPlaced() {
-        return (boolean) ((CraftBlockStateBridge) (Object) this).paperarc$isPlaced();
+        return ((CraftBlockStateBridge) (Object) this).paperarc$isPlaced();
     }
 
     @Unique

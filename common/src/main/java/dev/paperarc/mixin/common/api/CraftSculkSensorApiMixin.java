@@ -34,7 +34,7 @@ public abstract class CraftSculkSensorApiMixin {
 
     @Unique
     private org.bukkit.block.data.BlockData getBlockData() {
-        return (org.bukkit.block.data.BlockData) ((CraftBlockStateBridge) (Object) this).paperarc$getBlockData();
+        return ((CraftBlockStateBridge) (Object) this).paperarc$getBlockData();
     }
 
     @Unique
