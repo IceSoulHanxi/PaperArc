@@ -13,11 +13,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout PaperArc
-        uses: actions/checkout@v4
-
-      # Arclight 源码：其构建系统会在配置阶段用 Spigot BuildTools
-      # 现场生成 spigot-deobf 工件（不随仓库分发，规避 DMCA 风险）
       - name: Checkout Arclight (${{ env.ARCLIGHT_REF }})
         uses: actions/checkout@v4
         with:
@@ -25,6 +20,13 @@ jobs:
           ref: ${{ env.ARCLIGHT_REF }}
           path: Arclight
 
+      - name: Checkout PaperArc
+        uses: actions/checkout@v4
+        with:
+          path: PaperArc
+
+      # Arclight 源码：其构建系统会在配置阶段用 Spigot BuildTools
+      # 现场生成 spigot-deobf 工件（不随仓库分发，规避 DMCA 风险）
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -47,9 +49,11 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
 
       - name: Build PaperArc
+        working-directory: PaperArc
         run: ./gradlew build --no-daemon
 
       - name: Collect artifacts
+        working-directory: PaperArc
         run: |
           mkdir -p out
           for m in fabric neoforge forge; do
@@ -61,5 +65,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: PaperArc-${{ github.sha }}
-          path: out/*.jar
+          path: PaperArc/out/*.jar
           if-no-files-found: error
