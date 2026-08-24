@@ -6,12 +6,24 @@ on:
   pull_request:
   workflow_dispatch:
 
+env:
+  ARCLIGHT_REF: 166b9877e40eeec405097f416fc0ff2d23986313
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout PaperArc
         uses: actions/checkout@v4
+
+      # Arclight 源码：其构建系统会在配置阶段用 Spigot BuildTools
+      # 现场生成 spigot-deobf 工件（不随仓库分发，规避 DMCA 风险）
+      - name: Checkout Arclight (${{ env.ARCLIGHT_REF }})
+        uses: actions/checkout@v4
+        with:
+          repository: IzzelAliz/Arclight
+          ref: ${{ env.ARCLIGHT_REF }}
+          path: Arclight
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -19,16 +31,22 @@ jobs:
           distribution: temurin
           java-version: '21'
 
+      # 缓存 Spigot BuildTools 产物（deobf jar + mappings），命中后秒级就绪
+      - name: Cache Arclight spigot deps
+        id: arclight-cache
+        uses: actions/cache@v4
+        with:
+          path: Arclight/.gradle
+          key: arclight-spigotdeps-${{ env.ARCLIGHT_REF }}-v1
+
+      - name: Generate spigot-deobf (BuildTools, skipped when cached)
+        working-directory: Arclight
+        run: ./gradlew help --no-daemon
+
       - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Fetch arclight spigot-deobf
-        run: |
-          mkdir -p vendor/maven-flat
-          curl -fsSL -o vendor/maven-flat/spigot-1.21.1-deobf.jar \
-            https://github.com/IceSoulHanxi/PaperArc/releases/download/arclight-deps/spigot-1.21.1-deobf.jar
-
-      - name: Build
+      - name: Build PaperArc
         run: ./gradlew build --no-daemon
 
       - name: Collect artifacts
@@ -36,8 +54,8 @@ jobs:
           mkdir -p out
           for m in fabric neoforge forge; do
             cp "$m"/build/libs/paperarc-*[0-9].jar out/
-            ls -l out/
           done
+          ls -l out/
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -45,4 +63,3 @@ jobs:
           name: PaperArc-${{ github.sha }}
           path: out/*.jar
           if-no-files-found: error
-
