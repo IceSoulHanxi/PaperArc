@@ -1,73 +1,90 @@
 # PaperArc
 
-为 [Arclight](https://github.com/IzzelAliz/Arclight)（多加载器 Bukkit 混合端）实现
-**Paper API 兼容层**的跨加载器 Mod 项目。
+**让 Paper 插件运行在 [Arclight](https://github.com/IzzelAliz/Arclight) 上。**
 
-## 目标与边界
+Arclight 是 Bukkit + Mod 的混合端服务端，但它只提供到 Spigot 级别的 Bukkit API。
+大量插件是基于 **Paper API**（`io.papermc.paper.*` / `com.destroystokyo.paper.*`）
+开发的，直接放进 Arclight 会因缺少这些类和接口而无法加载。
 
-- ✅ 实现 `io.papermc.paper.*` / `com.destroystokyo.paper.*` 的 **API 表面**
-  （接口、事件、工具类），使仅依赖 Paper API 的插件能在 Arclight 上运行。
-- ❌ **不移植** Paper 的性能优化（异步区块调度、tick 优化、Folia 等）。
-- 目标 MC 版本：**1.21.1**（对齐 Arclight FeudalKings 分支）。
+PaperArc 以 Mod 形式为 Arclight 补齐 **Paper API 兼容层**：安装后，仅依赖
+Paper API 的插件可以像在 Paper 服务端上一样正常加载与运行。
 
-## 架构
+## 功能范围
 
-基于 [Architectury](https://github.com/architectury)（loom + plugin + API）的多加载器结构：
+- ✅ 提供 `io.papermc.paper.*` 与 `com.destroystokyo.paper.*` 的完整 API 表面：
+  - 全部 Paper 专属**事件类型**（如 `ServerTickEndEvent`、`EntityJumpEvent`、
+    `PlayerTradeEvent` 等），支持 `@EventHandler` 正常分发；
+  - 在 Bukkit 原生接口上增补 **630 个 Paper 独有方法**与 **106 个 Paper 接口**
+    （如 `Player#tickBoostedEnderPearl`、实体/fluid/材料家族的 Paper 扩展）；
+  - Adventure `Component` 运行时（随 Mod 内置提供）。
+- ❌ 不移植 Paper 的性能优化（异步区块调度、tick 优化、Folia 区域化等）。
+  PaperArc 只关心 *API 兼容*，不改变服务端的调度与性能行为。
+- 插件若使用了 Paper 的**服务端内部实现类**（非公开 API），不在保证范围内。
 
-```
-paperarc/
-├── common/    # 跨平台共享：paper-api 实现主体 + 公共 mixin（挂接 Arclight/CraftBukkit 层）
-├── forge/     # Forge 52.x 入口 + 平台 mixin
-├── neoforge/  # NeoForge 21.1.x 入口 + 平台 mixin
-└── fabric/    # Fabric Loader 0.16+ 入口 + 平台 mixin
-```
-
-- 平台差异通过 `@ExpectPlatform`（`dev.paperarc.PaperArcPlatform`）抽象。
-- 运行时依赖：Arclight（提供 Bukkit/Spigot 层与 Minecraft 服务端）。
-- 编译期依赖：`org.spigotmc:spigot-api`、`io.izzel.arclight:arclight-api`（均由 Arclight 运行时提供，不打进 jar）。
-
-## 版本矩阵（与 Arclight FeudalKings 对齐）
+## 兼容版本
 
 | 组件 | 版本 |
 |------|------|
 | Minecraft | 1.21.1 |
 | Java | 21 |
-| Architectury Loom | 1.9-SNAPSHOT |
-| Architectury Plugin | 3.4-SNAPSHOT |
-| Architectury API | 13.0.x |
-| Forge | 52.1.x |
-| NeoForge | 21.1.x |
-| Fabric Loader / API | 0.19.x / 0.116.x+1.21.1 |
-| Spigot API | 1.21.1-R0.1-SNAPSHOT |
-| Arclight API | 1.7.3 |
+| Arclight | 1.21.1（FeudalKings 分支，1.0.2-SNAPSHOT） |
+| 加载器 | Fabric Loader 0.19.x ／ NeoForge 21.1.x ／ Forge 52.1.x |
+
+三个加载器的 Arclight 发行版均可使用，按你现有的 Arclight 类型选择对应产物即可。
+
+## 安装
+
+1. 从下方构建说明获取（或下载）与你 Arclight 加载器对应的 Mod Jar：
+   - Arclight-Fabric → `paperarc-<version>.jar`（fabric 产物）
+   - Arclight-NeoForge → neoforge 产物
+   - Arclight-Forge → forge 产物
+2. 将 Jar 放入 Arclight 服务端的 `mods/` 目录；
+   你的插件照常放在 `plugins/` 目录。
+3. 启动服务器，日志出现 `Done (` 即安装成功。
+
+> 可选自检：仓库另提供一个极小的探针插件 **PaperArcProbe**
+> （独立目录 `../PaperArcProbe/`），放入 `plugins/` 后启动，日志中应输出多条
+> `PASS:` 与 `PASS(P3)`，代表 Paper 类可见且服务端侧注入生效。
 
 ## 构建
 
-需要 JDK 21。部分依赖仓库（spigotmc / maven.izzel.io 等）在受限网络下需配置代理：
+环境要求：**JDK 21**，Git。
 
 ```bash
-./gradlew build \
-  -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=10808 \
-  -Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=10808
+git clone <本仓库>
+cd paperarc
+./gradlew build
 ```
 
-产物：`forge/build/libs/`、`neoforge/build/libs/`、`fabric/build/libs/` 下的 remapJar。
+构建产物位于各加载器子目录：
 
-## 实现路线（建议顺序）
+| 目标 Arclight | 产物路径 |
+|---|---|
+| Fabric | `fabric/build/libs/paperarc-<version>.jar` |
+| NeoForge | `neoforge/build/libs/paperarc-<version>.jar` |
+| Forge | `forge/build/libs/paperarc-<version>.jar` |
 
-1. **事件 API 骨架**：`io.papermc.paper.event.*` 事件类 + Bukkit 事件桥接。
-2. **Paper 专属接口**：如 `PaperServerListPingEvent`、`PlayerProfileComponent` 等
-   纯 API 类（不依赖服务端内部）。
-3. **`com.destroystokyo.paper.*`** 事件与工具（PaperLib 风格的 block/state API）。
-4. **Adventure Component 桥接**：评估在 Arclight 上以独立库形式提供
-   `net.kyori.adventure`（Arclight 的 Spigot 层不含 Adventure）。
-5. **注册机制**：通过 mixin 在 Arclight 的 `CraftServer`/插件加载流程中注册
-   Paper 事件类型，使 `@EventHandler` 能正常分发。
+> 若你的网络访问 spigotmc / maven.izzel.io 等仓库受限，可在命令行追加代理参数，
+> 例如 `-Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=10808`。
 
-## 注意
+## 项目结构
 
-- mixin 包名约定：`dev.paperarc.mixin.<common|forge|neoforge|fabric>`，
-  分别对应各模块 resources 下的 `paperarc-*.mixins.json`。
-- 新增 mixin 后需在对应 `*.mixins.json` 的 `mixins` / `server` 数组中登记。
-- Arclight 自身大量使用 mixin 改造 CraftBukkit；挂接点选择需参考
-  Arclight 源码（`arclight-common` 的 mixin 结构），避免冲突。
+基于 [Architectury](https://github.com/architectury)（Loom + Plugin + API）的多加载器工程：
+
+```
+paperarc/
+├── common/    # 跨平台共享主体：Paper API 实现、公共 Mixin、访问权限扩展
+├── fabric/    # Fabric 入口 + Fabric 专属 Mixin
+├── neoforge/  # NeoForge 入口 + 共享 Mojang 映射 Mixin
+├── forge/     # Forge 入口（复用共享 Mixin）
+└── probe -> 见根工作区独立仓库 PaperArcProbe（可选自检插件）
+```
+
+## 反馈与兼容性报告
+
+遇到不兼容的 Paper 插件时，请附带：插件名称与版本、Arclight 日志中
+`[PaperArc]` / `[mixin]` 相关片段、以及该插件声称所需的 Paper 版本。
+
+## 许可证
+
+GPL-3.0-or-later
