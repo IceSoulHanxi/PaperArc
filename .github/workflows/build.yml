@@ -2,12 +2,19 @@ name: Build
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, 1.20.1 ]
   pull_request:
   workflow_dispatch:
 
 env:
-  ARCLIGHT_REF: 166b9877e40eeec405097f416fc0ff2d23986313
+  # Arclight Trials (1.20.1) 最新提交
+  ARCLIGHT_REF: 6de9fecc
+  # Trials 是 Forge-only + ForgeGradle + Java 17 工具链
+  JAVA_VERSION: '17'
+  # paperarc 期望的 spigot-deobf 落点（相对 Arclight 根）
+  SPIGOT_REPO: .gradle/arclight/arclight_repo/io/izzel/arclight/generated/spigot/1.20.1
+  # remapSpigotJar 输出（相对 arclight-common 模块）
+  SPIGOT_CACHE: arclight-common/build/arclight_cache
 
 jobs:
   build:
@@ -25,27 +32,42 @@ jobs:
         with:
           path: PaperArc
 
-      # Arclight 源码：其构建系统会在配置阶段用 Spigot BuildTools
-      # 现场生成 spigot-deobf 工件（不随仓库分发，规避 DMCA 风险）
-      - name: Set up JDK 21
+      # Trials 需要 Java 17（工具链 JavaLanguageVersion.of(17)）
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: ${{ env.JAVA_VERSION }}
 
-      # 缓存 Spigot BuildTools 产物（deobf jar + mappings），命中后秒级就绪
+      # 缓存 Spigot BuildTools 产物（deobf jar + mappings + BuildTools 缓存），命中后秒级就绪
       - name: Cache Arclight spigot deps
         id: arclight-cache
         uses: actions/cache@v4
-        # 失败的 run 默认不落盘缓存；开启后即使后续步骤失败也保存，避免重复跑 BuildTools
         with:
           save-always: true
-          path: Arclight/.gradle
+          path: |
+            Arclight/.gradle
+            Arclight/arclight-common/build/arclight_cache
           key: arclight-spigotdeps-${{ env.ARCLIGHT_REF }}-v1
 
-      - name: Generate spigot-deobf (BuildTools, skipped when cached)
+      # 生成 spigot-deobf。remapSpigotJar 产出 mapped-deobf.jar（不触发自依赖 jar 的 spigotJar）。
+      # 该任务内部走 BuildTools（下载 spigot 源码→编译→映射→remap），命中缓存时秒级完成。
+      - name: Generate spigot-deobf
         working-directory: Arclight
-        run: ./gradlew help --no-daemon
+        run: ./gradlew :arclight-common:remapSpigotJar --no-daemon
+
+      # 把 deobf 发布到 paperarc 期望的仓库坐标（io.izzel.arclight.generated:spigot:1.20.1:deobf）。
+      # Arclight 本身不自动发布；spigotJar 依赖自身 jar 且 compileJava 依赖 CB 类会先失败。
+      - name: Publish spigot-deobf to arclight_repo
+        working-directory: Arclight
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$SPIGOT_REPO"
+          cp "$SPIGOT_CACHE/spigot-1.20.1-mapped-deobf.jar" "$SPIGOT_REPO/spigot-1.20.1-deobf.jar"
+          cp "$SPIGOT_CACHE/spigot-1.20.1-mapped.jar" "$SPIGOT_REPO/spigot-1.20.1-mapped.jar"
+          printf '%s\n' '<?xml version="1.0" encoding="UTF-8"?>' '<project xmlns="http://maven.apache.org/POM/4.0.0">' '  <modelVersion>4.0.0</modelVersion>' '  <groupId>io.izzel.arclight.generated</groupId>' '  <artifactId>spigot</artifactId>' '  <version>1.20.1</version>' '  <packaging>jar</packaging>' '</project>' > "$SPIGOT_REPO/spigot-1.20.1.pom"
+          ls -la "$SPIGOT_REPO"
 
       - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v3
@@ -58,8 +80,8 @@ jobs:
         working-directory: PaperArc
         run: |
           mkdir -p out
-          # 三端同名文件会互相覆盖，收集时以加载器为前缀重命名
-          for m in fabric neoforge forge; do
+          # 1.20.1 只有 Forge（跟随 Arclight Trials）
+          for m in forge; do
             for f in "$m"/build/libs/paperarc-*.jar; do
               case "$f" in *-dev-shadow.jar|*-sources.jar) continue ;; esac
               [ -e "$f" ] || continue
