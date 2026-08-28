@@ -258,7 +258,6 @@
     "item.ExperienceBottleItemMixin",
     "item.FireworkRocketItemMixin",
     "item.NameTagItemNameEntityMixin",
-    "item.ProjectileWeaponItemMixin",
     "item.ServerItemCooldownsItemCooldownMixin",
     "item.ThrowablePotionItemMixin",
     "player.AbstractContainerMenuSlotChangeMixin",

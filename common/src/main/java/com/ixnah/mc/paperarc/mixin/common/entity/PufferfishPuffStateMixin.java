@@ -6,6 +6,7 @@ import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import io.papermc.paper.event.entity.PufferFishStateChangeEvent;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Pufferfish;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
@@ -49,8 +50,8 @@ public abstract class PufferfishPuffStateMixin {
     }
 
     @WrapOperation(method = "tick", at = @At(value = "INVOKE",
-        target = "Lnet/minecraft/world/entity/animal/Pufferfish;makeSound(Lnet/minecraft/sounds/SoundEvent;)V"))
-    private void paperarc$wrapMakeSound(Pufferfish instance, SoundEvent sound, Operation<Void> original) {
+        target = "Lnet/minecraft/world/entity/LivingEntity;playSound(Lnet/minecraft/sounds/SoundEvent;FF)V"))
+    private void paperarc$wrapMakeSound(LivingEntity instance, SoundEvent sound, float volume, float pitch, Operation<Void> original) {
         if (sound == SoundEvents.PUFFER_FISH_BLOW_UP) {
             if (!paperarc$fireStateChangeEvent(true)) {
                 this.paperarc$stateChangeCancelled = true;

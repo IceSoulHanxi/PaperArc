@@ -42,7 +42,7 @@ public abstract class DispenserBlockMixin {
     }
 
     @Inject(method = "dispenseFrom",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/core/dispenser/DispenseItemBehavior;dispense(Lnet/minecraft/core/dispenser/BlockSource;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/ItemStack;"),
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/core/dispenser/DispenseItemBehavior;m_6115_(Lnet/minecraft/core/BlockSource;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/ItemStack;", remap = false),
             cancellable = true)
     private void paperarc$preDispense(ServerLevel world, BlockState state, BlockPos pos, CallbackInfo ci,
                                       @Local(ordinal = 0) int slot, @Local(ordinal = 0) ItemStack stack) {
