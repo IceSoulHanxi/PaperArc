@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
+import com.ixnah.mc.paperarc.bridge.TNTPrimeState;
 import net.minecraft.world.level.block.TntBlock;
 import org.bukkit.craftbukkit.v1_20_R1.block.CraftBlock;
 import org.spongepowered.asm.mixin.Mixin;
@@ -38,6 +39,11 @@ public abstract class TntBlockPrimeMixin {
             at = @At("HEAD"), cancellable = true, remap = false)
     private static void paperarc$prime(Level level, BlockPos pos, @Nullable LivingEntity entity,
                                        CallbackInfo ci) {
+        // FIRE primes already reported by FireBlockPrimeMixin funnel through
+        // here (two-arg explode -> three-arg explode); skip the duplicate.
+        if (TNTPrimeState.takeFirePrime()) {
+            return;
+        }
         TNTPrimeEvent.PrimeReason reason = entity != null
                 ? TNTPrimeEvent.PrimeReason.PROJECTILE
                 : TNTPrimeEvent.PrimeReason.REDSTONE;

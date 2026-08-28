@@ -286,7 +286,18 @@
     "server.PlayerListPostRespawnMixin",
     "server.ServerLevelCallbacksMixin",
     "server.SetSpawnCommandMixin",
-    "world.ChunkGeneratorStructuresLocateMixin"
+    "world.ChunkGeneratorStructuresLocateMixin",
+    "api.CraftLivingEntityApiMixinPart1",
+    "api.CraftLivingEntityApiMixinPart2",
+    "api.CraftServerApiMixinPart1",
+    "api.CraftServerApiMixinPart2",
+    "api.CraftPlayerApiMixinPart1",
+    "api.CraftPlayerApiMixinPart2",
+    "block.LockCodeAccessor",
+    "entity.BreedGoalAccessor",
+    "player.BeaconMenuAccessor",
+    "player.ServerboundInteractPacketAccessor",
+    "player.StonecutterMenuInvoker"
   ],
   "server": [],
   "injectors": {
