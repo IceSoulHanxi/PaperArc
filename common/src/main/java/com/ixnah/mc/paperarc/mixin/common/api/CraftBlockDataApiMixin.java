@@ -2,11 +2,6 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v.block.data.CraftBlockData;
@@ -40,29 +35,15 @@ public abstract class CraftBlockDataApiMixin {
 
     @Unique
     public float getDestroySpeed(final org.bukkit.inventory.ItemStack itemStack, final boolean considerEnchants) {
-        // Paper: CraftItemStack.unwrap(itemStack); asNMSCopy is the equivalent
-        // present in this CraftBukkit codebase
-        ItemStack nmsItemStack = org.bukkit.craftbukkit.v.inventory.CraftItemStack.asNMSCopy(itemStack);
+        // Paper 1.20.1 Add-Destroy-Speed-API.patch 原文；deobf 无 unwrap，用等价 asNMSCopy
+        net.minecraft.world.item.ItemStack nmsItemStack = org.bukkit.craftbukkit.v.inventory.CraftItemStack.asNMSCopy(itemStack);
         float speed = nmsItemStack.getDestroySpeed(this.getState());
         if (speed > 1.0F && considerEnchants) {
-            final net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> attribute =
-                Attributes.MINING_EFFICIENCY;
-            // Logic sourced from AttributeInstance#calculateValue (as in Paper)
-            final double[] acc = {
-                attribute.value().getDefaultValue(), // [0] modified base value
-                1.0D,                                // [1] multiplied-base factor
-                1.0D                                 // [2] multiplied-total factor
-            };
-            EnchantmentHelper.forEachModifier(nmsItemStack, EquipmentSlot.MAINHAND,
-                (attributeHolder, attributeModifier) -> {
-                    switch (attributeModifier.operation()) {
-                        case ADD_VALUE -> acc[0] += attributeModifier.amount();
-                        case ADD_MULTIPLIED_BASE -> acc[1] += attributeModifier.amount();
-                        case ADD_MULTIPLIED_TOTAL -> acc[2] *= (1.0D + attributeModifier.amount());
-                    }
-                });
-            final double actualModifier = acc[0] * acc[1] * acc[2];
-            speed += (float) attribute.value().sanitizeValue(actualModifier);
+            int enchantLevel = net.minecraft.world.item.enchantment.EnchantmentHelper.getItemEnchantmentLevel(
+                net.minecraft.world.item.enchantment.Enchantments.BLOCK_EFFICIENCY, nmsItemStack);
+            if (enchantLevel > 0) {
+                speed += enchantLevel * enchantLevel + 1;
+            }
         }
         return speed;
     }

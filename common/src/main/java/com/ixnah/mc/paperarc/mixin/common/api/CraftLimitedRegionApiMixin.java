@@ -74,6 +74,6 @@ public abstract class CraftLimitedRegionApiMixin {
                 + CraftBlockData.fromData(this.getHandle().getBlockState(pos)).getAsString(false));
         }
         this.getHandle().getBlockEntity(pos)
-            .loadWithComponents(((CraftBlockEntityState<?>) state).getSnapshotNBT(), this.getHandle().registryAccess());
+            .load(((CraftBlockEntityState<?>) state).getSnapshotNBT());
     }
 }

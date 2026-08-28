@@ -43,7 +43,7 @@ public abstract class LivingEntityArmorChangeMixin {
         boolean changed = original.call(entity, oldItem, newItem);
         if (changed
                 && entity instanceof ServerPlayer serverPlayer
-                && slot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
+                && slot.getType() == EquipmentSlot.Type.ARMOR) {
             PlayerArmorChangeEvent event = new PlayerArmorChangeEvent(
                     PaperArcBridge.bukkitPlayer(serverPlayer),
                     PlayerArmorChangeEvent.SlotType.valueOf(slot.name()),

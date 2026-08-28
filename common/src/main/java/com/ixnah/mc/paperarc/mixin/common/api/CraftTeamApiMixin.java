@@ -180,13 +180,12 @@ public abstract class CraftTeamApiMixin {
     @Unique
     private static Component paperarc$asAdventure(net.minecraft.network.chat.Component vanilla) {
         return GsonComponentSerializer.gson()
-                .deserialize(Serializer.toJson(vanilla, paperarc$nmsServer().registryAccess()));
+                .deserialize(Serializer.toJson(vanilla));
     }
 
     @Unique
     private static net.minecraft.network.chat.Component paperarc$asVanilla(Component adventure) {
-        return Serializer.fromJson(GsonComponentSerializer.gson().serialize(adventure),
-                paperarc$nmsServer().registryAccess());
+        return Serializer.fromJson(GsonComponentSerializer.gson().serialize(adventure));
     }
 
     /** NMS MinecraftServer via CraftBukkit's server accessor (for component serialization). */

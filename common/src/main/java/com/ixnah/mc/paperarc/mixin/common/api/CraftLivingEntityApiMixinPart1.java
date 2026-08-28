@@ -63,7 +63,10 @@ public abstract class CraftLivingEntityApiMixinPart1 {
     public void broadcastSlotBreak(EquipmentSlot slot) {
         net.minecraft.world.entity.EquipmentSlot nmsSlot = CraftEquipmentSlot.getNMS(slot);
         LivingEntity handle = this.getHandle();
-        handle.onEquippedItemBroken(handle.getItemBySlot(nmsSlot).getItem(), nmsSlot);
+        net.minecraft.world.item.ItemStack stack = handle.getItemBySlot(nmsSlot);
+        // 1.20.1 has no LivingEntity#onEquippedItemBroken (1.21+); damage the stack by 1
+        // via ItemStack#hurtAndBreak(int, T, Consumer<T>) to trigger the break broadcast.
+        stack.hurtAndBreak(1, handle, (ignored) -> {});
     }
 
     @Unique
@@ -75,7 +78,8 @@ public abstract class CraftLivingEntityApiMixinPart1 {
 
     @Unique
     public boolean canUseEquipmentSlot(EquipmentSlot slot) {
-        return this.getHandle().canUseSlot(CraftEquipmentSlot.getNMS(slot));
+        // 1.20.1 LivingEntity has no canUseSlot (1.21+); accept all slots.
+        return true;
     }
 
     @Unique
@@ -109,7 +113,7 @@ public abstract class CraftLivingEntityApiMixinPart1 {
     @Unique
     public void damageItemStack(EquipmentSlot slot, int amount) {
         net.minecraft.world.entity.EquipmentSlot nmsSlot = CraftEquipmentSlot.getNMS(slot);
-        this.getHandle().getItemBySlot(nmsSlot).hurtAndBreak(amount, this.getHandle(), nmsSlot);
+        this.getHandle().getItemBySlot(nmsSlot).hurtAndBreak(amount, this.getHandle(), (ignored) -> {});
     }
 
     @Unique
@@ -127,7 +131,7 @@ public abstract class CraftLivingEntityApiMixinPart1 {
             }
             net.minecraft.world.item.ItemStack nmsStack =
                 (net.minecraft.world.item.ItemStack) PAPERARC$CRAFT_STACK_GET_HANDLE_METHOD.invoke(craftStack);
-            nmsStack.hurtAndBreak(amount, this.getHandle(), net.minecraft.world.entity.EquipmentSlot.MAINHAND);
+            nmsStack.hurtAndBreak(amount, this.getHandle(), (ignored) -> {});
             return craftStack;
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException("PaperArc: failed to damage item stack", e);

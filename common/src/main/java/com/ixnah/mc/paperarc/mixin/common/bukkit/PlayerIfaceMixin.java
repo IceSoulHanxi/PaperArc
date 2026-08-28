@@ -4,8 +4,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
 /**
- * Interface augmentation for {@link org.bukkit.entity.Player} (generated).
- * Adds 69 paper-api method declaration(s); implementations live in
+ * Interface augmentation for {@link org.bukkit.entity.Player} (generated, trimmed for 1.20.1).
+ * Adds 58 paper-api method declaration(s); implementations live in
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
  */
 @Mixin(targets = "org.bukkit.entity.Player", remap = false)
@@ -34,9 +34,6 @@ public interface PlayerIfaceMixin {
 
     @Unique
     public abstract void setPlayerListHeaderFooter(net.md_5.bungee.api.chat.BaseComponent p0, net.md_5.bungee.api.chat.BaseComponent p1);
-
-    @Unique
-    public abstract java.net.InetSocketAddress getHAProxyAddress();
 
     @Unique
     public abstract void kick();
@@ -85,15 +82,6 @@ public interface PlayerIfaceMixin {
 
     @Unique
     public abstract int applyMending(int p0);
-
-    @Unique
-    public abstract int calculateTotalExperiencePoints();
-
-    @Unique
-    public abstract void setExperienceLevelAndProgress(int p0);
-
-    @Unique
-    public abstract int getExperiencePointsNeededForNextLevel();
 
     @Unique
     public abstract void setFlyingFallDamage(net.kyori.adventure.util.TriState p0);
@@ -196,22 +184,4 @@ public interface PlayerIfaceMixin {
 
     @Unique
     public abstract void increaseWardenWarningLevel();
-
-    @Unique
-    public abstract java.time.Duration getIdleDuration();
-
-    @Unique
-    public abstract void resetIdleDuration();
-
-    @Unique
-    public abstract java.util.Set getSentChunkKeys();
-
-    @Unique
-    public abstract java.util.Set getSentChunks();
-
-    @Unique
-    public abstract boolean isChunkSent(long p0);
-
-    @Unique
-    public abstract void sendEntityEffect(org.bukkit.EntityEffect p0, org.bukkit.entity.Entity p1);
 }

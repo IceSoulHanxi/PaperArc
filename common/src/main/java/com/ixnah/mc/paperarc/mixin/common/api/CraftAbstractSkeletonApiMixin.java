@@ -37,8 +37,6 @@ public abstract class CraftAbstractSkeletonApiMixin {
             return Skeleton.SkeletonType.WITHER;
         } else if (handle instanceof net.minecraft.world.entity.monster.Stray) {
             return Skeleton.SkeletonType.STRAY;
-        } else if (handle instanceof net.minecraft.world.entity.monster.Bogged) {
-            return Skeleton.SkeletonType.BOGGED;
         }
         return Skeleton.SkeletonType.NORMAL;
     }

@@ -24,15 +24,15 @@ public abstract class ServerLevelCallbacksMixin {
 
     @Inject(method = "onTrackingStart", at = @At("TAIL"))
     private void paperarc$addToWorld(Entity entity, CallbackInfo ci) {
+        // 1.20.1: single-arg constructor (no World parameter yet)
         PaperArcBridge.fire(new EntityAddToWorldEvent(
-                PaperArcBridge.bukkitEntity(entity),
-                PaperArcBridge.bukkitWorld((ServerLevel) entity.level())));
+                PaperArcBridge.bukkitEntity(entity)));
     }
 
     @Inject(method = "onTrackingEnd", at = @At("TAIL"))
     private void paperarc$removeFromWorld(Entity entity, CallbackInfo ci) {
+        // 1.20.1: single-arg constructor (no World parameter yet)
         PaperArcBridge.fire(new EntityRemoveFromWorldEvent(
-                PaperArcBridge.bukkitEntity(entity),
-                PaperArcBridge.bukkitWorld((ServerLevel) entity.level())));
+                PaperArcBridge.bukkitEntity(entity)));
     }
 }

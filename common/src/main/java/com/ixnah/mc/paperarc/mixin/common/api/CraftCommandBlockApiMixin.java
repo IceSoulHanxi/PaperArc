@@ -42,7 +42,7 @@ public abstract class CraftCommandBlockApiMixin {
     public Component name() {
         net.minecraft.core.HolderLookup.Provider lookup = ((org.bukkit.craftbukkit.v.CraftServer) com.ixnah.mc.paperarc.bridge.PaperArcBridge.getServer())
             .getServer().registryAccess();
-        return GsonComponentSerializer.gson().deserialize(Serializer.toJson(this.getSnapshot().getCommandBlock().getName(), lookup));
+        return GsonComponentSerializer.gson().deserialize(Serializer.toJson(this.getSnapshot().getCommandBlock().getName()));
     }
 
     @Unique
@@ -50,9 +50,8 @@ public abstract class CraftCommandBlockApiMixin {
         // As in Paper: a null component resets to the vanilla "@" fallback name
         net.minecraft.network.chat.Component vanilla = name == null
             ? net.minecraft.network.chat.Component.literal("@")
-            : Serializer.fromJson(GsonComponentSerializer.gson().serialize(name),
-                ((org.bukkit.craftbukkit.v.CraftServer) com.ixnah.mc.paperarc.bridge.PaperArcBridge.getServer()).getServer().registryAccess());
-        this.getSnapshot().getCommandBlock().setCustomName(vanilla);
+            : Serializer.fromJson(GsonComponentSerializer.gson().serialize(name));
+        this.getSnapshot().getCommandBlock().setName(vanilla);
     }
 
     @Unique

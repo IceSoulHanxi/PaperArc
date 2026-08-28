@@ -8,7 +8,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemCooldowns;
 import net.minecraft.world.item.ServerItemCooldowns;
-import org.bukkit.craftbukkit.v.inventory.CraftItemType;
+import org.bukkit.craftbukkit.v.util.CraftMagicNumbers;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
@@ -37,7 +37,7 @@ public abstract class ServerItemCooldownsItemCooldownMixin {
         ServerPlayer player = ((ServerItemCooldownsPlayerAccessor) (Object) this).paperarc$player();
         PlayerItemCooldownEvent event = new PlayerItemCooldownEvent(
             PaperArcBridge.bukkitPlayer(player),
-            CraftItemType.minecraftToBukkit(item),
+            CraftMagicNumbers.getMaterial(item),
             duration
         );
         if (event.callEvent()) {

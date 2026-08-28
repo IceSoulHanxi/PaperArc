@@ -34,3 +34,9 @@ accessible method net/minecraft/world/entity/projectile/Projectile onHit (Lnet/m
 
 # FallingBlockEntity: private block state mirror (CraftFallingBlockApiMixin)
 accessible field net/minecraft/world/entity/item/FallingBlockEntity blockState Lnet/minecraft/world/level/block/state/BlockState;
+
+# ServerPlayer: win-screen flag (CraftPlayerApiMixinPart2 setHasSeenWinScreen)
+accessible field net/minecraft/server/level/ServerPlayer seenCredits Z
+
+# Player: skin part raw bits (CraftPlayerApiMixinPart1 getClientOption SKIN_PARTS)
+accessible field net/minecraft/world/entity/player/Player DATA_PLAYER_MODE_CUSTOMISATION Lnet/minecraft/network/syncher/EntityDataAccessor;

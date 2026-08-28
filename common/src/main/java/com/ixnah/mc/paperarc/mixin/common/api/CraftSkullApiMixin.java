@@ -5,7 +5,6 @@ import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
-import net.minecraft.world.item.component.ResolvableProfile;
 import org.bukkit.craftbukkit.v.block.CraftSkull;
 import org.bukkit.craftbukkit.v.profile.CraftPlayerProfile;
 import org.bukkit.profile.PlayerTextures;
@@ -39,24 +38,23 @@ import java.util.concurrent.CompletableFuture;
 public abstract class CraftSkullApiMixin {
 
     @Shadow
-    private ResolvableProfile profile;
+    private GameProfile profile;
 
     @Unique
     public void setPlayerProfile(com.destroystokyo.paper.profile.PlayerProfile profile) {
         Preconditions.checkNotNull(profile, "profile");
-        // paper-api here exposes neither SharedPlayerProfile nor
-        // buildGameProfile(); convert via the basic accessors instead.
-        GameProfile gameProfile = new GameProfile(profile.getUniqueId(), profile.getName());
+        // 1.20.1 paper-api has no buildGameProfile(); convert via the basic accessors.
+        GameProfile gameProfile = new GameProfile(profile.getId(), profile.getName());
         for (ProfileProperty property : profile.getProperties()) {
             gameProfile.getProperties().put(property.getName(), new Property(property.getName(), property.getValue(), property.getSignature()));
         }
-        this.profile = CraftPlayerProfile.validateSkullProfile(new ResolvableProfile(gameProfile));
+        this.profile = CraftPlayerProfile.validateSkullProfile(gameProfile);
     }
 
     @Unique
     public com.destroystokyo.paper.profile.PlayerProfile getPlayerProfile() {
-        ResolvableProfile resolvable = this.profile;
-        return resolvable == null ? null : CraftSkullApiMixin.paperarc$paperProfile(resolvable.gameProfile());
+        GameProfile gameProfile = this.profile;
+        return gameProfile == null ? null : CraftSkullApiMixin.paperarc$paperProfile(gameProfile);
     }
 
     @Unique
@@ -104,7 +102,7 @@ public abstract class CraftSkullApiMixin {
         private static Set<ProfileProperty> paperarc$toPaperProperties(PropertyMap properties) {
             Set<ProfileProperty> result = new HashSet<>();
             for (Map.Entry<String, Property> entry : properties.entries()) {
-                result.add(new ProfileProperty(entry.getKey(), entry.getValue().value(), entry.getValue().signature()));
+                result.add(new ProfileProperty(entry.getKey(), entry.getValue().getValue(), entry.getValue().getSignature()));
             }
             return result;
         }
@@ -173,10 +171,6 @@ public abstract class CraftSkullApiMixin {
                 case "update":
                     // sync-fallback: no Mojang API refresh infrastructure
                     return CompletableFuture.completedFuture(this.self);
-                case "buildGameProfile":
-                    return this.profile;
-                case "buildResolvableProfile":
-                    return new ResolvableProfile(this.profile);
                 case "serialize":
                     return this.cbProfile.serialize();
                 case "toString":

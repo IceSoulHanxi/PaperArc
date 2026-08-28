@@ -7,8 +7,6 @@ import net.minecraft.network.protocol.game.ClientboundCustomChatCompletionsPacke
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantedItemInUse;
-import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -68,25 +66,53 @@ public abstract class CraftPlayerApiMixinPart1 {
         ServerPlayer sp = this.getHandle();
         sp.resetLastActionTime();
         int remaining = amount;
-        for (int guard = 0; guard < 64 && remaining > 0; guard++) {
-            Optional<EnchantedItemInUse> opt = EnchantmentHelper.getRandomItemWith(
-                EnchantmentEffectComponents.REPAIR_WITH_XP, sp, ItemStack::isDamaged);
-            if (opt.isEmpty()) {
-                break;
+        // 1.20.1 mending: getRandomItemWith(Enchantment, LivingEntity) returns Map.Entry<EquipmentSlot, ItemStack>
+        java.util.Map.Entry<net.minecraft.world.entity.EquipmentSlot, ItemStack> stackEntry =
+            net.minecraft.world.item.enchantment.EnchantmentHelper.getRandomItemWith(
+                net.minecraft.world.item.enchantment.Enchantments.MENDING, sp);
+        final ItemStack itemstack = stackEntry != null ? stackEntry.getValue() : ItemStack.EMPTY;
+        if (!itemstack.isEmpty() && itemstack.getItem().canBeDepleted()) {
+            net.minecraft.world.entity.ExperienceOrb orb = net.minecraft.world.entity.EntityType.EXPERIENCE_ORB.create(sp.level());
+            if (orb == null) {
+                return remaining;
             }
-            ItemStack stack = opt.get().itemStack();
-            if (stack.isEmpty() || !stack.isDamaged()) {
-                break;
+            try {
+                com.ixnah.mc.paperarc.bridge.PaperArcMendingAccess.VALUE_FIELD.invokeExact(orb, remaining);
+            } catch (Throwable t) {
+                throw new IllegalStateException("ExperienceOrb.value failed", t);
             }
-            int want = EnchantmentHelper.modifyDurabilityToRepairFromXp(sp.serverLevel(), stack, remaining * 2);
-            int heal = Math.min(want, stack.getDamageValue());
-            if (heal <= 0) {
-                break;
+            orb.setPosRaw(sp.getX(), sp.getY(), sp.getZ());
+
+            int i = Math.min(paperarc$xpToDurability(orb, remaining), itemstack.getDamageValue());
+            org.bukkit.event.player.PlayerItemMendEvent event =
+                org.bukkit.craftbukkit.v.event.CraftEventFactory.callPlayerItemMendEvent(
+                    sp, orb, itemstack, stackEntry.getKey(), i);
+            i = event.getRepairAmount();
+            orb.discard();
+            if (!event.isCancelled()) {
+                remaining -= paperarc$durabilityToXp(orb, i);
+                itemstack.setDamageValue(itemstack.getDamageValue() - i);
             }
-            stack.setDamageValue(stack.getDamageValue() - heal);
-            remaining -= heal / 2;
         }
         return Math.max(remaining, 0);
+    }
+
+    @Unique
+    private static int paperarc$xpToDurability(net.minecraft.world.entity.ExperienceOrb orb, int amount) {
+        try {
+            return (int) com.ixnah.mc.paperarc.bridge.PaperArcMendingAccess.XP_TO_DURABILITY.invokeExact(orb, amount);
+        } catch (Throwable t) {
+            throw new IllegalStateException("ExperienceOrb.xpToDurability failed", t);
+        }
+    }
+
+    @Unique
+    private static int paperarc$durabilityToXp(net.minecraft.world.entity.ExperienceOrb orb, int amount) {
+        try {
+            return (int) com.ixnah.mc.paperarc.bridge.PaperArcMendingAccess.DURABILITY_TO_XP.invokeExact(orb, amount);
+        } catch (Throwable t) {
+            throw new IllegalStateException("ExperienceOrb.durabilityToXp failed", t);
+        }
     }
 
     // ---- calculateTotalExperiencePoints ----
@@ -131,34 +157,35 @@ public abstract class CraftPlayerApiMixinPart1 {
     // ---- getClientOption ----
     @Unique
     public Object getClientOption(ClientOption option) {
-        net.minecraft.server.level.ClientInformation info = this.getHandle().clientInformation();
         if (option == ClientOption.SKIN_PARTS) {
-            return paperarc$skinParts((byte) info.modelCustomisation());
+            return new com.ixnah.mc.paperarc.bridge.PaperArcSkinParts(
+                this.getHandle().getEntityData().get(net.minecraft.world.entity.player.Player.DATA_PLAYER_MODE_CUSTOMISATION));
         }
         if (option == ClientOption.CHAT_VISIBILITY) {
-            return ClientOption.ChatVisibility.valueOf(info.chatVisibility().name());
+            net.minecraft.world.entity.player.ChatVisiblity vis = this.getHandle().getChatVisibility();
+            return vis == null ? ClientOption.ChatVisibility.UNKNOWN
+                : ClientOption.ChatVisibility.valueOf(vis.name());
         }
         if (option == ClientOption.CHAT_COLORS_ENABLED) {
-            return info.chatColors();
+            return this.getHandle().canChatInColor();
         }
         if (option == ClientOption.LOCALE) {
-            String lang = info.language();
+            String lang = ((org.bukkit.craftbukkit.v.entity.CraftPlayer) (Object) this).getLocale();
             return lang == null ? null : java.util.Locale.forLanguageTag(lang.replace('_', '-'));
         }
         if (option == ClientOption.VIEW_DISTANCE) {
-            return info.viewDistance();
+            return ((org.bukkit.craftbukkit.v.entity.CraftPlayer) (Object) this).getClientViewDistance();
         }
         if (option == ClientOption.TEXT_FILTERING_ENABLED) {
-            return info.textFilteringEnabled();
+            return this.getHandle().isTextFilteringEnabled();
         }
         if (option == ClientOption.MAIN_HAND) {
-            return MainHand.valueOf(info.mainHand().name());
+            return org.bukkit.inventory.MainHand.valueOf(this.getHandle().getMainArm().name());
         }
         if (option == ClientOption.ALLOW_SERVER_LISTINGS) {
-            return info.allowsListing();
+            return this.getHandle().allowsListing();
         }
-        // 未知/无数据选项（如粒子可见性）返回 null
-        return null;
+        throw new RuntimeException("Unknown settings type");
     }
 
     // ---- getCooldownPeriod / getCooledAttackStrength ----
@@ -228,51 +255,5 @@ public abstract class CraftPlayerApiMixinPart1 {
     public int getSimulationDistance() {
         // vanilla 无每玩家模拟距离，回退服务器级 simulation distance
         return paperarc$playerList().getSimulationDistance();
-    }
-
-    // ---- helpers ----
-    @Unique
-    private static com.destroystokyo.paper.SkinParts paperarc$skinParts(final byte raw) {
-        return new com.destroystokyo.paper.SkinParts() {
-            @Override
-            public boolean hasCapeEnabled() {
-                return (raw & 0x01) != 0;
-            }
-
-            @Override
-            public boolean hasJacketEnabled() {
-                return (raw & 0x02) != 0;
-            }
-
-            @Override
-            public boolean hasLeftSleeveEnabled() {
-                return (raw & 0x04) != 0;
-            }
-
-            @Override
-            public boolean hasRightSleeveEnabled() {
-                return (raw & 0x08) != 0;
-            }
-
-            @Override
-            public boolean hasLeftPantsEnabled() {
-                return (raw & 0x10) != 0;
-            }
-
-            @Override
-            public boolean hasRightPantsEnabled() {
-                return (raw & 0x20) != 0;
-            }
-
-            @Override
-            public boolean hasHatsEnabled() {
-                return (raw & 0x40) != 0;
-            }
-
-            @Override
-            public int getRaw() {
-                return raw;
-            }
-        };
     }
 }

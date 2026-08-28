@@ -14,7 +14,6 @@ import net.minecraft.world.level.block.CactusBlock;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.DetectorRailBlock;
-import net.minecraft.world.level.block.EndGatewayBlock;
 import net.minecraft.world.level.block.EndPortalBlock;
 import net.minecraft.world.level.block.FrogspawnBlock;
 import net.minecraft.world.level.block.HoneyBlock;
@@ -55,7 +54,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
         CampfireBlock.class,
         CropBlock.class,
         DetectorRailBlock.class,
-        EndGatewayBlock.class,
         EndPortalBlock.class,
         FrogspawnBlock.class,
         HoneyBlock.class,

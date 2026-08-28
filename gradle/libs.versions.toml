@@ -1,35 +1,28 @@
 [versions]
-# 工具链（与 Arclight FeudalKings 对齐）
+# 工具链（与 Arclight Trials(1.20.1) 对齐）
 architectury-loom = '1.9-SNAPSHOT'
-# architectury-plugin 版本在根 build.gradle 的 plugins 块中声明（3.4-SNAPSHOT）
 
-# Architectury API（MC 1.21.x 对应 13.x 线）
-
-# MC 与加载器
-minecraft = '1.21.1'
-forge = '1.21.1-52.1.14'
-neoforge = '21.1.248'
-fabric-loader = '0.19.3'
-fabric-api = '0.116.15+1.21.1'
+# MC 与加载器（1.20.1：Arclight Trials 仅 Forge）
+minecraft = '1.20.1'
+forge = '1.20.1-47.4.18'
 
 # Bukkit / Arclight 层（运行时由 Arclight 提供，仅编译期依赖）
-spigot-api = '1.21.1-R0.1-SNAPSHOT'
-arclight-api = '1.7.3'
+spigot-api = '1.20.1-R0.1-SNAPSHOT'
+arclight-api = '1.5.4'
 
 # Paper API（shade 进最终 jar，排除 org.bukkit——运行时用 Arclight 的）
-paper-api = '1.21.1-R0.1-SNAPSHOT'
-# Paper API 引用的 adventure 组件库（运行时 Arclight 不提供，需随包 shade）
-adventure = '4.17.0'
+paper-api = '1.20.1-R0.1-SNAPSHOT'
+# Paper API 引用的 adventure 组件库（运行时 Arclight 不提供，需随包 shade；4.14.0 = paper-api 1.20.1 实际 BOM）
+adventure = '4.14.0'
 examination = '1.3.0'
 # MixinExtras（wrap 系列注入器，降低与 Arclight mixin 的冲突面）
 mixinextras = '0.4.1'
+# Sponge Mixin（编译期注解；运行时 Forge 47 / Arclight 自带）
+mixin = '0.8.5'
 
 [libraries]
 
 forge = { module = 'net.minecraftforge:forge', version.ref = 'forge' }
-neoforge = { module = 'net.neoforged:neoforge', version.ref = 'neoforge' }
-fabric-loader = { module = 'net.fabricmc:fabric-loader', version.ref = 'fabric-loader' }
-fabric-api = { module = 'net.fabricmc.fabric-api:fabric-api', version.ref = 'fabric-api' }
 
 spigot-api = { module = 'org.spigotmc:spigot-api', version.ref = 'spigot-api' }
 arclight-api = { module = 'io.izzel.arclight:arclight-api', version.ref = 'arclight-api' }
@@ -46,9 +39,9 @@ examination-api = { module = 'net.kyori:examination-api', version.ref = 'examina
 examination-string = { module = 'net.kyori:examination-string', version.ref = 'examination' }
 
 mixinextras-common = { module = 'io.github.llamalad7:mixinextras-common', version.ref = 'mixinextras' }
-mixinextras-fabric = { module = 'io.github.llamalad7:mixinextras-fabric', version.ref = 'mixinextras' }
 mixinextras-forge = { module = 'io.github.llamalad7:mixinextras-forge', version.ref = 'mixinextras' }
-mixinextras-neoforge = { module = 'io.github.llamalad7:mixinextras-neoforge', version.ref = 'mixinextras' }
+# Sponge Mixin：common 源码用 @Mixin/@Inject/@At/Slice 等注解，编译期必须可见（0.8.7 也验证过可用）
+mixin = { module = 'org.spongepowered:mixin', version.ref = 'mixin' }
 
 [bundles]
 # shade 用：paper-api 类加载所需的完整 adventure 依赖面

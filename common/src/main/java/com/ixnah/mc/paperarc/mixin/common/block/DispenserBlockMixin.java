@@ -4,7 +4,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import io.papermc.paper.event.block.BlockFailedDispenseEvent;
 import io.papermc.paper.event.block.BlockPreDispenseEvent;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.dispenser.BlockSource;
+import net.minecraft.core.BlockSource;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;

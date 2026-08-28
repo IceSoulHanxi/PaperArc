@@ -4,8 +4,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
 /**
- * Interface augmentation for {@link org.bukkit.entity.LivingEntity} (generated).
- * Adds 46 paper-api method declaration(s); implementations live in
+ * Interface augmentation for {@link org.bukkit.entity.LivingEntity} (generated, trimmed for 1.20.1).
+ * Adds 31 paper-api method declaration(s); implementations live in
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
  */
 @Mixin(targets = "org.bukkit.entity.LivingEntity", remap = false)
@@ -33,12 +33,6 @@ public interface LivingEntityIfaceMixin {
     public abstract void setArrowsInBody(int p0, boolean p1);
 
     @Unique
-    public abstract void setNextArrowRemoval(int p0);
-
-    @Unique
-    public abstract int getNextArrowRemoval();
-
-    @Unique
     public abstract int getBeeStingerCooldown();
 
     @Unique
@@ -49,12 +43,6 @@ public interface LivingEntityIfaceMixin {
 
     @Unique
     public abstract void setBeeStingersInBody(int p0);
-
-    @Unique
-    public abstract void setNextBeeStingerRemoval(int p0);
-
-    @Unique
-    public abstract int getNextBeeStingerRemoval();
 
     @Unique
     public abstract void setKiller(org.bukkit.entity.Player p0);
@@ -78,40 +66,10 @@ public interface LivingEntityIfaceMixin {
     public abstract void setShieldBlockingDelay(int p0);
 
     @Unique
-    public abstract float getSidewaysMovement();
-
-    @Unique
-    public abstract float getUpwardsMovement();
-
-    @Unique
-    public abstract float getForwardsMovement();
-
-    @Unique
-    public abstract void startUsingItem(org.bukkit.inventory.EquipmentSlot p0);
-
-    @Unique
-    public abstract void completeUsingActiveItem();
-
-    @Unique
     public abstract org.bukkit.inventory.ItemStack getActiveItem();
 
     @Unique
     public abstract void clearActiveItem();
-
-    @Unique
-    public abstract int getActiveItemRemainingTime();
-
-    @Unique
-    public abstract void setActiveItemRemainingTime(int p0);
-
-    @Unique
-    public abstract boolean hasActiveItem();
-
-    @Unique
-    public abstract int getActiveItemUsedTime();
-
-    @Unique
-    public abstract org.bukkit.inventory.EquipmentSlot getActiveItemHand();
 
     @Unique
     public abstract boolean isJumping();
@@ -145,7 +103,4 @@ public interface LivingEntityIfaceMixin {
 
     @Unique
     public abstract void setBodyYaw(float p0);
-
-    @Unique
-    public abstract boolean canUseEquipmentSlot(org.bukkit.inventory.EquipmentSlot p0);
 }

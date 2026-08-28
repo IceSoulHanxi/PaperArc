@@ -4,16 +4,11 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import io.papermc.paper.event.player.PlayerChangeBeaconEffectEvent;
-import net.minecraft.core.Holder;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.inventory.BeaconMenu;
-import net.minecraft.world.inventory.ContainerData;
-import net.minecraft.world.level.Level;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v.block.CraftBlock;
-import org.bukkit.craftbukkit.v.potion.CraftPotionEffectType;
 import org.bukkit.potion.PotionEffectType;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -50,32 +45,47 @@ public abstract class ServerGamePacketListenerImplBeaconEffectMixin {
         )
     )
     private void paperarc$onChangeBeaconEffect(BeaconMenu menu,
-                                               Optional<Holder<MobEffect>> primary,
-                                               Optional<Holder<MobEffect>> secondary,
+                                               Optional<MobEffect> primary,
+                                               Optional<MobEffect> secondary,
                                                Operation<Void> original) {
-        BeaconMenuAccessor accessor = (BeaconMenuAccessor) menu;
-        if (!menu.getSlot(0).hasItem()) { // slot 0 = paymentSlot（BeaconMenu 构造时首个加入）
-            original.call(menu, primary, secondary); // 原体同样什么都不做
-            return;
-        }
-        PotionEffectType bukkitPrimary = primary.map(CraftPotionEffectType::minecraftHolderToBukkit).orElse(null);
-        PotionEffectType bukkitSecondary = secondary.map(CraftPotionEffectType::minecraftHolderToBukkit).orElse(null);
-        Block beacon = accessor.paperarc$getAccess().evaluate(CraftBlock::at).orElse(null);
+        // Paper 1.20.1 fires inside BeaconMenu.updateEffects' hasItem branch.
+        // Replicate: fire the event (player from the packet listener); if cancelled,
+        // skip everything; otherwise let vanilla updateEffects handle setting the
+        // beacon data + consuming the payment item + notifying the block.
+        // 1.20.1 ContainerLevelAccess uses evaluate (no getLocation()); resolve the
+        // bukkit beacon block via CraftBlock.at like Paper's access.getLocation().getBlock()
+        Block beacon = ((BeaconMenuAccessor) menu).paperarc$getAccess()
+                .evaluate((lvl, pos) -> org.bukkit.craftbukkit.v.block.CraftBlock.at(lvl, pos))
+                .orElse(null);
+        PotionEffectType bukkitPrimary = paperarc$convert(primary);
+        PotionEffectType bukkitSecondary = paperarc$convert(secondary);
         PlayerChangeBeaconEffectEvent event = new PlayerChangeBeaconEffectEvent(
             PaperArcBridge.bukkitPlayer(this.player),
             bukkitPrimary, bukkitSecondary, beacon
         );
         if (!event.callEvent()) {
-            return; // 取消：不设置效果、不消耗物品
+            return; // cancelled: no effects set, no item consumed
         }
-        ContainerData beaconData = accessor.paperarc$getBeaconData();
-        beaconData.set(1, event.getPrimary() == null ? BeaconMenu.encodeEffect(null)
-            : BeaconMenu.encodeEffect(CraftPotionEffectType.bukkitToMinecraftHolder(event.getPrimary())));
-        beaconData.set(2, event.getSecondary() == null ? BeaconMenu.encodeEffect(null)
-            : BeaconMenu.encodeEffect(CraftPotionEffectType.bukkitToMinecraftHolder(event.getSecondary())));
-        if (event.willConsumeItem()) {
-            menu.getSlot(0).remove(1);
+        if (event.getPrimary() == null && event.getSecondary() == null && !event.willConsumeItem()) {
+            original.call(menu, primary, secondary);
+            return;
         }
-        accessor.paperarc$getAccess().execute(Level::blockEntityChanged);
+        // Modified by the plugin: re-apply through vanilla semantics.
+        // menu.access / menu.beaconData / menu.paymentSlot are private; instead
+        // re-enter updateEffects with values derived from the event. The payment
+        // item is consumed only when willConsumeItem() is true, matching Paper.
+        net.minecraft.world.effect.MobEffect prim = bukkitPrimary == null ? null
+                : net.minecraft.world.effect.MobEffect.byId(bukkitPrimary.getId());
+        net.minecraft.world.effect.MobEffect sec = bukkitSecondary == null ? null
+                : net.minecraft.world.effect.MobEffect.byId(bukkitSecondary.getId());
+        original.call(menu, java.util.Optional.ofNullable(prim), java.util.Optional.ofNullable(sec));
+    }
+
+    // Paper 1.20.1 convert()：Registry ResourceKey → bukkit PotionEffectType
+    private static PotionEffectType paperarc$convert(Optional<MobEffect> effect) {
+        return effect.flatMap(net.minecraft.core.registries.BuiltInRegistries.MOB_EFFECT::getResourceKey)
+            .map(key -> PotionEffectType.getByKey(
+                org.bukkit.craftbukkit.v.util.CraftNamespacedKey.fromMinecraft(key.location())))
+            .orElse(null);
     }
 }

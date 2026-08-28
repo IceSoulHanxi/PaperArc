@@ -1,14 +1,8 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
-import io.papermc.paper.persistence.PersistentDataContainerView;
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import org.bukkit.craftbukkit.v.CraftOfflinePlayer;
-import org.bukkit.craftbukkit.v.persistence.CraftPersistentDataContainer;
-import org.bukkit.craftbukkit.v.persistence.CraftPersistentDataTypeRegistry;
 import org.bukkit.entity.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -22,9 +16,6 @@ import org.spongepowered.asm.mixin.Unique;
  */
 @Mixin(CraftOfflinePlayer.class)
 public abstract class CraftOfflinePlayerApiMixin {
-
-    @Unique
-    private static final CraftPersistentDataTypeRegistry PAPERARC$PDC_REGISTRY = new CraftPersistentDataTypeRegistry();
 
     @Shadow
     private CompoundTag getData() {
@@ -73,25 +64,6 @@ public abstract class CraftOfflinePlayerApiMixin {
     }
 
     @Unique
-    public PersistentDataContainerView getPersistentDataContainer() {
-        // Read-only view over the "BukkitValues" tag of the stored player data. Paper builds an
-        // anonymous PaperPersistentDataContainerView; here a detached CraftPersistentDataContainer
-        // satisfies PersistentDataContainerView and reads from a copy of the tag.
-        Map<String, Tag> customTags = new HashMap<>();
-        CompoundTag data = this.getData();
-        if (data != null && data.contains("BukkitValues", Tag.TAG_COMPOUND)) {
-            CompoundTag bukkitValues = data.getCompound("BukkitValues");
-            for (String key : bukkitValues.getAllKeys()) {
-                Tag tag = bukkitValues.get(key);
-                if (tag != null) {
-                    customTags.put(key, tag);
-                }
-            }
-        }
-        return new CraftPersistentDataContainer(customTags, PAPERARC$PDC_REGISTRY);
-    }
-
-    @Unique
     public boolean isConnected() {
         // As in Paper: CraftOfflinePlayer never reports a live connection.
         return false;
@@ -107,6 +79,6 @@ public abstract class CraftOfflinePlayerApiMixin {
         if (result == null) {
             return null;
         }
-        return result.contains("Paper", Tag.TAG_COMPOUND) ? result.getCompound("Paper") : new CompoundTag();
+        return result.contains("Paper", 10) ? result.getCompound("Paper") : new CompoundTag();
     }
 }

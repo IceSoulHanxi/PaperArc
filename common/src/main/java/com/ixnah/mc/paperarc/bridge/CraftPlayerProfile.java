@@ -119,7 +119,7 @@ public class CraftPlayerProfile implements com.destroystokyo.paper.profile.Playe
         Set<ProfileProperty> out = new HashSet<>();
         for (Map.Entry<String, Property> entry : this.profile.getProperties().entries()) {
             Property property = entry.getValue();
-            out.add(new ProfileProperty(entry.getKey(), property.value(), property.signature()));
+            out.add(new ProfileProperty(entry.getKey(), property.getValue(), property.getSignature()));
         }
         return out;
     }
@@ -222,9 +222,10 @@ public class CraftPlayerProfile implements com.destroystokyo.paper.profile.Playe
     }
 
     /**
-     * Best-effort property fill from {@code MinecraftSessionService#fetchProfile};
+     * Best-effort property fill from {@code MinecraftSessionService#fillProfileProperties};
      * swallows every failure (offline mode, no network) and leaves the profile
-     * untouched.
+     * untouched. authlib 4.0.43 has no fetchProfile/ProfileResult —
+     * fillProfileProperties(GameProfile, boolean) is the equivalent API.
      */
     private boolean paperarc$fillFromSessionService(boolean requireSecure) {
         net.minecraft.server.MinecraftServer nms = paperarc$nmsServer();
@@ -232,14 +233,7 @@ public class CraftPlayerProfile implements com.destroystokyo.paper.profile.Playe
             return false;
         }
         try {
-            com.mojang.authlib.yggdrasil.ProfileResult result =
-                    nms.getSessionService().fetchProfile(getId(), requireSecure);
-            if (result == null) {
-                return false;
-            }
-            // authlib 6.x ProfileResult#profile() returns the GameProfile directly
-            // (not an Optional).
-            GameProfile found = result.profile();
+            GameProfile found = nms.getSessionService().fillProfileProperties(this.profile, requireSecure);
             if (found == null || found.getId() == null) {
                 return false;
             }
@@ -388,7 +382,7 @@ public class CraftPlayerProfile implements com.destroystokyo.paper.profile.Playe
             }
             try {
                 String raw = new String(
-                        Base64.getDecoder().decode(stored.iterator().next().value()),
+                        Base64.getDecoder().decode(stored.iterator().next().getValue()),
                         StandardCharsets.UTF_8);
                 return JsonParser.parseString(raw).getAsJsonObject();
             } catch (Exception e) {

@@ -246,11 +246,14 @@ public abstract class CraftServerApiMixinPart2 {
     }
 
     /**
-     * Minimal PotionBrewer backed by an in-memory potion-mix side map; the
-     * vanilla brewing registry is untouched.
+     * PotionBrewer delegating the vanilla lookup methods to the CraftBukkit
+     * base {@link org.bukkit.craftbukkit.v.potion.CraftPotionBrewer} (present in
+     * the deobf classpath) and keeping Paper's custom potion-mix extensions in an
+     * in-memory side map (vanilla brewing registry untouched).
      */
     private static final class PaperarcPotionBrewer implements PotionBrewer {
 
+        private static final org.bukkit.craftbukkit.v.potion.CraftPotionBrewer CB_BREWER = new org.bukkit.craftbukkit.v.potion.CraftPotionBrewer();
         private static final List<PotionMix> MIXES = new ArrayList<>();
 
         @Override
@@ -277,9 +280,17 @@ public abstract class CraftServerApiMixinPart2 {
 
         @Override
         public Collection<PotionEffect> getEffects(PotionType type, boolean upgraded, boolean extended) {
-            // upgraded/extended variants are not tracked without the NMS mix
-            // registry; the base effect set is returned for every variant.
-            return type.getPotionEffects();
+            return CB_BREWER.getEffects(type, upgraded, extended);
+        }
+
+        @Override
+        public Collection<PotionEffect> getEffectsFromDamage(int damage) {
+            return CB_BREWER.getEffectsFromDamage(damage);
+        }
+
+        @Override
+        public org.bukkit.potion.PotionEffect createEffect(org.bukkit.potion.PotionEffectType potion, int duration, int amplifier) {
+            return CB_BREWER.createEffect(potion, duration, amplifier);
         }
     }
 

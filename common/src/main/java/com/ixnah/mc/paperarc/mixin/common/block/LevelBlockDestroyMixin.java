@@ -77,15 +77,13 @@ public abstract class LevelBlockDestroyMixin {
 
         BlockDestroyEvent event = new BlockDestroyEvent(
                 CraftBlock.at(level, pos),
-                CraftBlockData.fromData(fluid.createLegacyBlock()),
                 CraftBlockData.fromData(effectType),
-                0, // exp: see class javadoc
                 drop);
         if (!event.callEvent()) {
             cir.setReturnValue(false);
             return;
         }
-        this.paperarc$effectType = ((CraftBlockData) event.getEffectBlock()).getState();
+        this.paperarc$effectType = ((CraftBlockData) event.getNewState()).getState();
         this.paperarc$playEffect = event.playEffect();
         this.paperarc$willDrop = event.willDrop();
     }

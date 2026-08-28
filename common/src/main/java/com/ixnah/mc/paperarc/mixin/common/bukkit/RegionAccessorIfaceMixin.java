@@ -4,8 +4,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
 /**
- * Interface augmentation for {@link org.bukkit.RegionAccessor} (generated).
- * Adds 6 paper-api method declaration(s); implementations live in
+ * Interface augmentation for {@link org.bukkit.RegionAccessor} (generated, trimmed for 1.20.1).
+ * Adds 5 paper-api method declaration(s); implementations live in
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
  */
 @Mixin(targets = "org.bukkit.RegionAccessor", remap = false)
@@ -13,9 +13,6 @@ public interface RegionAccessorIfaceMixin {
 
     @Unique
     public abstract org.bukkit.block.Biome getComputedBiome(int p0, int p1, int p2);
-
-    @Unique
-    public abstract io.papermc.paper.block.fluid.FluidData getFluidData(int p0, int p1, int p2);
 
     @Unique
     public abstract io.papermc.paper.world.MoonPhase getMoonPhase();

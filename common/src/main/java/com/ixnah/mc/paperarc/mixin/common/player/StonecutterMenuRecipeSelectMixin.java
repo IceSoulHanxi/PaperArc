@@ -7,7 +7,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.StonecutterMenu;
-import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
 import org.bukkit.craftbukkit.v.util.CraftNamespacedKey;
 import org.bukkit.inventory.InventoryView;
@@ -49,15 +48,15 @@ public abstract class StonecutterMenuRecipeSelectMixin {
     private DataSlot selectedRecipeIndex;
 
     @Shadow
-    public abstract List<RecipeHolder<StonecutterRecipe>> getRecipes();
+    public abstract List<StonecutterRecipe> getRecipes();
 
     @Inject(method = "clickMenuButton", at = @At("HEAD"), cancellable = true)
     private void paperarc$onRecipeSelect(Player player, int id, CallbackInfoReturnable<Boolean> cir) {
         if (!((StonecutterMenuInvoker) (Object) this).paperarc$isValidRecipeIndex(id)) {
             return; // invalid id: vanilla ignores it too
         }
-        List<RecipeHolder<StonecutterRecipe>> recipes = this.getRecipes();
-        RecipeHolder<StonecutterRecipe> holder = recipes.get(id);
+        List<StonecutterRecipe> recipes = this.getRecipes();
+        StonecutterRecipe holder = recipes.get(id);
 
         InventoryView view = paperarc$getBukkitView((AbstractContainerMenu) (Object) this);
         if (!(view != null && view.getTopInventory() instanceof StonecutterInventory topInv)) {
@@ -81,9 +80,9 @@ public abstract class StonecutterMenuRecipeSelectMixin {
 
         ResourceLocation key = CraftNamespacedKey.toMinecraft(event.getStonecuttingRecipe().getKey());
         int recipeIndex = id;
-        if (!recipes.get(recipeIndex).id().equals(key)) { // recipe did NOT stay the same
+        if (!recipes.get(recipeIndex).getId().equals(key)) { // recipe did NOT stay the same
             for (int i = 0; i < recipes.size(); i++) {
-                if (recipes.get(i).id().equals(key)) {
+                if (recipes.get(i).getId().equals(key)) {
                     recipeIndex = i;
                     break;
                 }
@@ -106,10 +105,9 @@ public abstract class StonecutterMenuRecipeSelectMixin {
     }
 
     @Unique
-    private static StonecuttingRecipe paperarc$toBukkit(RecipeHolder<StonecutterRecipe> holder) {
+    private static StonecuttingRecipe paperarc$toBukkit(StonecutterRecipe holder) {
         try {
-            Object nmsRecipe = holder.value();
-            return (StonecuttingRecipe) nmsRecipe.getClass().getMethod("toBukkitRecipe").invoke(nmsRecipe);
+            return (StonecuttingRecipe) holder.getClass().getMethod("toBukkitRecipe").invoke(holder);
         } catch (ReflectiveOperationException e) {
             return null;
         }

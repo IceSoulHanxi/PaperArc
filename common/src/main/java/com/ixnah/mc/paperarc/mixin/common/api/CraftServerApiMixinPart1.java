@@ -22,16 +22,12 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.MapItem;
 import net.minecraft.world.level.levelgen.structure.Structure;
-import net.minecraft.world.level.saveddata.maps.MapDecorationType;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import org.bukkit.BanList;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.craftbukkit.v.CraftServer;
 import org.bukkit.craftbukkit.v.CraftWorld;
-import org.bukkit.craftbukkit.v.ban.CraftIpBanList;
-import org.bukkit.craftbukkit.v.ban.CraftProfileBanList;
 import org.bukkit.craftbukkit.v.inventory.CraftItemStack;
 import org.bukkit.generator.structure.StructureType;
 import org.bukkit.inventory.InventoryHolder;
@@ -137,15 +133,9 @@ public abstract class CraftServerApiMixinPart1 {
 
     @Unique
     public double getAverageTickTime() {
-        return this.getServer().getAverageTickTimeNanos() / 1.0E6D;
-    }
-
-    @Unique
-    public BanList getBanList(io.papermc.paper.ban.BanListType type) {
-        if (io.papermc.paper.ban.BanListType.IP.equals(type)) {
-            return new CraftIpBanList(this.getServer().getPlayerList().getIpBans());
-        }
-        return new CraftProfileBanList(this.getServer().getPlayerList().getBans());
+        // 1.20.1 MinecraftServer exposes float getAverageTickTime() (ms);
+        // Paper's getAverageTickTimeNanos() is a CraftServer-only addition absent here.
+        return this.getServer().getAverageTickTime();
     }
 
     @Unique
@@ -324,7 +314,10 @@ public abstract class CraftServerApiMixinPart1 {
         }
         net.minecraft.server.level.ServerLevel level = craftWorld.getHandle();
         Registry<Structure> structures = level.registryAccess().registryOrThrow(Registries.STRUCTURE);
-        ResourceLocation structureId = ResourceLocation.parse(structureType.getKey().toString());
+        ResourceLocation structureId = ResourceLocation.tryParse(structureType.getKey().toString());
+        if (structureId == null) {
+            return null;
+        }
         Holder<Structure> holder = structures
                 .getHolder(ResourceKey.create(Registries.STRUCTURE, structureId))
                 .orElse(null);
@@ -341,33 +334,9 @@ public abstract class CraftServerApiMixinPart1 {
         net.minecraft.world.item.ItemStack nmsMap = MapItem.create(level,
                 target.getX(), target.getZ(), (byte) zoom, true, unlimitedTracking);
         MapItem.renderBiomePreviewMap(level, nmsMap);
-        Holder<MapDecorationType> icon = paperarc$mapDecorationType(level, mapIcon);
-        if (icon != null) {
-            MapItemSavedData.addTargetDecoration(nmsMap, target, "+", icon);
-        }
+        MapItemSavedData.addTargetDecoration(nmsMap, target, "+",
+                net.minecraft.world.level.saveddata.maps.MapDecoration.Type.byIcon(mapIcon.getValue()));
         return CraftItemStack.asBukkitCopy(nmsMap);
-    }
-
-    /**
-     * Resolves a {@link MapCursor.Type} against the vanilla map-decoration
-     * registry by lowercased enum name; falls back to the classic red-X
-     * ({@code minecraft:target_x}) marker used by vanilla explorer maps when
-     * the requested icon has no direct NMS counterpart.
-     */
-    @Unique
-    private static Holder<MapDecorationType> paperarc$mapDecorationType(
-            net.minecraft.server.level.ServerLevel level, MapCursor.Type icon) {
-        Registry<MapDecorationType> decorations =
-                level.registryAccess().registryOrThrow(Registries.MAP_DECORATION_TYPE);
-        Holder<MapDecorationType> resolved = decorations.getHolder(ResourceKey.create(
-                        Registries.MAP_DECORATION_TYPE,
-                        ResourceLocation.fromNamespaceAndPath("minecraft", icon.name().toLowerCase(Locale.ROOT))))
-                .orElse(null);
-        if (resolved != null) {
-            return resolved;
-        }
-        return decorations.getHolder(ResourceKey.create(Registries.MAP_DECORATION_TYPE,
-                ResourceLocation.withDefaultNamespace("target_x"))).orElse(null);
     }
 
     /**

@@ -4,8 +4,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
 /**
- * Interface augmentation for {@link org.bukkit.Server} (generated).
- * Adds 43 paper-api method declaration(s); implementations live in
+ * Interface augmentation for {@link org.bukkit.Server} (generated, trimmed for 1.20.1).
+ * Adds 44 paper-api method declaration(s); implementations live in
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
  */
 @Mixin(targets = "org.bukkit.Server", remap = false)
@@ -49,9 +49,6 @@ public interface ServerIfaceMixin {
 
     @Unique
     public abstract org.bukkit.OfflinePlayer getOfflinePlayerIfCached(java.lang.String p0);
-
-    @Unique
-    public abstract org.bukkit.BanList getBanList(io.papermc.paper.ban.BanListType p0);
 
     @Unique
     public abstract org.bukkit.command.CommandSender createCommandSender(java.util.function.Consumer p0);
@@ -106,9 +103,6 @@ public interface ServerIfaceMixin {
 
     @Unique
     public abstract com.destroystokyo.paper.profile.PlayerProfile createProfile(java.lang.String p0);
-
-    @Unique
-    public abstract com.destroystokyo.paper.profile.PlayerProfile createProfileExact(java.lang.String p1);
 
     @Unique
     public abstract int getCurrentTick();

@@ -4,7 +4,6 @@ import io.papermc.paper.event.entity.ElderGuardianAppearanceEvent;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
-import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffect;
@@ -38,14 +37,14 @@ public abstract class ElderGuardianAppearanceMixin {
     private List<ServerPlayer> paperarc$appearanceEvent(ServerLevel level, Entity entity, Vec3 pos, double dist,
                                                         MobEffectInstance effect, int duration,
                                                         Operation<List<ServerPlayer>> original) {
-        Holder<MobEffect> holder = effect.getEffect();
+        MobEffect effectType = effect.getEffect();
         List<ServerPlayer> list = level.getPlayers(player ->
                 player.gameMode.isSurvival()
                         && (entity == null || !entity.isAlliedTo(player))
                         && pos.closerThan(player.position(), dist)
-                        && (!player.hasEffect(holder)
-                            || player.getEffect(holder).getAmplifier() < effect.getAmplifier()
-                            || player.getEffect(holder).endsWithin(duration - 1)));
+                        && (!player.hasEffect(effectType)
+                            || player.getEffect(effectType).getAmplifier() < effect.getAmplifier()
+                            || player.getEffect(effectType).endsWithin(duration - 1)));
         List<ServerPlayer> result = new ArrayList<>(list.size());
         for (ServerPlayer player : list) {
             ElderGuardianAppearanceEvent event = new ElderGuardianAppearanceEvent(

@@ -27,7 +27,7 @@ public abstract class CraftMobApiMixin {
     @Unique
     public int getPossibleExperienceReward() {
         net.minecraft.world.entity.Mob handle = this.getHandle();
-        return handle.getExperienceReward((net.minecraft.server.level.ServerLevel) handle.level(), null);
+        return handle.getExperienceReward();
     }
 
     @Unique

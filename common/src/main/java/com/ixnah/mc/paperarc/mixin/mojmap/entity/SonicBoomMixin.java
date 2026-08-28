@@ -3,7 +3,6 @@ package com.ixnah.mc.paperarc.mixin.mojmap.entity;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
-import io.papermc.paper.event.entity.EntityKnockbackEvent;
 import io.papermc.paper.event.entity.EntityPushedByEntityAttackEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -35,13 +34,12 @@ public abstract class SonicBoomMixin {
         Vector delta = new Vector(x, y, z);
         EntityPushedByEntityAttackEvent event = new EntityPushedByEntityAttackEvent(
                 PaperArcBridge.bukkitEntity(instance),
-                EntityKnockbackEvent.Cause.PUSH,
-                PaperArcBridge.bukkitEntity(warden),
+                                PaperArcBridge.bukkitEntity(warden),
                 delta);
         if (!event.callEvent()) {
             return;
         }
-        Vector knockback = event.getKnockback();
+        Vector knockback = event.getAcceleration();
         original.call(instance, knockback.getX(), knockback.getY(), knockback.getZ());
     }
 }

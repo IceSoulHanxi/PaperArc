@@ -40,19 +40,30 @@ public abstract class CraftWitherApiMixin {
 
     @Unique
     public boolean canTravelThroughPortals() {
-        // Paper: return getHandle().canUsePortal(false);
-        return this.getHandle().canUsePortal(false);
+        // Paper 1.20.1: return getHandle().canChangeDimensions(); (canUsePortal is 1.21+)
+        return this.getHandle().canChangeDimensions();
     }
 
     @Unique
     public void setCanTravelThroughPortals(boolean value) {
-        // Paper sets a private WitherBoss#canPortal field that vanilla mojmap lacks -> side-map.
-        ApiState.put(this.getHandle(), "canTravelThroughPortals", value);
+        // Paper stores a private WitherBoss#canPortal field (Missing-Entity-API.patch);
+        // vanilla mojmap has no such field, so keep it in the ApiState side-map and
+        // honour it at read time.
+        ApiState.put(this.getHandle(), "canPortal", value);
     }
 
     @Unique
     public void enterInvulnerabilityPhase() {
         // Paper: this.getHandle().makeInvulnerable();
         this.getHandle().makeInvulnerable();
+    }
+
+    @Unique
+    public boolean canChangeDimensions() {
+        Boolean portal = ApiState.get(this.getHandle(), "canPortal", null);
+        if (portal != null && !portal) {
+            return false;
+        }
+        return this.getHandle().canChangeDimensions();
     }
 }

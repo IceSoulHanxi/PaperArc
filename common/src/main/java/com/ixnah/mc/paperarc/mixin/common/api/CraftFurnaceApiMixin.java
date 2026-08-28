@@ -9,7 +9,7 @@ import com.google.common.base.Preconditions;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
@@ -120,8 +120,8 @@ public abstract class CraftFurnaceApiMixin {
         // this mapping has no MinecraftServer.getServer(); reach it via CraftServer
         RecipeManager recipeManager = level != null ? level.getRecipeManager()
             : ((CraftServer) PaperArcBridge.getServer()).getServer().getRecipeManager();
-        Optional<RecipeHolder<?>> nmsRecipe = recipeManager.byKey(location);
-        Preconditions.checkArgument(nmsRecipe.isPresent() && nmsRecipe.get().value() instanceof AbstractCookingRecipe,
+        Optional<? extends net.minecraft.world.item.crafting.Recipe<?>> nmsRecipe = recipeManager.byKey(location);
+        Preconditions.checkArgument(nmsRecipe.isPresent() && nmsRecipe.get() instanceof AbstractCookingRecipe,
             furnaceRecipe.getKey() + " is not recognized as a valid and registered furnace recipe");
         if (count > 0) {
             this.paperarc$recipesUsed().put(location, count);

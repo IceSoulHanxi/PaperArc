@@ -34,7 +34,9 @@ public abstract class CraftItemApiMixin {
 
     @Unique
     protected final net.minecraft.world.entity.item.ItemEntity paperarc$handle() {
-        return ((CraftItem) (Object) this).getHandle();
+        // 1.20.1 CraftEntity#getHandle() returns Entity; the actual ItemEntity is
+        // reachable via the single-arg constructor (CraftServer, ItemEntity).
+        return (net.minecraft.world.entity.item.ItemEntity) ((CraftItem) (Object) this).getHandle();
     }
 
     // ---- Add-API-for-item-entity-health ----

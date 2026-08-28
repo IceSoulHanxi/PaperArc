@@ -4,8 +4,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
 /**
- * Interface augmentation for {@link org.bukkit.entity.Mob} (generated).
- * Adds 12 paper-api method declaration(s); implementations live in
+ * Interface augmentation for {@link org.bukkit.entity.Mob} (generated, trimmed for 1.20.1).
+ * Adds 10 paper-api method declaration(s); implementations live in
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
  */
 @Mixin(targets = "org.bukkit.entity.Mob", remap = false)
@@ -31,12 +31,6 @@ public interface MobIfaceMixin {
 
     @Unique
     public abstract int getMaxHeadPitch();
-
-    @Unique
-    public abstract boolean isAggressive();
-
-    @Unique
-    public abstract void setAggressive(boolean p0);
 
     @Unique
     public abstract boolean isLeftHanded();

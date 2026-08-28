@@ -1,7 +1,6 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.google.common.base.Preconditions;
-import io.papermc.paper.block.fluid.FluidData;
 import io.papermc.paper.world.MoonPhase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ClipContext;
@@ -13,7 +12,6 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Biome;
-import org.bukkit.craftbukkit.v.block.CraftBiome;
 import org.bukkit.craftbukkit.v.CraftRegionAccessor;
 import org.bukkit.craftbukkit.v.util.CraftNamespacedKey;
 import org.bukkit.util.BoundingBox;
@@ -38,15 +36,13 @@ public abstract class CraftRegionAccessorApiMixin {
 
     @Unique
     public Biome getComputedBiome(int x, int y, int z) {
-        // Paper: CraftBiome.minecraftHolderToBukkit(this.getHandle().getBiome(new BlockPos(x, y, z)))
-        return CraftBiome.minecraftHolderToBukkit(this.getHandle().getBiome(new BlockPos(x, y, z)));
+        net.minecraft.world.level.WorldGenLevel handle = this.getHandle();
+        net.minecraft.core.Registry<net.minecraft.world.level.biome.Biome> registry =
+            handle.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.BIOME);
+        return org.bukkit.craftbukkit.v.block.CraftBlock.biomeBaseToBiome(
+            registry, handle.getBiome(new BlockPos(x, y, z)));
     }
 
-    @Unique
-    public io.papermc.paper.block.fluid.FluidData getFluidData(int x, int y, int z) {
-        // Paper: new PaperFluidData(getHandle().getFluidState(new BlockPos(x, y, z))) — paperarc 用 bridge 实现等价类
-        return new com.ixnah.mc.paperarc.bridge.PaperArcFluidData(this.getHandle().getFluidState(new BlockPos(x, y, z)));
-    }
 
     @Unique
     public NamespacedKey getKey() {
@@ -77,8 +73,11 @@ public abstract class CraftRegionAccessorApiMixin {
         }
         Vec3 start = new Vec3(from.getX(), from.getY(), from.getZ());
         Vec3 end = new Vec3(to.getX(), to.getY(), to.getZ());
+        if (end.distanceToSqr(start) > 128D * 128D) {
+            return false; // Return early if the distance is greater than 128 blocks
+        }
         return this.getHandle().clip(new ClipContext(start, end,
-                ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, CollisionContext.empty()))
+                ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, null))
                 .getType() == HitResult.Type.MISS;
     }
 }

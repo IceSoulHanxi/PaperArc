@@ -18,15 +18,15 @@ public final class PushByEntityEvents {
 
     public static double[] fire(Entity pushed, Entity pushingEntity, double x, double y, double z) {
         Vector delta = new Vector(x, y, z);
+        // 1.20.1: 3-arg constructor (no Cause), getAcceleration() accessor
         EntityPushedByEntityAttackEvent event = new EntityPushedByEntityAttackEvent(
                 PaperArcBridge.bukkitEntity(pushed),
-                io.papermc.paper.event.entity.EntityKnockbackEvent.Cause.PUSH,
                 PaperArcBridge.bukkitEntity(pushingEntity),
                 delta);
         if (!event.callEvent()) {
             return null;
         }
-        Vector knockback = event.getKnockback();
+        Vector knockback = event.getAcceleration();
         return new double[]{knockback.getX(), knockback.getY(), knockback.getZ()};
     }
 }

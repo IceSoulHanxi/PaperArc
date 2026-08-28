@@ -32,8 +32,7 @@ public abstract class CraftTextDisplayApiMixin {
             return Component.empty();
         }
         // PaperAdventure unavailable: gson round-trip instead
-        String json = Serializer.toJson(vanilla,
-                ((org.bukkit.craftbukkit.v.CraftServer) PaperArcBridge.getServer()).getServer().registryAccess());
+        String json = Serializer.toJson(vanilla);
         return GsonComponentSerializer.gson().deserialize(json);
     }
 
@@ -44,7 +43,7 @@ public abstract class CraftTextDisplayApiMixin {
         }
         String json = GsonComponentSerializer.gson().serialize(component);
         net.minecraft.network.chat.Component vanilla =
-                Serializer.fromJson(json, ((org.bukkit.craftbukkit.v.CraftServer) PaperArcBridge.getServer()).getServer().registryAccess());
+                Serializer.fromJson(json);
         this.getHandle().setText(vanilla);
     }
 }

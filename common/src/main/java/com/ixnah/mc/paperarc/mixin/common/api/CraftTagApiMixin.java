@@ -26,7 +26,7 @@ public abstract class CraftTagApiMixin {
 
     @Unique
     private static net.minecraft.resources.ResourceLocation paperarc$toResourceLocation(NamespacedKey key) {
-        return net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(key.getNamespace(), key.getKey());
+        return new net.minecraft.resources.ResourceLocation(key.getNamespace(), key.getKey());
     }
 
     @Unique
@@ -75,29 +75,22 @@ public abstract class CraftTagApiMixin {
         java.util.Map<String, org.bukkit.Registry<? extends org.bukkit.Keyed>> map = paperarc$registryMap;
         if (map == null) {
             map = new java.util.HashMap<>();
-            map.put("minecraft:item", org.bukkit.Registry.ITEM);
-            map.put("minecraft:block", org.bukkit.Registry.BLOCK);
+            map.put("minecraft:item", org.bukkit.Registry.MATERIAL);
+            map.put("minecraft:block", org.bukkit.Registry.MATERIAL);
             map.put("minecraft:entity_type", org.bukkit.Registry.ENTITY_TYPE);
             map.put("minecraft:fluid", org.bukkit.Registry.FLUID);
             map.put("minecraft:game_event", org.bukkit.Registry.GAME_EVENT);
-            map.put("minecraft:mob_effect", org.bukkit.Registry.EFFECT);
-            map.put("minecraft:potion", org.bukkit.Registry.POTION);
-            map.put("minecraft:enchantment", org.bukkit.Registry.ENCHANTMENT);
+            map.put("minecraft:mob_effect", org.bukkit.Registry.POTION_EFFECT_TYPE);
             map.put("minecraft:sound_event", org.bukkit.Registry.SOUNDS);
             map.put("minecraft:music_instrument", org.bukkit.Registry.INSTRUMENT);
             map.put("minecraft:trim_material", org.bukkit.Registry.TRIM_MATERIAL);
             map.put("minecraft:trim_pattern", org.bukkit.Registry.TRIM_PATTERN);
-            map.put("minecraft:banner_pattern", org.bukkit.Registry.BANNER_PATTERN);
-            map.put("minecraft:damage_type", org.bukkit.Registry.DAMAGE_TYPE);
-            map.put("minecraft:jukebox_song", org.bukkit.Registry.JUKEBOX_SONG);
             map.put("minecraft:villager_profession", org.bukkit.Registry.VILLAGER_PROFESSION);
             map.put("minecraft:villager_type", org.bukkit.Registry.VILLAGER_TYPE);
             map.put("minecraft:attribute", org.bukkit.Registry.ATTRIBUTE);
             map.put("minecraft:memory_module_type", org.bukkit.Registry.MEMORY_MODULE_TYPE);
             map.put("minecraft:painting_variant", org.bukkit.Registry.ART);
-            map.put("minecraft:cat_variant", org.bukkit.Registry.CAT_VARIANT);
             map.put("minecraft:frog_variant", org.bukkit.Registry.FROG_VARIANT);
-            map.put("minecraft:wolf_variant", org.bukkit.Registry.WOLF_VARIANT);
             map.put("minecraft:worldgen/biome", org.bukkit.Registry.BIOME);
             map.put("minecraft:worldgen/structure", org.bukkit.Registry.STRUCTURE);
             map.put("minecraft:worldgen/structure_type", org.bukkit.Registry.STRUCTURE_TYPE);

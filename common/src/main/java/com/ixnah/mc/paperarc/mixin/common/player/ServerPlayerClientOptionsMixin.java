@@ -3,7 +3,7 @@ package com.ixnah.mc.paperarc.mixin.common.player;
 import com.destroystokyo.paper.ClientOption;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import com.ixnah.mc.paperarc.util.PaperArcSkinParts;
-import net.minecraft.server.level.ClientInformation;
+import net.minecraft.network.protocol.game.ServerboundClientInformationPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.HumanoidArm;
 import org.bukkit.inventory.MainHand;
@@ -42,7 +42,7 @@ public abstract class ServerPlayerClientOptionsMixin {
     }
 
     @Inject(method = "updateOptions", at = @At("HEAD"))
-    private void paperarc$onUpdateOptions(ClientInformation clientOptions, CallbackInfo ci) {
+    private void paperarc$onUpdateOptions(ServerboundClientInformationPacket clientOptions, CallbackInfo ci) {
         if (paperarc$isLoginPath()) {
             return;
         }

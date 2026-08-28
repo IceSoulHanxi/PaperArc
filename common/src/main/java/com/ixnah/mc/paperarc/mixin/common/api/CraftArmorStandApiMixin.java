@@ -28,7 +28,6 @@ public abstract class CraftArmorStandApiMixin {
     @Unique
     public ItemStack getItem(EquipmentSlot slot) {
         com.google.common.base.Preconditions.checkArgument(slot != null, "slot");
-        com.google.common.base.Preconditions.checkArgument(slot != EquipmentSlot.BODY, "Cannot get body item");
         return org.bukkit.craftbukkit.v.inventory.CraftItemStack.asCraftMirror(
                 this.getHandle().getItemBySlot(CraftEquipmentSlot.getNMS(slot)));
     }
@@ -36,7 +35,6 @@ public abstract class CraftArmorStandApiMixin {
     @Unique
     public void setItem(EquipmentSlot slot, ItemStack item) {
         com.google.common.base.Preconditions.checkArgument(slot != null, "slot");
-        com.google.common.base.Preconditions.checkArgument(slot != EquipmentSlot.BODY, "Cannot set body item");
         org.bukkit.inventory.EntityEquipment equipment = ((org.bukkit.entity.LivingEntity) (Object) this).getEquipment();
         switch (slot) {
             case HAND:

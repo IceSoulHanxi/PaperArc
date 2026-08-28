@@ -120,8 +120,7 @@ public abstract class CraftPlayerApiMixinPart2 {
         if (adventure == null) {
             return null;
         }
-        return Serializer.fromJson(GsonComponentSerializer.gson().serialize(adventure),
-                paperarc$nmsServer().registryAccess());
+        return Serializer.fromJson(GsonComponentSerializer.gson().serialize(adventure));
     }
 
     @Unique
@@ -130,7 +129,7 @@ public abstract class CraftPlayerApiMixinPart2 {
             return Component.empty();
         }
         return GsonComponentSerializer.gson().deserialize(
-                Serializer.toJson(vanilla, paperarc$nmsServer().registryAccess()));
+                Serializer.toJson(vanilla));
     }
 
     @Unique
@@ -138,7 +137,7 @@ public abstract class CraftPlayerApiMixinPart2 {
         if (comps == null || comps.length == 0) {
             return null;
         }
-        return Serializer.fromJson(ComponentSerializer.toString(comps), paperarc$nmsServer().registryAccess());
+        return Serializer.fromJson(ComponentSerializer.toString(comps));
     }
 
     @Unique
@@ -250,12 +249,6 @@ public abstract class CraftPlayerApiMixinPart2 {
         if (vanilla != null) {
             paperarc$send(new ClientboundSetActionBarTextPacket(vanilla));
         }
-    }
-
-    @Unique
-    public void sendEntityEffect(EntityEffect effect, org.bukkit.entity.Entity entity) {
-        Preconditions.checkArgument(effect.isApplicableTo(entity), "%s is not applicable to %s", effect, entity);
-        paperarc$send(new ClientboundEntityEventPacket(((CraftEntity) entity).getHandle(), effect.getData()));
     }
 
     @Unique
@@ -395,9 +388,15 @@ public abstract class CraftPlayerApiMixinPart2 {
             }
         }
         // Refresh the target client: Paper's refreshPlayer() respawn pipeline.
+        // 1.20.1 无 createCommonSpawnInfo——用 Player.setPlayerProfile-API.patch 的 10 参构造。
         net.minecraft.server.level.ServerLevel worldserver = self.serverLevel();
-        self.connection.send(new ClientboundRespawnPacket(
-                self.createCommonSpawnInfo(worldserver), ClientboundRespawnPacket.KEEP_ALL_DATA));
+        self.connection.send(new net.minecraft.network.protocol.game.ClientboundRespawnPacket(
+                worldserver.dimensionTypeId(), worldserver.dimension(),
+                net.minecraft.world.level.biome.BiomeManager.obfuscateSeed(worldserver.getSeed()),
+                self.gameMode.getGameModeForPlayer(), self.gameMode.getPreviousGameModeForPlayer(),
+                worldserver.isDebug(), worldserver.isFlat(),
+                net.minecraft.network.protocol.game.ClientboundRespawnPacket.KEEP_ALL_DATA,
+                self.getLastDeathLocation(), self.getPortalCooldown()));
         self.onUpdateAbilities();
         Location loc = ((CraftPlayer) (Object) this).getLocation();
         self.connection.teleport(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch(),
@@ -410,7 +409,7 @@ public abstract class CraftPlayerApiMixinPart2 {
                 self.experienceProgress, self.totalExperience, self.experienceLevel));
         for (net.minecraft.world.effect.MobEffectInstance mobEffect : self.getActiveEffects()) {
             self.connection.send(new net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket(
-                    self.getId(), mobEffect, false));
+                    self.getId(), mobEffect));
         }
     }
 
@@ -475,8 +474,8 @@ public abstract class CraftPlayerApiMixinPart2 {
     @Unique
     public void setResourcePack(java.util.UUID id, String url, byte[] hash,
             net.kyori.adventure.text.Component prompt, boolean force) {
-        paperarc$send(new net.minecraft.network.protocol.common.ClientboundResourcePackPushPacket(
-                id, url, paperarc$sha1Hex(hash), force, java.util.Optional.ofNullable(paperarc$vanilla(prompt))));
+        paperarc$send(new net.minecraft.network.protocol.game.ClientboundResourcePackPacket(
+                url, paperarc$sha1Hex(hash), force, paperarc$vanilla(prompt)));
     }
 
     @Unique

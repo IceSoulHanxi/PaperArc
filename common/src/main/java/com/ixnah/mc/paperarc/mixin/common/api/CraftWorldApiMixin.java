@@ -267,8 +267,8 @@ public abstract class CraftWorldApiMixin {
     public void sendGameEvent(org.bukkit.entity.Entity sourceEntity, org.bukkit.GameEvent gameEvent, Vector position) {
         Preconditions.checkArgument(gameEvent != null, "gameEvent cannot be null");
         Preconditions.checkArgument(position != null, "position cannot be null");
-        net.minecraft.core.Holder<net.minecraft.world.level.gameevent.GameEvent> nmsEvent =
-                net.minecraft.core.Holder.direct(CraftGameEvent.bukkitToMinecraft(gameEvent));
+        net.minecraft.world.level.gameevent.GameEvent nmsEvent =
+                org.bukkit.craftbukkit.v.CraftGameEvent.bukkitToMinecraft(gameEvent);
         GameEvent.Context context = GameEvent.Context.of(
                 sourceEntity == null ? null : ((CraftEntity) sourceEntity).getHandle());
         this.getHandle().gameEvent(nmsEvent,
@@ -395,7 +395,7 @@ public abstract class CraftWorldApiMixin {
             this.spawnParticle(particle, x, y, z, count, offsetX, offsetY, offsetZ, extra, data, forceOverride);
             return;
         }
-        ParticleOptions options = CraftParticle.createParticleParam(particle, data);
+        ParticleOptions options = org.bukkit.craftbukkit.v.CraftParticle.toNMS(particle, data);
         ClientboundLevelParticlesPacket packet = new ClientboundLevelParticlesPacket(
                 options, forceOverride, x, y, z,
                 (float) offsetX, (float) offsetY, (float) offsetZ, (float) extra, count);

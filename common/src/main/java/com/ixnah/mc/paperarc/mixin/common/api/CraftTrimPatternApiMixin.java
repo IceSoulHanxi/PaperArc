@@ -25,7 +25,7 @@ public abstract class CraftTrimPatternApiMixin {
 
     @Unique
     public Component description() {
-        String json = Serializer.toJson(this.getHandle().description(), ((org.bukkit.craftbukkit.v.CraftServer) PaperArcBridge.getServer()).getServer().registryAccess());
+        String json = Serializer.toJson(this.getHandle().description());
         return GsonComponentSerializer.gson().deserialize(json);
     }
 }

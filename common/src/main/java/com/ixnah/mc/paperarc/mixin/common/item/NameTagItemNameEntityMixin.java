@@ -2,7 +2,6 @@ package com.ixnah.mc.paperarc.mixin.common.item;
 
 import io.papermc.paper.event.player.PlayerNameEntityEvent;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -43,7 +42,7 @@ public class NameTagItemNameEntityMixin {
         cancellable = true
     )
     private void paperarc$onNameEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
-        Component component = stack.get(DataComponents.CUSTOM_NAME);
+        // 1.20.1: no data components; custom name comes from the stack hover name
         PlayerNameEntityEvent event = new PlayerNameEntityEvent(
             PaperArcBridge.bukkitPlayer(user),
             PaperArcBridge.bukkitEntity(entity),

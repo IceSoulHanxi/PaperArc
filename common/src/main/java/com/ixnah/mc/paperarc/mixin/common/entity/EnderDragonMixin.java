@@ -3,7 +3,6 @@ package com.ixnah.mc.paperarc.mixin.common.entity;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
-import io.papermc.paper.event.entity.EntityKnockbackEvent;
 import io.papermc.paper.event.entity.EntityPushedByEntityAttackEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -31,13 +30,12 @@ public abstract class EnderDragonMixin {
                                          Operation<Void> original, ServerLevel level, List<Entity> entities) {
         EntityPushedByEntityAttackEvent event = new EntityPushedByEntityAttackEvent(
                 PaperArcBridge.bukkitEntity(instance),
-                EntityKnockbackEvent.Cause.PUSH,
-                PaperArcBridge.bukkitEntity((Entity) (Object) this),
+                                PaperArcBridge.bukkitEntity((Entity) (Object) this),
                 new Vector(x, y, z));
         if (!event.callEvent()) {
             return;
         }
-        Vector knockback = event.getKnockback();
+        Vector knockback = event.getAcceleration();
         original.call(instance, knockback.getX(), knockback.getY(), knockback.getZ());
     }
 }

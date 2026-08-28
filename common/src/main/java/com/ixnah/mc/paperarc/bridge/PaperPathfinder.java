@@ -130,11 +130,6 @@ public class PaperPathfinder implements com.destroystokyo.paper.entity.Pathfinde
         }
 
         @Override
-        public boolean canReachFinalPoint() {
-            return path.canReach();
-        }
-
-        @Override
         public List<Location> getPoints() {
             List<Location> points = new ArrayList<>();
             for (int i = 0; i < path.getNodeCount(); i++) {

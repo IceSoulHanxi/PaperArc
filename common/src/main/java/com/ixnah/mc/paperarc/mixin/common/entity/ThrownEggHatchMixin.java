@@ -10,6 +10,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Ageable;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -30,6 +31,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(net.minecraft.world.entity.projectile.ThrownEgg.class)
 public abstract class ThrownEggHatchMixin {
 
+    // 1.20.1 Entity.random (protected final RandomSource)；ThrownEgg 继承之。
+    @Shadow
+    protected net.minecraft.util.RandomSource random;
+
+
     /**
      * NOTE(require=0): Arclight @Overwrites ThrownEgg.onHit entirely (its
      * ThrownEggMixin replaces the vanilla body), so the vanilla super.onHit
@@ -46,9 +52,11 @@ public abstract class ThrownEggHatchMixin {
         Entity egg = (Entity) (Object) this;
         Level level = egg.level();
         if (!level.isClientSide) {
-            if (egg.getRandom().nextInt(8) == 0) {
+            // 1.20.1 Entity 无 getRandom()，直接读注入目标继承的 protected random 字段
+            net.minecraft.util.RandomSource random = this.random;
+            if (random.nextInt(8) == 0) {
                 // Vanilla calls nextInt(32) unconditionally inside this branch; keep that order.
-                byte b0 = (byte) (egg.getRandom().nextInt(32) == 0 ? 4 : 1);
+                byte b0 = (byte) (random.nextInt(32) == 0 ? 4 : 1);
 
                 ThrownEggHatchEvent event = new ThrownEggHatchEvent(
                     (org.bukkit.entity.Egg) PaperArcBridge.bukkitEntity(egg), true, b0,

@@ -5,8 +5,8 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import io.papermc.paper.event.block.PlayerShearBlockEvent;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -28,29 +28,27 @@ import java.util.List;
 
 /**
  * Port of Paper's PlayerShearBlockEvent for PumpkinBlock
- * (Add-PlayerShearBlockEvent.patch).
+ * (Add-PlayerShearBlockEvent.patch), 1.20.1 single-use-method form.
  *
- * Paper fires the event in the server-side carve branch of useItemOn, before
- * the carve sound; a cancelled event returns SKIP_DEFAULT_BLOCK_INTERACTION
- * and the carved seeds come from event.getDrops() instead of the fixed
- * pumpkin-seeds stack. We replicate the NeoForge gate condition
- * canPerformAction(ItemAbilities.SHEARS_CARVE) at HEAD, fire the event, and
- * hand the (mutable) drops to an addFreshEntity wrapper that spawns one
- * ItemEntity per drop with the vanilla entity's position/velocity.
+ * Paper fires the event in the server-side carve branch of use, before the
+ * carve sound; a cancelled event returns InteractionResult.PASS and the
+ * carved seeds come from event.getDrops() instead of the fixed
+ * pumpkin-seeds stack.
  */
 @Mixin(PumpkinBlock.class)
 public abstract class PumpkinBlockMixin {
 
     private static final ThreadLocal<List<org.bukkit.inventory.ItemStack>> paperarc$shearDrops = new ThreadLocal<>();
 
-    @Inject(method = "useItemOn", at = @At("HEAD"), cancellable = true)
-    private void paperarc$playerShearBlock(ItemStack stack, BlockState state, Level level, BlockPos pos,
+    @Inject(method = "use", at = @At("HEAD"), cancellable = true)
+    private void paperarc$playerShearBlock(BlockState state, Level level, BlockPos pos,
                                            Player player, InteractionHand hand, BlockHitResult hit,
-                                           CallbackInfoReturnable<ItemInteractionResult> cir) {
-        if (level.isClientSide() || player == null) {
+                                           CallbackInfoReturnable<InteractionResult> cir) {
+        if (level.isClientSide || player == null) {
             return;
         }
-        if (!stack.is(net.minecraft.world.item.Items.SHEARS)) {
+        ItemStack stack = player.getItemInHand(hand);
+        if (!stack.is(Items.SHEARS)) {
             return;
         }
         List<org.bukkit.inventory.ItemStack> drops = new java.util.ArrayList<>();
@@ -59,13 +57,13 @@ public abstract class PumpkinBlockMixin {
                 PaperArcBridge.bukkitPlayer(player), CraftBlock.at(level, pos),
                 CraftItemStack.asCraftMirror(stack), CraftEquipmentSlot.getHand(hand), drops);
         if (!event.callEvent()) {
-            cir.setReturnValue(ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION);
+            cir.setReturnValue(InteractionResult.PASS);
             return;
         }
         paperarc$shearDrops.set(event.getDrops());
     }
 
-    @WrapOperation(method = "useItemOn",
+    @WrapOperation(method = "use",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;addFreshEntity(Lnet/minecraft/world/entity/Entity;)Z"))
     private boolean paperarc$dropEventDrops(Level level, Entity entity, Operation<Boolean> original) {
         List<org.bukkit.inventory.ItemStack> drops = paperarc$shearDrops.get();

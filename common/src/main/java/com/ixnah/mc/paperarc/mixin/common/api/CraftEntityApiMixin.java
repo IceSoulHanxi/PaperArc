@@ -430,8 +430,7 @@ public abstract class CraftEntityApiMixin {
     public net.kyori.adventure.text.Component teamDisplayName() {
         try {
             net.minecraft.network.chat.Component vanilla = this.getHandle().getDisplayName();
-            String json = net.minecraft.network.chat.Component.Serializer.toJson(vanilla,
-                    this.getHandle().level().registryAccess());
+            String json = net.minecraft.network.chat.Component.Serializer.toJson(vanilla);
             // PaperAdventure unavailable: gson round-trip instead
             return net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson().deserialize(json);
         } catch (Exception e) {

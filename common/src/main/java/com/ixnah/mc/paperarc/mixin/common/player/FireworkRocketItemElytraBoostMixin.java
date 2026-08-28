@@ -12,7 +12,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.FireworkRocketItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import org.bukkit.craftbukkit.v.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.v.inventory.CraftItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -48,8 +47,7 @@ public abstract class FireworkRocketItemElytraBoostMixin {
         PlayerElytraBoostEvent event = new PlayerElytraBoostEvent(
                 PaperArcBridge.bukkitPlayer(user),
                 CraftItemStack.asCraftMirror(itemStack),
-                (org.bukkit.entity.Firework) PaperArcBridge.bukkitEntity(fireworkRocketEntity),
-                CraftEquipmentSlot.getHand(hand));
+                (org.bukkit.entity.Firework) PaperArcBridge.bukkitEntity(fireworkRocketEntity));
         if (!event.callEvent()) {
             if (user instanceof ServerPlayer serverPlayer) {
                 PaperArcBridge.bukkitPlayer(serverPlayer).updateInventory();
@@ -59,7 +57,7 @@ public abstract class FireworkRocketItemElytraBoostMixin {
         boolean added = original.call(world, entity);
         if (added) {
             user.awardStat(Stats.ITEM_USED.get((FireworkRocketItem) (Object) this));
-            if (event.shouldConsume() && !user.hasInfiniteMaterials()) {
+            if (event.shouldConsume() && !user.getAbilities().instabuild) {
                 itemStack.shrink(1);
             } else if (user instanceof ServerPlayer serverPlayer) {
                 PaperArcBridge.bukkitPlayer(serverPlayer).updateInventory();

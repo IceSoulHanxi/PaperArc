@@ -4,9 +4,8 @@ import com.destroystokyo.paper.event.player.PlayerConnectionCloseEvent;
 import com.mojang.authlib.GameProfile;
 import com.ixnah.mc.paperarc.event.PaperArcEvents;
 import net.minecraft.network.Connection;
-import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.PacketListener;
-import net.minecraft.server.network.ServerCommonPacketListenerImpl;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -40,14 +39,14 @@ public abstract class ConnectionMixin {
     private SocketAddress address;
 
     @Inject(
-        method = "disconnect(Lnet/minecraft/network/DisconnectionDetails;)V",
+        method = "disconnect(Lnet/minecraft/network/chat/Component;)V",
         at = @At("RETURN")
     )
-    private void paperarc$onConnectionClose(DisconnectionDetails details, CallbackInfo ci) {
-        if (!(this.packetListener instanceof ServerCommonPacketListenerImpl common)) {
+    private void paperarc$onConnectionClose(net.minecraft.network.chat.Component details, CallbackInfo ci) {
+        if (!(this.packetListener instanceof ServerGamePacketListenerImpl common)) {
             return;
         }
-        GameProfile profile = common.getOwner();
+        GameProfile profile = common.player.getGameProfile();
         if (profile == null) {
             return; // 登录完成前断开，无玩家身份
         }

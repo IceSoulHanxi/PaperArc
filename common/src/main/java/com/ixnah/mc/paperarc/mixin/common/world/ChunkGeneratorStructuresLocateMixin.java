@@ -35,9 +35,10 @@ public abstract class ChunkGeneratorStructuresLocateMixin {
                                                                         Operation<Pair<BlockPos, Holder<Structure>>> original) {
         final org.bukkit.World bukkitWorld = PaperArcBridge.bukkitWorld(world);
         final org.bukkit.Location origin = new org.bukkit.Location(bukkitWorld, center.getX(), center.getY(), center.getZ());
+        final Registry<Structure> registry = world.registryAccess().registryOrThrow(Registries.STRUCTURE);
         final List<org.bukkit.generator.structure.Structure> apiStructures = new ArrayList<>();
         for (Holder<Structure> holder : structures) {
-            apiStructures.add(CraftStructure.minecraftToBukkit(holder.value()));
+            apiStructures.add(CraftStructure.minecraftToBukkit(holder.value(), world.registryAccess()));
         }
         if (apiStructures.isEmpty()) {
             return original.call(world, structures, center, radius, skipReferencedStructures);
@@ -46,7 +47,6 @@ public abstract class ChunkGeneratorStructuresLocateMixin {
         if (!event.callEvent()) {
             return null;
         }
-        final Registry<Structure> registry = world.registryAccess().registryOrThrow(Registries.STRUCTURE);
         final StructuresLocateEvent.Result result = event.getResult();
         if (result != null) {
             final BlockPos pos = new BlockPos(result.pos().blockX(), result.pos().blockY(), result.pos().blockZ());

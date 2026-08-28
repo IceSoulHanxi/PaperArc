@@ -106,15 +106,13 @@ public abstract class CraftSignSideApiMixin {
 
     @Unique
     private static Component paperarc$fromVanilla(net.minecraft.network.chat.Component vanilla) {
-        String json = Serializer.toJson(vanilla,
-            ((org.bukkit.craftbukkit.v.CraftServer) PaperArcBridge.getServer()).getServer().registryAccess());
+        String json = Serializer.toJson(vanilla);
         return GsonComponentSerializer.gson().deserialize(json);
     }
 
     @Unique
     private static net.minecraft.network.chat.Component paperarc$toVanilla(Component component) {
         String json = GsonComponentSerializer.gson().serialize(component);
-        return Serializer.fromJson(json,
-            ((org.bukkit.craftbukkit.v.CraftServer) PaperArcBridge.getServer()).getServer().registryAccess());
+        return Serializer.fromJson(json);
     }
 }

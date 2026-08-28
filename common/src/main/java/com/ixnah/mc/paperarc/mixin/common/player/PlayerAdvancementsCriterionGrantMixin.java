@@ -4,7 +4,7 @@ import com.destroystokyo.paper.event.player.PlayerAdvancementCriterionGrantEvent
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
-import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.server.PlayerAdvancements;
 import net.minecraft.server.level.ServerPlayer;
@@ -25,14 +25,14 @@ import org.spongepowered.asm.mixin.injection.At;
 public class PlayerAdvancementsCriterionGrantMixin {
 
     @WrapOperation(
-        method = "award(Lnet/minecraft/advancements/AdvancementHolder;Ljava/lang/String;)Z",
+        method = "award(Lnet/minecraft/advancements/Advancement;Ljava/lang/String;)Z",
         at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/advancements/AdvancementProgress;grantProgress(Ljava/lang/String;)Z"
         )
     )
     private boolean paperarc$onCriterionGrant(AdvancementProgress progress, String criterion, Operation<Boolean> original,
-                                              AdvancementHolder holder, String criterionName) {
+                                              Advancement holder, String criterionName) {
         boolean granted = original.call(progress, criterion);
         if (!granted) {
             return false;

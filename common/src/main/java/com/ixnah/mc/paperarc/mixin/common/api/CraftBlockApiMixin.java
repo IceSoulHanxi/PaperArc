@@ -6,7 +6,6 @@ import java.lang.reflect.Method;
 import org.bukkit.SoundGroup;
 import org.bukkit.block.Biome;
 import org.bukkit.craftbukkit.v.CraftSoundGroup;
-import org.bukkit.craftbukkit.v.block.CraftBiome;
 import org.bukkit.craftbukkit.v.block.CraftBlockStates;
 import org.bukkit.craftbukkit.v.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
@@ -226,10 +225,13 @@ public abstract class CraftBlockApiMixin {
 
     @Unique
     public Biome getComputedBiome() {
-        return CraftBiome.minecraftHolderToBukkit(this.world.getNoiseBiome(
-            QuartPos.fromBlock(this.position.getX()),
-            QuartPos.fromBlock(this.position.getY()),
-            QuartPos.fromBlock(this.position.getZ())));
+        net.minecraft.core.Registry<net.minecraft.world.level.biome.Biome> registry =
+            this.world.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.BIOME);
+        return org.bukkit.craftbukkit.v.block.CraftBlock.biomeBaseToBiome(registry,
+            this.world.getNoiseBiome(
+                QuartPos.fromBlock(this.position.getX()),
+                QuartPos.fromBlock(this.position.getY()),
+                QuartPos.fromBlock(this.position.getZ())));
     }
 
     /**
@@ -241,7 +243,9 @@ public abstract class CraftBlockApiMixin {
         if (useSnapshot) {
             return this.getState();
         }
-        return CraftBlockStates.getBlockState(this.world, this.position, this.getNMS(), (CompoundTag) null);
+        // 1.20.1 CraftBlockStates has no (LevelAccessor, BlockPos, BlockState, CompoundTag)
+        // overload; the (BlockPos, BlockState, CompoundTag) form carries the same semantics.
+        return CraftBlockStates.getBlockState(this.position, this.getNMS(), (CompoundTag) null);
     }
 
     // Paper: This is in fact isSolid, despite the fact that isSolid below returns blocksMotion

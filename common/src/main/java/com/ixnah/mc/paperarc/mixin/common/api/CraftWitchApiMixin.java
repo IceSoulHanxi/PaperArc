@@ -65,7 +65,7 @@ public abstract class CraftWitchApiMixin {
         Witch witch = getHandle();
         // Mirror of Paper's NMS Witch#setDrinkingPotion body (minus its event hook).
         witch.setItemSlot(EquipmentSlot.MAINHAND, CraftItemStack.asNMSCopy(potion));
-        paperarc$setUsingTime(witch, witch.getMainHandItem().getUseDuration(witch));
+        paperarc$setUsingTime(witch, witch.getMainHandItem().getUseDuration());
         witch.setUsingItem(true);
         if (!witch.isSilent()) {
             witch.level().playSound(null, witch.getX(), witch.getY(), witch.getZ(),
@@ -79,7 +79,7 @@ public abstract class CraftWitchApiMixin {
             ResourceLocation modifierId = (ResourceLocation) idField.get(null);
             AttributeModifier modifier = (AttributeModifier) modField.get(null);
             AttributeInstance movementSpeed = witch.getAttribute(Attributes.MOVEMENT_SPEED);
-            movementSpeed.removeModifier(modifierId);
+            movementSpeed.removeModifier(modifier.getId());
             movementSpeed.addTransientModifier(modifier);
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException("NMS Witch drinking speed modifier not found", e);

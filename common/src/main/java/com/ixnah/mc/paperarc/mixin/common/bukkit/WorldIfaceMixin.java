@@ -4,30 +4,12 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
 /**
- * Interface augmentation for {@link org.bukkit.World} (generated).
- * Adds 31 paper-api method declaration(s); implementations live in
+ * Interface augmentation for {@link org.bukkit.World} (generated, trimmed for 1.20.1).
+ * Adds 21 paper-api method declaration(s); implementations live in
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
  */
 @Mixin(targets = "org.bukkit.World", remap = false)
 public interface WorldIfaceMixin {
-
-    @Unique
-    public abstract boolean isVoidDamageEnabled();
-
-    @Unique
-    public abstract void setVoidDamageEnabled(boolean p0);
-
-    @Unique
-    public abstract float getVoidDamageAmount();
-
-    @Unique
-    public abstract void setVoidDamageAmount(float p0);
-
-    @Unique
-    public abstract double getVoidDamageMinBuildHeightOffset();
-
-    @Unique
-    public abstract void setVoidDamageMinBuildHeightOffset(double p0);
 
     @Unique
     public abstract int getEntityCount();
@@ -45,9 +27,6 @@ public interface WorldIfaceMixin {
     public abstract int getPlayerCount();
 
     @Unique
-    public abstract boolean hasStructureAt(io.papermc.paper.math.Position p0, org.bukkit.generator.structure.Structure p1);
-
-    @Unique
     public abstract org.bukkit.Location findLightningRod(org.bukkit.Location p0);
 
     @Unique
@@ -61,12 +40,6 @@ public interface WorldIfaceMixin {
 
     @Unique
     public abstract org.bukkit.util.RayTraceResult rayTraceEntities(io.papermc.paper.math.Position p0, org.bukkit.util.Vector p1, double p2, double p3, java.util.function.Predicate p4);
-
-    @Unique
-    public abstract org.bukkit.util.RayTraceResult rayTraceBlocks(io.papermc.paper.math.Position p0, org.bukkit.util.Vector p1, double p2, org.bukkit.FluidCollisionMode p3, boolean p4, java.util.function.Predicate p5);
-
-    @Unique
-    public abstract org.bukkit.util.RayTraceResult rayTrace(io.papermc.paper.math.Position p0, org.bukkit.util.Vector p1, double p2, org.bukkit.FluidCollisionMode p3, boolean p4, double p5, java.util.function.Predicate p6, java.util.function.Predicate p7);
 
     @Unique
     public abstract boolean isDayTime();
@@ -88,9 +61,6 @@ public interface WorldIfaceMixin {
 
     @Unique
     public abstract void sendGameEvent(org.bukkit.entity.Entity p0, org.bukkit.GameEvent p1, org.bukkit.util.Vector p2);
-
-    @Unique
-    public abstract org.bukkit.Raid getRaid(int p0);
 
     @Unique
     public abstract void setViewDistance(int p0);

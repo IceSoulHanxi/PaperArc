@@ -29,8 +29,11 @@ public final class ContainerUnlockSupport {
                 "container.isLocked", net.kyori.adventure.text.Component.text(containerName.getString()));
         net.kyori.adventure.sound.Sound lockedSound = net.kyori.adventure.sound.Sound.sound(
                 Sound.BLOCK_CHEST_LOCKED, net.kyori.adventure.sound.Sound.Source.BLOCK, 1.0F, 1.0F);
+        // Paper: (LockableTileState) block.getState(); runtime impl must expose it
+        io.papermc.paper.block.LockableTileState lockable =
+                (io.papermc.paper.block.LockableTileState) block.getState();
         BlockLockCheckEvent event =
-                new BlockLockCheckEvent(block, PaperArcBridge.bukkitPlayer(player), lockedMessage, lockedSound);
+                new BlockLockCheckEvent(block, lockable, PaperArcBridge.bukkitPlayer(player), lockedMessage, lockedSound);
         event.callEvent();
         if (event.getResult() == org.bukkit.event.Event.Result.ALLOW) {
             return true;

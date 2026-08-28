@@ -80,10 +80,10 @@ components.java {
     }
 }
 
-// CraftBukkit 包版本化：deobf v/ -> 运行时 v1_21_R1（含 mixin refmap）
+// CraftBukkit 包版本化：deobf v/ -> 运行时 v1_20_R1（含 mixin refmap）
 tasks.register('versionCraftBukkit', com.ixnah.mc.paperarc.build.VersionCraftBukkitTask) {
     jar.set(tasks.named('remapJar').flatMap { it.archiveFile })
-    revision.set('v1_21_R1')
+    revision.set('v1_20_R1')
     mixinConfigs.set('paperarc-common.mixins.json,paperarc-mojmap.mixins.json,paperarc-forge.mixins.json')
 }
 tasks.matching { it.name == 'versionCraftBukkit' }.configureEach {

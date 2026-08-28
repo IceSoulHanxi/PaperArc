@@ -85,7 +85,7 @@ public abstract class ItemFrameChangeEventMixin {
         // so the event's (possibly modified) ItemStack is what actually gets placed.
         this.setItem(org.bukkit.craftbukkit.v.inventory.CraftItemStack.asNMSCopy(event.getItemStack()), true);
         ((net.minecraft.world.entity.Entity) (Object) this).gameEvent(net.minecraft.world.level.gameevent.GameEvent.BLOCK_CHANGE, player);
-        itemstack.consume(1, player);
+        itemstack.shrink(1);
         cir.setReturnValue(InteractionResult.CONSUME);
     }
 
