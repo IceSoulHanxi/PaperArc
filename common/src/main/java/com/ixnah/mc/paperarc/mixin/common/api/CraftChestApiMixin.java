@@ -9,7 +9,7 @@ import net.minecraft.world.level.block.DoubleBlockCombiner;
 import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Chest;
-import org.bukkit.craftbukkit.v.block.CraftChest;
+import org.bukkit.craftbukkit.v1_20_R1.block.CraftChest;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 

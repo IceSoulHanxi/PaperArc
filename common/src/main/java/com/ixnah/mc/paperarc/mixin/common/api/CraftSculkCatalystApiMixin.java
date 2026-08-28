@@ -7,7 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.entity.SculkCatalystBlockEntity;
-import org.bukkit.craftbukkit.v.block.CraftSculkCatalyst;
+import org.bukkit.craftbukkit.v1_20_R1.block.CraftSculkCatalyst;
 import com.ixnah.mc.paperarc.bridge.craft.CraftBlockStateBridge;
 import com.ixnah.mc.paperarc.bridge.craft.CraftBlockEntityStateBridge;
 import org.spongepowered.asm.mixin.Mixin;
@@ -52,7 +52,7 @@ public abstract class CraftSculkCatalystApiMixin {
         Preconditions.checkNotNull(position, "position cannot be null");
         // Paper calls requirePlaced(); equivalent guard via public isPlaced()
         Preconditions.checkState(this.isPlaced(), "Cannot bloom an unplaced state");
-        ServerLevel level = ((org.bukkit.craftbukkit.v.CraftWorld) this.getWorld()).getHandle();
+        ServerLevel level = ((org.bukkit.craftbukkit.v1_20_R1.CraftWorld) this.getWorld()).getHandle();
         SculkCatalystBlockEntity catalyst = (SculkCatalystBlockEntity) this.getTileEntityFromWorld();
         try {
             Method bloom = paperarc$catalystBloomMethod();

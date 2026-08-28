@@ -3,6 +3,9 @@ package com.ixnah.mc.paperarc.mixin.common.server;
 import com.destroystokyo.paper.event.server.ServerTickEndEvent;
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
 import com.ixnah.mc.paperarc.event.PaperArcEvents;
+import java.util.function.BooleanSupplier;
+
+import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import net.minecraft.server.MinecraftServer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -11,26 +14,29 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.function.BooleanSupplier;
-
 /**
- * ServerTickEndEvent 触发点。
+ * Paper 1.20.1 ServerTickStartEvent / ServerTickEndEvent。
  * <p>
- * 对照 Paper：事件在 tickServer 尾部发出，携带 tick 序号、本 tick 耗时（ms）
- * 与距下个 tick 的剩余纳秒。字段名 tickCount / nextTickTimeNanos 已与
- * Paper ver/1.21.x 补丁逐字核对。
+ * 对照 Paper ver/1.20.1 补丁（Server-Tick-Events.patch）：
+ * <ul>
+ *   <li>Start：在 tickChildren 调用点发出，参数 tickCount+1（tickCount++ 之前）。</li>
+ *   <li>End：tickServer 尾部；durationMs = (now - tickStartNanos)/1e6，
+ *       remaining = TICK_TIME - (now - tickStartNanos)（本 tick 耗时对 50ms 的差额）。</li>
+ * </ul>
+ * 字段说明：1.20.1 mojmap 只有 nextTickTime（毫秒语义），不存在 1.21 的
+ * nextTickTimeNanos；Paper 1.20.1 的 remaining 是 tickServer 方法体内局部变量
+ * （lastTick/catchupTime）计算，mixin 无法在 RETURN 处取局部变量，故用本 tick
+ * 耗时近似（语义一致：正值=提前，负值=落后）。
  * <p>
- * 冲突评估（docs/conflict-matrix.md #1）：Arclight MinecraftServerMixin 在
- * tickServer 仅占用 HEAD，RETURN 无冲突。
+ * tickCount 为 @Shadow mojmap 名，loom remapJar 会映射到 srg f_129766_。
  */
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerMixin {
 
-    @Shadow
-    private int tickCount;
+    private static final long TICK_TIME_NANOS = 50_000_000L; // 20 TPS
 
     @Shadow
-    private long nextTickTimeNanos;
+    private int tickCount;
 
     @Unique
     private long paperarc$tickStartNanos;
@@ -67,7 +73,7 @@ public abstract class MinecraftServerMixin {
         this.paperarc$tickTiming = false;
         long end = System.nanoTime();
         double durationMs = (end - this.paperarc$tickStartNanos) / 1_000_000.0D;
-        long remaining = this.nextTickTimeNanos - end;
+        long remaining = TICK_TIME_NANOS - (end - this.paperarc$tickStartNanos);
         PaperArcEvents.fire(new ServerTickEndEvent(this.tickCount, durationMs, remaining));
     }
 }

@@ -2,7 +2,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 
 import java.lang.reflect.Method;
 
-import org.bukkit.craftbukkit.v.block.CraftCampfire;
+import org.bukkit.craftbukkit.v1_20_R1.block.CraftCampfire;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -31,7 +31,7 @@ import net.minecraft.world.level.block.entity.CampfireBlockEntity;
 public abstract class CraftCampfireApiMixin {
 
     @Unique
-    private static final String PAPERARC$SNAPSHOT_OWNER = "org.bukkit.craftbukkit.v.block.CraftBlockEntityState";
+    private static final String PAPERARC$SNAPSHOT_OWNER = "org.bukkit.craftbukkit.v1_20_R1.block.CraftBlockEntityState";
 
     @Unique
     private static volatile Method PAPERARC$SNAPSHOT_METHOD;

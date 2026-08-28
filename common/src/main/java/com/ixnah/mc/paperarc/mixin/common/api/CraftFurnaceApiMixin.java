@@ -15,10 +15,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import org.bukkit.NamespacedKey;
-import org.bukkit.craftbukkit.v.CraftServer;
-import org.bukkit.craftbukkit.v.block.CraftBlockState;
-import org.bukkit.craftbukkit.v.block.CraftFurnace;
-import org.bukkit.craftbukkit.v.util.CraftNamespacedKey;
+import org.bukkit.craftbukkit.v1_20_R1.CraftServer;
+import org.bukkit.craftbukkit.v1_20_R1.block.CraftBlockState;
+import org.bukkit.craftbukkit.v1_20_R1.block.CraftFurnace;
+import org.bukkit.craftbukkit.v1_20_R1.util.CraftNamespacedKey;
 import org.bukkit.inventory.CookingRecipe;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -39,7 +39,7 @@ import org.spongepowered.asm.mixin.Unique;
 public abstract class CraftFurnaceApiMixin {
 
     @Unique
-    private static final String PAPERARC$SNAPSHOT_OWNER = "org.bukkit.craftbukkit.v.block.CraftBlockEntityState";
+    private static final String PAPERARC$SNAPSHOT_OWNER = "org.bukkit.craftbukkit.v1_20_R1.block.CraftBlockEntityState";
 
     @Unique
     private static Method paperarc$snapshotMethod;

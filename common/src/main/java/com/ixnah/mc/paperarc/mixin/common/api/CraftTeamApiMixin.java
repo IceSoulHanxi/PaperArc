@@ -7,7 +7,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.minecraft.network.chat.Component.Serializer;
-import org.bukkit.craftbukkit.v.scoreboard.CraftScoreboard;
+import org.bukkit.craftbukkit.v1_20_R1.scoreboard.CraftScoreboard;
 import org.bukkit.entity.Entity;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -31,7 +31,7 @@ import org.spongepowered.asm.mixin.Unique;
  * uses gson round-trips because Paper's io.papermc.paper.adventure.PaperAdventure is
  * server-only.
  */
-@Mixin(targets = "org.bukkit.craftbukkit.v.scoreboard.CraftTeam")
+@Mixin(targets = "org.bukkit.craftbukkit.v1_20_R1.scoreboard.CraftTeam")
 public abstract class CraftTeamApiMixin {
 
     @Shadow
@@ -191,6 +191,6 @@ public abstract class CraftTeamApiMixin {
     /** NMS MinecraftServer via CraftBukkit's server accessor (for component serialization). */
     @Unique
     private static net.minecraft.server.MinecraftServer paperarc$nmsServer() {
-        return ((org.bukkit.craftbukkit.v.CraftServer) PaperArcBridge.getServer()).getServer();
+        return ((org.bukkit.craftbukkit.v1_20_R1.CraftServer) PaperArcBridge.getServer()).getServer();
     }
 }

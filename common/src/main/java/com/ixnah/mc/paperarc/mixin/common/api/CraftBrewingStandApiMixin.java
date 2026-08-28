@@ -6,7 +6,7 @@ import java.lang.reflect.Method;
 import com.google.common.base.Preconditions;
 
 import net.minecraft.world.level.block.entity.BrewingStandBlockEntity;
-import org.bukkit.craftbukkit.v.block.CraftBrewingStand;
+import org.bukkit.craftbukkit.v1_20_R1.block.CraftBrewingStand;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -25,7 +25,7 @@ import org.spongepowered.asm.mixin.Unique;
 public abstract class CraftBrewingStandApiMixin {
 
     @Unique
-    private static final String PAPERARC$SNAPSHOT_OWNER = "org.bukkit.craftbukkit.v.block.CraftBlockEntityState";
+    private static final String PAPERARC$SNAPSHOT_OWNER = "org.bukkit.craftbukkit.v1_20_R1.block.CraftBlockEntityState";
 
     @Unique
     private static Method paperarc$snapshotMethod;

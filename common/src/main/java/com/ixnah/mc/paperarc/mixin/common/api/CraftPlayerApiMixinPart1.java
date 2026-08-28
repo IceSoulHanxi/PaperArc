@@ -10,7 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import org.bukkit.craftbukkit.v.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer;
 import org.bukkit.event.player.PlayerResourcePackStatusEvent;
 import org.bukkit.inventory.MainHand;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Paper API 方法补齐批次 B30（part 1）：org.bukkit.craftbukkit.v.entity.CraftPlayer
+ * Paper API 方法补齐批次 B30（part 1）：org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer
  * 覆盖切片 docs/api-slices/B30.json 中 part=1 的前 19 个方法
  * （activeBossBars .. getSimulationDistance；其余由 Part2 批次负责）。
  */
@@ -45,7 +45,7 @@ public abstract class CraftPlayerApiMixinPart1 {
 
     @Unique
     private static PlayerList paperarc$playerList() {
-        return ((org.bukkit.craftbukkit.v.CraftServer) org.bukkit.Bukkit.getServer()).getServer().getPlayerList();
+        return ((org.bukkit.craftbukkit.v1_20_R1.CraftServer) org.bukkit.Bukkit.getServer()).getServer().getPlayerList();
     }
 
     // ---- activeBossBars ----
@@ -85,7 +85,7 @@ public abstract class CraftPlayerApiMixinPart1 {
 
             int i = Math.min(paperarc$xpToDurability(orb, remaining), itemstack.getDamageValue());
             org.bukkit.event.player.PlayerItemMendEvent event =
-                org.bukkit.craftbukkit.v.event.CraftEventFactory.callPlayerItemMendEvent(
+                org.bukkit.craftbukkit.v1_20_R1.event.CraftEventFactory.callPlayerItemMendEvent(
                     sp, orb, itemstack, stackEntry.getKey(), i);
             i = event.getRepairAmount();
             orb.discard();
@@ -170,11 +170,11 @@ public abstract class CraftPlayerApiMixinPart1 {
             return this.getHandle().canChatInColor();
         }
         if (option == ClientOption.LOCALE) {
-            String lang = ((org.bukkit.craftbukkit.v.entity.CraftPlayer) (Object) this).getLocale();
+            String lang = ((org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer) (Object) this).getLocale();
             return lang == null ? null : java.util.Locale.forLanguageTag(lang.replace('_', '-'));
         }
         if (option == ClientOption.VIEW_DISTANCE) {
-            return ((org.bukkit.craftbukkit.v.entity.CraftPlayer) (Object) this).getClientViewDistance();
+            return ((org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer) (Object) this).getClientViewDistance();
         }
         if (option == ClientOption.TEXT_FILTERING_ENABLED) {
             return this.getHandle().isTextFilteringEnabled();

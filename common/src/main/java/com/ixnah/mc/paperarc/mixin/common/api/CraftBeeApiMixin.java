@@ -5,7 +5,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import net.kyori.adventure.util.TriState;
 import net.minecraft.world.entity.animal.Bee;
-import org.bukkit.craftbukkit.v.entity.CraftBee;
+import org.bukkit.craftbukkit.v1_20_R1.entity.CraftBee;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;

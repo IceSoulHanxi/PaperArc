@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import com.ixnah.mc.paperarc.bridge.ApiState;
 import net.minecraft.world.level.block.entity.SculkSensorBlockEntity;
 import org.bukkit.block.data.type.SculkSensor;
-import org.bukkit.craftbukkit.v.block.CraftSculkSensor;
+import org.bukkit.craftbukkit.v1_20_R1.block.CraftSculkSensor;
 import com.ixnah.mc.paperarc.bridge.craft.CraftBlockStateBridge;
 import com.ixnah.mc.paperarc.bridge.craft.CraftBlockEntityStateBridge;
 import org.spongepowered.asm.mixin.Mixin;

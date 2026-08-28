@@ -2,7 +2,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.animal.frog.Tadpole;
-import org.bukkit.craftbukkit.v.entity.CraftTadpole;
+import org.bukkit.craftbukkit.v1_20_R1.entity.CraftTadpole;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;

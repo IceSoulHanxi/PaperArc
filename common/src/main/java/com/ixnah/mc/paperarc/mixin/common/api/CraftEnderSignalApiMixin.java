@@ -2,8 +2,8 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.google.common.base.Preconditions;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v.entity.CraftEnderSignal;
-import org.bukkit.craftbukkit.v.util.CraftLocation;
+import org.bukkit.craftbukkit.v1_20_R1.entity.CraftEnderSignal;
+import org.bukkit.craftbukkit.v1_20_R1.util.CraftLocation;
 import com.ixnah.mc.paperarc.bridge.craft.CraftEntityBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -30,7 +30,7 @@ public abstract class CraftEnderSignalApiMixin {
     @Unique
     public void setTargetLocation(Location location, boolean update) {
         Preconditions.checkArgument(this.getWorld().equals(location.getWorld()), "Cannot target EnderSignal across worlds");
-        EyeOfEnder handle = ((org.bukkit.craftbukkit.v.entity.CraftEnderSignal) (Object) this).getHandle();
+        EyeOfEnder handle = ((org.bukkit.craftbukkit.v1_20_R1.entity.CraftEnderSignal) (Object) this).getHandle();
         BlockPos target = CraftLocation.toBlockPosition(location);
         if (update || !(handle instanceof EyeOfEnderAccessorMixin acc)) {
             handle.signalTo(target);

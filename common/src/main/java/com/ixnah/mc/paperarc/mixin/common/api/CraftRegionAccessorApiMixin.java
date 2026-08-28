@@ -12,8 +12,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Biome;
-import org.bukkit.craftbukkit.v.CraftRegionAccessor;
-import org.bukkit.craftbukkit.v.util.CraftNamespacedKey;
+import org.bukkit.craftbukkit.v1_20_R1.CraftRegionAccessor;
+import org.bukkit.craftbukkit.v1_20_R1.util.CraftNamespacedKey;
 import org.bukkit.util.BoundingBox;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -39,7 +39,7 @@ public abstract class CraftRegionAccessorApiMixin {
         net.minecraft.world.level.WorldGenLevel handle = this.getHandle();
         net.minecraft.core.Registry<net.minecraft.world.level.biome.Biome> registry =
             handle.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.BIOME);
-        return org.bukkit.craftbukkit.v.block.CraftBlock.biomeBaseToBiome(
+        return org.bukkit.craftbukkit.v1_20_R1.block.CraftBlock.biomeBaseToBiome(
             registry, handle.getBiome(new BlockPos(x, y, z)));
     }
 

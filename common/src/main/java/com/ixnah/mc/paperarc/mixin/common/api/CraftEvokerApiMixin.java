@@ -2,10 +2,10 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 
 import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.entity.monster.Evoker;
-import org.bukkit.craftbukkit.v.CraftServer;
-import org.bukkit.craftbukkit.v.entity.CraftEntity;
-import org.bukkit.craftbukkit.v.entity.CraftEvoker;
-import org.bukkit.craftbukkit.v.entity.CraftSheep;
+import org.bukkit.craftbukkit.v1_20_R1.CraftServer;
+import org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_20_R1.entity.CraftEvoker;
+import org.bukkit.craftbukkit.v1_20_R1.entity.CraftSheep;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

@@ -27,7 +27,7 @@ public abstract class MobKnockbackMixin {
             )
     )
     private void paperarc$mobKnockback(LivingEntity target, double strength, double x, double z,
-                                       Operation<Void> original, Mob attacker) {
-        EntityKnockbackByEntityEventHelper.fire(target, strength, x, z, attacker, original);
+                                       Operation<Void> original) {
+        EntityKnockbackByEntityEventHelper.fire(target, strength, x, z, (Mob) (Object) this, original);
     }
 }

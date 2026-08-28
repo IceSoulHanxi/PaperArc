@@ -2,7 +2,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 
 import java.io.File;
 import net.minecraft.nbt.CompoundTag;
-import org.bukkit.craftbukkit.v.CraftOfflinePlayer;
+import org.bukkit.craftbukkit.v1_20_R1.CraftOfflinePlayer;
 import org.bukkit.entity.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

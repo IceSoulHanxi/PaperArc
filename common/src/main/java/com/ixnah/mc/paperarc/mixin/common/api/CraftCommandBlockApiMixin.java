@@ -6,7 +6,7 @@ import net.minecraft.network.chat.Component.Serializer;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.CommandBlock;
-import org.bukkit.craftbukkit.v.block.CraftCommandBlock;
+import org.bukkit.craftbukkit.v1_20_R1.block.CraftCommandBlock;
 import com.ixnah.mc.paperarc.bridge.craft.CraftBlockStateBridge;
 import com.ixnah.mc.paperarc.bridge.craft.CraftBlockEntityStateBridge;
 import org.spongepowered.asm.mixin.Mixin;
@@ -40,7 +40,7 @@ public abstract class CraftCommandBlockApiMixin {
 
     @Unique
     public Component name() {
-        net.minecraft.core.HolderLookup.Provider lookup = ((org.bukkit.craftbukkit.v.CraftServer) com.ixnah.mc.paperarc.bridge.PaperArcBridge.getServer())
+        net.minecraft.core.HolderLookup.Provider lookup = ((org.bukkit.craftbukkit.v1_20_R1.CraftServer) com.ixnah.mc.paperarc.bridge.PaperArcBridge.getServer())
             .getServer().registryAccess();
         return GsonComponentSerializer.gson().deserialize(Serializer.toJson(this.getSnapshot().getCommandBlock().getName()));
     }

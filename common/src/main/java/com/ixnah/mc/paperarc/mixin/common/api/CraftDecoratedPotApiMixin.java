@@ -1,6 +1,6 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
-import org.bukkit.craftbukkit.v.block.CraftDecoratedPot;
+import org.bukkit.craftbukkit.v1_20_R1.block.CraftDecoratedPot;
 import org.spongepowered.asm.mixin.Mixin;
 
 /**

@@ -5,9 +5,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.v.CraftWorld;
-import org.bukkit.craftbukkit.v.block.CraftBlockState;
-import org.bukkit.craftbukkit.v.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_20_R1.block.CraftBlockState;
+import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -49,7 +49,7 @@ public abstract class CraftBlockStateApiMixin {
                 this.world.getHandle(),
                 this.position,
                 this.world.getHandle().getBlockEntity(this.position),
-                entity == null ? null : ((org.bukkit.craftbukkit.v.entity.CraftEntity) entity).getHandle(),
+                entity == null ? null : ((org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity) entity).getHandle(),
                 nms
             );
             return drops.stream().map(CraftItemStack::asBukkitCopy).toList();

@@ -5,7 +5,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.minecraft.network.chat.Component.Serializer;
 import net.minecraft.world.entity.Display;
-import org.bukkit.craftbukkit.v.entity.CraftTextDisplay;
+import org.bukkit.craftbukkit.v1_20_R1.entity.CraftTextDisplay;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;

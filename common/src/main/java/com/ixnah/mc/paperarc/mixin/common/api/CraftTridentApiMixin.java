@@ -3,7 +3,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.projectile.ThrownTrident;
-import org.bukkit.craftbukkit.v.entity.CraftTrident;
+import org.bukkit.craftbukkit.v1_20_R1.entity.CraftTrident;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;

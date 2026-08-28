@@ -15,9 +15,9 @@ import net.minecraft.world.phys.Vec3;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v.entity.CraftEntity;
-import org.bukkit.craftbukkit.v.entity.CraftItem;
-import org.bukkit.craftbukkit.v.util.CraftRayTraceResult;
+import org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_20_R1.entity.CraftItem;
+import org.bukkit.craftbukkit.v1_20_R1.util.CraftRayTraceResult;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
@@ -28,9 +28,9 @@ import org.spongepowered.asm.mixin.Unique;
 
 /**
  * B29 part 2: paper-api LivingEntity additions on Arclight CraftLivingEntity.
- * Host: {@link org.bukkit.craftbukkit.v.entity.CraftLivingEntity}.
+ * Host: {@link org.bukkit.craftbukkit.v1_20_R1.entity.CraftLivingEntity}.
  */
-@Mixin(org.bukkit.craftbukkit.v.entity.CraftLivingEntity.class)
+@Mixin(org.bukkit.craftbukkit.v1_20_R1.entity.CraftLivingEntity.class)
 public abstract class CraftLivingEntityApiMixinPart2 {
 
     // region Shadows
@@ -342,7 +342,7 @@ public abstract class CraftLivingEntityApiMixinPart2 {
             return;
         }
         net.minecraft.world.entity.player.Player nms =
-                ((org.bukkit.craftbukkit.v.entity.CraftPlayer) killer).getHandle();
+                ((org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer) killer).getHandle();
         try {
             paperarc$nmsField("lastHurtByPlayer").set(handle, nms);
         } catch (IllegalAccessException e) {

@@ -11,8 +11,8 @@ import com.google.common.base.Preconditions;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.minecraft.locale.Language;
 
-import org.bukkit.craftbukkit.v.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v.util.RandomSourceWrapper;
+import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_20_R1.util.RandomSourceWrapper;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,7 +33,7 @@ import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
  *   and {@code asHoverEvent} drops the components-patch payload, keeping key + amount.
  * - enchantWithLevels follows the 1.20.1 Paper implementation (no data components).
  */
-@Mixin(org.bukkit.craftbukkit.v.inventory.CraftItemFactory.class)
+@Mixin(org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemFactory.class)
 public abstract class CraftItemFactoryApiMixin {
 
     /**

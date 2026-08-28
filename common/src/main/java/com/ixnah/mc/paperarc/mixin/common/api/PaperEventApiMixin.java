@@ -1,7 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v.CraftServer;
+import org.bukkit.craftbukkit.v1_20_R1.CraftServer;
 import org.bukkit.event.Event;
 import org.bukkit.event.Cancellable;
 import org.spongepowered.asm.mixin.Mixin;

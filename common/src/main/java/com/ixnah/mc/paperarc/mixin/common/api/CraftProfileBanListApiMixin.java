@@ -8,7 +8,7 @@ import java.util.Date;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.common.base.Preconditions;
 import org.bukkit.BanEntry;
-import org.bukkit.craftbukkit.v.ban.CraftProfileBanList;
+import org.bukkit.craftbukkit.v1_20_R1.ban.CraftProfileBanList;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -34,7 +34,7 @@ public abstract class CraftProfileBanListApiMixin {
     @Unique
     private static MethodHandle paperarc$buildGameProfileHandle() {
         try {
-            Class<?> cbProfile = Class.forName("org.bukkit.craftbukkit.v.profile.CraftPlayerProfile");
+            Class<?> cbProfile = Class.forName("org.bukkit.craftbukkit.v1_20_R1.profile.CraftPlayerProfile");
             return MethodHandles.privateLookupIn(cbProfile, MethodHandles.lookup())
                     .findVirtual(cbProfile, "buildGameProfile",
                             MethodType.methodType(com.mojang.authlib.GameProfile.class));

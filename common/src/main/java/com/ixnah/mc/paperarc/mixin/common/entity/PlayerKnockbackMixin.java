@@ -29,8 +29,8 @@ public abstract class PlayerKnockbackMixin {
             )
     )
     private void paperarc$playerKnockback1(LivingEntity target, double strength, double x, double z,
-                                           Operation<Void> original, Player attacker) {
-        EntityKnockbackByEntityEventHelper.fire(target, strength, x, z, attacker, original);
+                                           Operation<Void> original) {
+        EntityKnockbackByEntityEventHelper.fire(target, strength, x, z, (Player) (Object) this, original);
     }
 
     @WrapOperation(
@@ -42,7 +42,7 @@ public abstract class PlayerKnockbackMixin {
             )
     )
     private void paperarc$playerKnockback2(LivingEntity target, double strength, double x, double z,
-                                           Operation<Void> original, Player attacker) {
-        EntityKnockbackByEntityEventHelper.fire(target, strength, x, z, attacker, original);
+                                           Operation<Void> original) {
+        EntityKnockbackByEntityEventHelper.fire(target, strength, x, z, (Player) (Object) this, original);
     }
 }
