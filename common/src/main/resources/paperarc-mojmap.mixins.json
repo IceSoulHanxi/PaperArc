@@ -19,5 +19,6 @@
   "server": [],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "refmap": "paperarc-common-refmap.json"
 }

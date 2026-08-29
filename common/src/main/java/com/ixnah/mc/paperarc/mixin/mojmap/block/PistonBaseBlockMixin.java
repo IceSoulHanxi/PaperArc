@@ -29,9 +29,8 @@ public abstract class PistonBaseBlockMixin {
                     value = "INVOKE",
                     // runtime CP owner is PistonBaseBlock itself (unqualified inherited-static call);
                     // intermediary literal bypasses refmap (tiny cannot map this site)
-                    target = "Lnet/minecraft/world/level/block/piston/PistonBaseBlock;dropResources(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/entity/BlockEntity;)V",
-                    remap = false
-            )
+            target = "Lnet/minecraft/world/level/block/piston/PistonBaseBlock;dropResources(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/entity/BlockEntity;)V"
+    )
     )
     private void paperarc$pistonBreakWithEvent(BlockState state, LevelAccessor accessor, BlockPos destroyedPos,
                                                BlockEntity blockEntity, Operation<Void> original,

@@ -21,8 +21,7 @@ public abstract class SnifferFertilizeMixin {
 
     @WrapOperation(
             method = "spawnChildFromBreeding",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/animal/sniffer/Sniffer;finalizeSpawnChildFromBreeding(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/animal/Animal;Lnet/minecraft/world/entity/AgeableMob;)V",
-                    remap = false)
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/animal/sniffer/Sniffer;finalizeSpawnChildFromBreeding(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/animal/Animal;Lnet/minecraft/world/entity/AgeableMob;)V")
     )
     private void paperarc$fertilize(net.minecraft.world.entity.animal.sniffer.Sniffer instance, ServerLevel level, Animal other, AgeableMob child,
                                     Operation<Void> original) {

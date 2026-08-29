@@ -49,9 +49,7 @@ public abstract class AnvilMenuAnvilDamagedMixin {
     }
 
     @WrapOperation(method = "lambda$onTake$2(Lnet/minecraft/world/entity/player/Player;FLnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V",
-            remap = false,
-            at = @At(value = "INVOKE", remap = false,
-            target = "Lnet/minecraft/world/level/block/AnvilBlock;damage(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/world/level/block/state/BlockState;"))
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/AnvilBlock;damage(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/world/level/block/state/BlockState;"))
     private static BlockState paperarc$anvilDamaged(BlockState state, Operation<BlockState> original,
                                                     @Local(argsOnly = true) Player player,
                                                     @Local(argsOnly = true) Level level,

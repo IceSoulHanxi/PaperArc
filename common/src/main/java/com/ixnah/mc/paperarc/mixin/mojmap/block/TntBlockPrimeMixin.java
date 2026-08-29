@@ -36,7 +36,7 @@ import javax.annotation.Nullable;
 public abstract class TntBlockPrimeMixin {
 
     @Inject(method = "explode(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/LivingEntity;)V",
-            at = @At("HEAD"), cancellable = true, remap = false)
+            at = @At("HEAD"), cancellable = true)
     private static void paperarc$prime(Level level, BlockPos pos, @Nullable LivingEntity entity,
                                        CallbackInfo ci) {
         // FIRE primes already reported by FireBlockPrimeMixin funnel through

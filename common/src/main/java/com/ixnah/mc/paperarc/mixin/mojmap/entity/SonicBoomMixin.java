@@ -23,7 +23,6 @@ public abstract class SonicBoomMixin {
     @WrapOperation(
             // The push happens inside a lambda captured from tick(Warden,...); warden is its first param.
             method = "method_43265(Lnet/minecraft/world/entity/monster/warden/Warden;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;)V",
-            remap = false,
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/world/entity/LivingEntity;push(DDD)V"

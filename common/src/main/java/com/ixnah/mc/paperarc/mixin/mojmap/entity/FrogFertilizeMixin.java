@@ -21,8 +21,7 @@ public abstract class FrogFertilizeMixin {
 
     @WrapOperation(
             method = "spawnChildFromBreeding",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/animal/frog/Frog;finalizeSpawnChildFromBreeding(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/animal/Animal;Lnet/minecraft/world/entity/AgeableMob;)V",
-                    remap = false)
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/animal/frog/Frog;finalizeSpawnChildFromBreeding(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/animal/Animal;Lnet/minecraft/world/entity/AgeableMob;)V")
     )
     private void paperarc$fertilize(Frog instance, ServerLevel level, Animal other, net.minecraft.world.entity.AgeableMob child,
                                     Operation<Void> original) {

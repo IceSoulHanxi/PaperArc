@@ -21,7 +21,7 @@ public abstract class RavagerJumpMixin {
 
     @WrapOperation(
             method = "aiStep",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/monster/Ravager;jumpFromGround()V", remap = false)
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/monster/Ravager;jumpFromGround()V")
     )
     private void paperarc$entityJump(Ravager instance, Operation<Void> original) {
         EntityJumpEvent event = new EntityJumpEvent(
