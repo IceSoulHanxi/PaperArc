@@ -11,29 +11,27 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 /**
- * PlayerAttackEntityCooldownResetEvent 触发点。
+ * PlayerAttackEntityCooldownResetEvent 触发点（1.20.1 Arclight Trials 版）。
  * <p>
- * 对照 Paper：LivingEntity#hurt 中冷却拒绝分支（damage &lt;= lastHurt）里
- * 原 resetAttackStrengthTicker() 调用处，若攻击者为 ServerPlayer 则发事件，
- * 取消时不重置攻击冷却；非玩家/非 ServerPlayer 攻击者保持原行为直接重置。
+ * 1.20.1 的 Arclight 在 {@code LivingEntity.damageEntity0} 私有方法里，
+ * 伤害事件结算（CraftEventFactory.handleLivingEntityDamageEvent）之后执行
+ * {@code ((Player) damagesource.getEntity()).resetAttackStrengthTicker()}
+ * ——即攻击者成功造成伤害后重置攻击冷却，与 Paper 的触发语义一致。
+ * 本 wrap 锚定该调用；取消 = 不调用 original（跳过重置），与 Paper 的
+ * {@code if (...callEvent()) { reset } } 分支等价。
  * <p>
- * 实现说明：vanilla hurt 体内并无该调用——Arclight 把伤害事件逻辑放进
- * 自己的处理方法 arclight$fireEntityDamageEvent（core LivingEntityMixin，
- * 签名 (DamageSource;F)EntityDamageEvent），resetAttackStrengthTicker 调用
- * 位于其冷却拒绝分支内。本 wrap 锚定该合并后的处理方法；取消 = 不调用
- * original（跳过 reset），与 Paper 的 if (...callEvent()) { reset } 分支等价。
- * require = 0 保证 Arclight 上游重构时静默降级而非启动崩。
+ * {@code damageEntity0} 是 Arclight @Unique 方法（注入 LivingEntity），
+ * remap=false 按字面名匹配；require=0 保证 Arclight 上游重构时静默降级。
  */
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityAttackCooldownResetMixin {
 
     @WrapOperation(
-        method = "arclight$fireEntityDamageEvent(Lnet/minecraft/world/damagesource/DamageSource;F)Lorg/bukkit/event/entity/EntityDamageEvent;",
+        method = "damageEntity0(Lnet/minecraft/world/damagesource/DamageSource;F)Z",
         remap = false,
         at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/world/entity/player/Player;resetAttackStrengthTicker()V",
-            remap = false
+            target = "Lnet/minecraft/world/entity/player/Player;resetAttackStrengthTicker()V"
         ),
         require = 0
     )

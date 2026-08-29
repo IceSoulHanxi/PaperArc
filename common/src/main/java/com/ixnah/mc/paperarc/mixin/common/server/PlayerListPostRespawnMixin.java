@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * Port of Paper's PlayerPostRespawnEvent (Implement-PlayerPostRespawnEvent.patch),
@@ -40,7 +40,7 @@ public abstract class PlayerListPostRespawnMixin {
     private void paperarc$recordNaturalRespawn(ServerPlayer playerIn, net.minecraft.server.level.ServerLevel worldIn,
                                                boolean flag, Location location, boolean avoidSuffocation,
                                                org.bukkit.event.player.PlayerRespawnEvent.RespawnReason respawnReason,
-                                               CallbackInfo ci) {
+                                               CallbackInfoReturnable<ServerPlayer> cir) {
         paperarc$isRespawn.set(location == null);
     }
 

@@ -50,8 +50,8 @@ public abstract class PufferfishPuffStateMixin {
     }
 
     @WrapOperation(method = "tick", at = @At(value = "INVOKE",
-        target = "Lnet/minecraft/world/entity/LivingEntity;playSound(Lnet/minecraft/sounds/SoundEvent;FF)V"))
-    private void paperarc$wrapMakeSound(LivingEntity instance, SoundEvent sound, float volume, float pitch, Operation<Void> original) {
+        target = "Lnet/minecraft/world/entity/animal/Pufferfish;playSound(Lnet/minecraft/sounds/SoundEvent;FF)V"))
+    private void paperarc$wrapMakeSound(Pufferfish instance, SoundEvent sound, float volume, float pitch, Operation<Void> original) {
         if (sound == SoundEvents.PUFFER_FISH_BLOW_UP) {
             if (!paperarc$fireStateChangeEvent(true)) {
                 this.paperarc$stateChangeCancelled = true;
@@ -63,7 +63,7 @@ public abstract class PufferfishPuffStateMixin {
                 return;
             }
         }
-        original.call(instance, sound);
+        original.call(instance, sound, volume, pitch);
     }
 
     @WrapOperation(method = "tick", at = @At(value = "INVOKE",
