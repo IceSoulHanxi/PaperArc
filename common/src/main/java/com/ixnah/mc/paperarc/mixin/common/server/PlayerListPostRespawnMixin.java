@@ -34,24 +34,19 @@ public abstract class PlayerListPostRespawnMixin {
     @Unique
     private static final ThreadLocal<Boolean> paperarc$isRespawn = new ThreadLocal<>();
 
-    @Inject(method = "respawn(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/server/level/ServerLevel;ZLorg/bukkit/Location;ZLorg/bukkit/event/player/PlayerRespawnEvent$RespawnReason;)Lnet/minecraft/server/level/ServerPlayer;",
-            at = @At("HEAD"),
-            remap = false)
-    private void paperarc$recordNaturalRespawn(ServerPlayer playerIn, net.minecraft.server.level.ServerLevel worldIn,
-                                               boolean flag, Location location, boolean avoidSuffocation,
-                                               org.bukkit.event.player.PlayerRespawnEvent.RespawnReason respawnReason,
+    @Inject(method = "respawn(Lnet/minecraft/server/level/ServerPlayer;Z)Lnet/minecraft/server/level/ServerPlayer;",
+            at = @At("HEAD"))
+    private void paperarc$recordNaturalRespawn(ServerPlayer playerIn, boolean conqueredEnd,
                                                CallbackInfoReturnable<ServerPlayer> cir) {
-        paperarc$isRespawn.set(location == null);
+        paperarc$isRespawn.set(true);
     }
 
     @WrapOperation(
-        method = "respawn(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/server/level/ServerLevel;ZLorg/bukkit/Location;ZLorg/bukkit/event/player/PlayerRespawnEvent$RespawnReason;)Lnet/minecraft/server/level/ServerPlayer;",
+        method = "respawn(Lnet/minecraft/server/level/ServerPlayer;Z)Lnet/minecraft/server/level/ServerPlayer;",
         at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/server/players/PlayerList;sendAllPlayerInfo(Lnet/minecraft/server/level/ServerPlayer;)V",
-            remap = false
-        ),
-        remap = false
+            target = "Lnet/minecraft/server/players/PlayerList;sendAllPlayerInfo(Lnet/minecraft/server/level/ServerPlayer;)V"
+        )
     )
     private void paperarc$onPostRespawn(PlayerList self, ServerPlayer playerIn, Operation<Void> original) {
         original.call(self, playerIn);
