@@ -141,7 +141,10 @@ jar {
     from {
         configurations.shade.collect { it.isDirectory() ? it : zipTree(it) }
     }
+    // org.bukkit 接口类由 Arclight 运行时提供（spigot-api），避免模块双导冲突；
+    // 接口增补由 bukkit/*IfaceMixin 完成（1.21.1 已验证路径）
     exclude 'org/bukkit/**'
+    // io/papermc 与 com/destroystokyo 事件类保留在 mod jar（插件事件引用由本 jar 提供）
     exclude 'org/spigotmc/**'
     exclude 'module-info.class'
     exclude 'META-INF/versions/**'
@@ -151,8 +154,6 @@ jar {
     exclude 'com/llamalad7/**'
     // 排除 shade 依赖自带的 META-INF/jars 嵌套 jar（如 mixinextras-forge 的 jarjar 布局）
     exclude 'META-INF/jars/**'
-    // MixinExtras 由 mods/ 独立提供（GAMELIBRARY），不打包（避免模块导出冲突）
-    exclude 'com/llamalad7/**'
 }
 
 tasks.withType(JavaCompile).configureEach {
