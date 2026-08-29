@@ -8,7 +8,7 @@ import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Invoker;
 import org.spongepowered.asm.mixin.injection.At;
 
 /**
@@ -27,12 +27,12 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityJumpMixin implements LivingEntityBridge {
 
-    @Shadow
-    protected abstract void setJumping(boolean jumping);
+    @Invoker("setJumping")
+    abstract void paperarc$setJumping(boolean jumping);
 
     @Override
     public void bridge$setJumping(boolean jumping) {
-        this.setJumping(jumping);
+        this.paperarc$setJumping(jumping);
     }
 
     @WrapOperation(
@@ -45,7 +45,7 @@ public abstract class LivingEntityJumpMixin implements LivingEntityBridge {
         if (event.callEvent()) {
             original.call(instance);
         } else {
-            this.setJumping(false);
+            this.paperarc$setJumping(false);
         }
     }
 }

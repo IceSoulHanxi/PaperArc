@@ -26,7 +26,7 @@ public abstract class DropperBlockMixin {
     @Inject(method = "dispenseFrom",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;levelEvent(ILnet/minecraft/core/BlockPos;I)V"),
             cancellable = true)
-    private void paperarc$failedDispense(ServerLevel world, BlockState state, BlockPos pos, CallbackInfo ci) {
+    private void paperarc$failedDispense(ServerLevel world, BlockPos pos, CallbackInfo ci) {
         if (!new BlockFailedDispenseEvent(CraftBlock.at(world, pos)).callEvent()) {
             ci.cancel();
         }
@@ -35,7 +35,7 @@ public abstract class DropperBlockMixin {
     @Inject(method = "dispenseFrom",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/core/dispenser/DispenseItemBehavior;dispense(Lnet/minecraft/core/BlockSource;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/ItemStack;"),
             cancellable = true)
-    private void paperarc$preDispense(ServerLevel world, BlockState state, BlockPos pos, CallbackInfo ci,
+    private void paperarc$preDispense(ServerLevel world, BlockPos pos, CallbackInfo ci,
                                       @Local(ordinal = 0) int slot, @Local(ordinal = 0) ItemStack stack) {
         // Only reachable in Paper's `iinventory == null` branch: the direct-dispense
         // path is the only dispense() call in the method.

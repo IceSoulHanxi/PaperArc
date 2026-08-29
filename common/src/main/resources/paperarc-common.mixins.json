@@ -256,7 +256,6 @@
     "inventory.MerchantResultSlotTradeMixin",
     "item.CrossbowItemMixin",
     "item.ExperienceBottleItemMixin",
-    "item.FireworkRocketItemMixin",
     "item.NameTagItemNameEntityMixin",
     "item.ServerItemCooldownsItemCooldownMixin",
     "item.ThrowablePotionItemMixin",
@@ -301,5 +300,6 @@
   "server": [],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "refmap": "paperarc-common-refmap.json"
 }

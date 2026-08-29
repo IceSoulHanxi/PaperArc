@@ -7,7 +7,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import org.bukkit.PortalType;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -27,8 +27,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Entity.class)
 public abstract class NetherPortalBlockMixin {
 
-    @Shadow
-    protected int portalTime;
+    @Accessor("portalTime")
+    abstract void paperarc$setPortalTime(int portalTime);
 
     @Inject(
             method = "handleNetherPortal",
@@ -42,7 +42,7 @@ public abstract class NetherPortalBlockMixin {
                 worldserver1 == null ? null : PaperArcBridge.bukkitWorld(worldserver1),
                 PortalType.NETHER);
         if (!event.callEvent()) {
-            this.portalTime = 0;
+            this.paperarc$setPortalTime(0);
             ci.cancel();
         }
     }

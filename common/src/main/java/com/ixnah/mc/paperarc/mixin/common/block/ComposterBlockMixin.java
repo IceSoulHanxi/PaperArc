@@ -14,12 +14,9 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.ComposterBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import org.bukkit.craftbukkit.v1_20_R1.block.CraftBlock;
 import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -38,19 +35,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ComposterBlock.class)
 public abstract class ComposterBlockMixin {
 
-    @Shadow
-    @Final
-    public static IntegerProperty LEVEL;
-
-    @Shadow
-    @Final
-    public static Object2FloatMap<ItemLike> COMPOSTABLES;
-
     @Inject(method = "addItem", at = @At("HEAD"), cancellable = true)
     private static void paperarc$compostItem(Entity entity, BlockState state, LevelAccessor level, BlockPos pos,
                                              ItemStack stack, CallbackInfoReturnable<BlockState> cir) {
-        int i = state.getValue(LEVEL);
-        float f = COMPOSTABLES.getFloat((ItemLike) stack.getItem());
+        int i = state.getValue(ComposterBlock.LEVEL);
+        float f = ComposterBlock.COMPOSTABLES.getFloat((ItemLike) stack.getItem());
         double rand = level.getRandom().nextDouble();
         boolean willRaiseLevel = !((i != 0 || f <= 0.0F) && rand >= (double) f);
         if (entity == null) {

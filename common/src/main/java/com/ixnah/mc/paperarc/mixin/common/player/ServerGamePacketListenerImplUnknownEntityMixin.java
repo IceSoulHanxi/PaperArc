@@ -11,6 +11,7 @@ import org.bukkit.craftbukkit.v1_20_R1.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.v1_20_R1.util.CraftVector;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -26,15 +27,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ServerGamePacketListenerImpl.class)
 public abstract class ServerGamePacketListenerImplUnknownEntityMixin {
 
-    @Shadow
-    protected ServerPlayer player;
+    @Accessor("player")
+    abstract ServerPlayer paperarc$getPlayer();
 
     @Inject(method = "handleInteract", at = @At("TAIL"))
     private void paperarc$useUnknownEntity(ServerboundInteractPacket packet, CallbackInfo ci) {
-        if (packet.getTarget(this.player.serverLevel()) != null) {
+        if (packet.getTarget(this.paperarc$getPlayer().serverLevel()) != null) {
             return; // known entity: vanilla interaction pipeline handled it
         }
-        final ServerPlayer sender = this.player;
+        final ServerPlayer sender = this.paperarc$getPlayer();
         final int entityId = ((ServerboundInteractPacketAccessor) packet).paperarc$entityId();
         packet.dispatch(new ServerboundInteractPacket.Handler() {
             @Override

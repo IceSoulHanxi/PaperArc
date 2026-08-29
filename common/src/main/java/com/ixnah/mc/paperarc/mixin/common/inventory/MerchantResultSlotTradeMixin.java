@@ -17,6 +17,7 @@ import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftMerchantRecipe;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -43,13 +44,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(MerchantResultSlot.class)
 public abstract class MerchantResultSlotTradeMixin {
 
-    @Shadow
-    @Final
-    private MerchantContainer slots;
+    @Accessor("slots")
+    abstract MerchantContainer paperarc$getSlots();
 
-    @Shadow
-    @Final
-    private Merchant merchant;
+    @Accessor("merchant")
+    abstract Merchant paperarc$getMerchant();
 
     @Unique
     private MerchantOffer paperarc$bukkitTradeOffer;
@@ -57,19 +56,19 @@ public abstract class MerchantResultSlotTradeMixin {
     @Inject(method = "onTake", at = @At("HEAD"), cancellable = true)
     private void paperarc$playerTrade(Player who, ItemStack stack, CallbackInfo ci) {
         this.paperarc$bukkitTradeOffer = null;
-        MerchantOffer offer = this.slots.getActiveOffer();
+        MerchantOffer offer = this.paperarc$getSlots().getActiveOffer();
         if (offer == null || !(who instanceof ServerPlayer serverPlayer)) {
             return;
         }
 
         io.papermc.paper.event.player.PlayerPurchaseEvent event;
         org.bukkit.inventory.MerchantRecipe recipe = new CraftMerchantRecipe(offer);
-        if (this.merchant instanceof net.minecraft.world.entity.npc.AbstractVillager villager) {
+        if (this.paperarc$getMerchant() instanceof net.minecraft.world.entity.npc.AbstractVillager villager) {
             event = new PlayerTradeEvent(
                     PaperArcBridge.bukkitPlayer(serverPlayer),
                     PaperArcBridge.<org.bukkit.entity.AbstractVillager>bukkitEntity(villager),
                     recipe, true, true);
-        } else if (this.merchant instanceof CraftMerchantCustom.MinecraftMerchant customMerchant) {
+        } else if (this.paperarc$getMerchant() instanceof CraftMerchantCustom.MinecraftMerchant customMerchant) {
             event = new PlayerPurchaseEvent(
                     PaperArcBridge.bukkitPlayer(serverPlayer),
                     recipe, false, true);

@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 
 /**
@@ -28,7 +29,7 @@ import org.spongepowered.asm.mixin.injection.At;
 public abstract class ServerGamePacketListenerImplPickItemMixin {
 
     // @formatter:off
-    @Shadow public ServerPlayer player;
+    @Accessor("player") public abstract ServerPlayer paperarc$getPlayer();
     // @formatter:on
 
     @WrapOperation(
@@ -41,7 +42,7 @@ public abstract class ServerGamePacketListenerImplPickItemMixin {
     private void paperarc$onPickItem(Inventory inventory, int slot, Operation<Void> original, ServerboundPickItemPacket packet) {
         int targetSlot = inventory.getSuitableHotbarSlot();
         PlayerPickItemEvent event = new PlayerPickItemEvent(
-            PaperArcBridge.bukkitPlayer(this.player),
+            PaperArcBridge.bukkitPlayer(this.paperarc$getPlayer()),
             targetSlot,
             packet.getSlot()
         );

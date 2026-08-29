@@ -7,7 +7,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -24,17 +24,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * {@code ItemStack.asBukkitMirror()}, a Paper-only alias).
  */
 @Mixin(LivingEntity.class)
-public class LivingEntityStopUsingItemMixin {
+public abstract class LivingEntityStopUsingItemMixin {
 
-    @Shadow
-    protected ItemStack useItem;
+    @Accessor("useItem")
+    abstract ItemStack paperarc$getUseItem();
 
     @Inject(method = "releaseUsingItem", at = @At("HEAD"))
     private void paperarc$fireStopUsingItem(CallbackInfo ci) {
-        if (((Object) this instanceof ServerPlayer serverPlayer) && !this.useItem.isEmpty()) {
+        if (((Object) this instanceof ServerPlayer serverPlayer) && !this.paperarc$getUseItem().isEmpty()) {
             PaperArcBridge.fire(new PlayerStopUsingItemEvent(
                 PaperArcBridge.bukkitPlayer(serverPlayer),
-                CraftItemStack.asCraftMirror(this.useItem),
+                CraftItemStack.asCraftMirror(this.paperarc$getUseItem()),
                 ((LivingEntity) (Object) this).getTicksUsingItem()
             ));
         }

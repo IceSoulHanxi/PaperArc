@@ -12,6 +12,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Invoker;
 import org.spongepowered.asm.mixin.injection.At;
 
 /**
@@ -25,7 +26,8 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(Cat.class)
 public abstract class CatDyeMixin {
 
-    @Shadow public abstract DyeColor getCollarColor();
+    @Invoker("getCollarColor")
+    abstract DyeColor paperarc$getCollarColor();
 
     @WrapOperation(
             method = "mobInteract",
@@ -39,7 +41,7 @@ public abstract class CatDyeMixin {
                 org.bukkit.DyeColor.getByWoolData((byte) color.getId()),
                 PaperArcBridge.bukkitPlayer(player));
         if (!event.callEvent()) {
-            return this.getCollarColor();
+            return this.paperarc$getCollarColor();
         }
         return DyeColor.byId(event.getColor().getWoolData());
     }

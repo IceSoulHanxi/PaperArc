@@ -29,6 +29,7 @@ public abstract class LivingEntityAttackCooldownResetMixin {
 
     @WrapOperation(
         method = "arclight$fireEntityDamageEvent(Lnet/minecraft/world/damagesource/DamageSource;F)Lorg/bukkit/event/entity/EntityDamageEvent;",
+        remap = false,
         at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/world/entity/player/Player;resetAttackStrengthTicker()V",

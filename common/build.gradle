@@ -1,36 +1,161 @@
-architectury {
-    common(rootProject.enabled_platforms.split(','))
+buildscript {
+    repositories {
+        maven {
+            url = 'https://maven.minecraftforge.net/'
+        }
+        maven {
+            url = 'https://repo.spongepowered.org/repository/maven-public/'
+        }
+        maven {
+            url = 'https://maven.izzel.io/releases'
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath(group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true)
+        classpath(group: 'org.spongepowered', name: 'mixingradle', version: '0.7.2-SNAPSHOT')
+    }
+}
+// paperarc common —— ForgeGradle mod 工程（对齐 Arclight Trials 工具链）
+// 源码写 official(mojmap) 名；mixingradle 生成 refmap；reobfJar 阶段自动转 srg 并重映射 refmap
+
+plugins {
+    id 'java'
+    id 'maven-publish'
 }
 
-loom {
-    // Access Widener：以 AW 而非反射解决 NMS 成员访问问题（Fox 私有状态、TextDisplay 文本字段等）
-    accessWidenerPath = file('src/main/resources/paperarc.accesswidener')
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'org.spongepowered.mixin'
+
+
+repositories {
+    mavenCentral()
+    maven {
+        url = 'https://maven.minecraftforge.net/'
+    }
+    maven {
+        url = 'https://maven.izzel.io/releases'
+    }
+    maven {
+        url = 'https://repo.papermc.io/repository/maven-public/'
+    }
+    maven {
+        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+    }
+    maven {
+        url = 'https://oss.sonatype.org/content/repositories/snapshots/'
+    }
+    maven {
+        url = 'https://repo.spongepowered.org/repository/maven-public/'
+    }
+    maven {
+        url = uri("${rootDir}/../Arclight/.gradle/arclight/arclight_repo")
+    }
+    flatDir {
+        dirs "${rootDir}/vendor/maven-flat"
+    }
+}
+
+group = rootProject.maven_group
+version = rootProject.mod_version
+
+minecraft {
+    // official = mojmap，与 Arclight 编译完全一致；reobf 由 ForgeGradle 自动处理
+    mappings channel: 'official', version: rootProject.minecraft_version
+
+    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+}
+
+mixin {
+    add sourceSets.main, 'paperarc-common-refmap.json'
 }
 
 dependencies {
-    // Bukkit / Arclight 层：运行时由 Arclight 提供，仅编译期可见
-    compileOnly libs.spigot.api
-    compileOnly libs.arclight.api
+    // Minecraft + Forge（1.20.1-47.4.18）
+    minecraft "net.minecraftforge:forge:1.20.1-47.4.18"
 
-    // Arclight 本地构建产出的 Spigot（NMS + CraftBukkit，mojang mappings 反混淆版）。
-    // 工件不发布远端，只能从 Arclight 仓库的本地 arclight_repo 拿；
-    // 用于后续 mixin 中引用 Craft* 类与 NMS 精确签名。
-    // 条件启用：Arclight 构建完成后该目录出现工件即自动生效。
-    if (file("${rootDir}/../Arclight/.gradle/arclight/arclight_repo/io/izzel/arclight/generated/spigot/1.20.1").isDirectory()
-            || file("${rootDir}/vendor/maven-flat/spigot-1.20.1-deobf.jar").isFile()) {
-        compileOnly 'io.izzel.arclight.generated:spigot:1.20.1:deobf'
-    }
+    // Bukkit / Arclight 层：运行时由 Arclight 提供
+    // 注意：不能同时 compileOnly spigot-api 与 paper-api——两者都含 org.bukkit.event.Event，
+    // javac 取 classpath 前者（spigot 无 callEvent()），导致 Paper 扩展方法全部丢失。
+    // paper-api 已内嵌完整 spigot-api 类，故只保留 paper-api。
+    compileOnly "io.izzel.arclight:arclight-api:${rootProject.arclight_api_version}"
 
-    // Paper API 表面（实现目标）；shade 由各平台子项目负责
-    compileOnly libs.paper.api
+    // Arclight 本地构建产出的 Spigot deobf（含 NMS + CraftBukkit mojang mappings 反混淆）
+    // 工件不发布远端，从 Arclight 的 arclight_repo 取；CI 由 workflow 生成
+    compileOnly "io.izzel.arclight.generated:spigot:${rootProject.minecraft_version}:deobf"
 
-    // MixinExtras 注解（common mixin 可用 @WrapOperation 等）
-    compileOnly libs.mixinextras.common
-    annotationProcessor libs.mixinextras.common
+    // Paper API（实现目标，shade 进最终 jar，排除 org.bukkit —— 运行时用 Arclight 的）
+    compileOnly "io.papermc.paper:paper-api:${rootProject.paper_api_version}"
 
-    // Sponge Mixin 注解：@Mixin/@Inject/@Slice 等编译期需要（运行时 Forge/Arclight 自带）
-    compileOnly libs.mixin
-
-    // ASM（mixin 注解处理器与 FIELD 注入的 Opcodes 编译期需要）
-    compileOnly 'org.ow2.asm:asm:9.6'
+    // MixinExtras + Sponge Mixin（编译 tip）
+    compileOnly "io.github.llamalad7:mixinextras-common:${rootProject.mixinextras_version}"
+    compileOnly "org.spongepowered:mixin:${rootProject.mixin_version}"
+    annotationProcessor "io.github.llamalad7:mixinextras-common:${rootProject.mixinextras_version}"
+    annotationProcessor "org.spongepowered:mixin:${rootProject.mixin_version}:processor"
 }
+
+// ---- 打包：shade paper-api + adventure + mixinextras，产出单个 mod jar ----
+configurations {
+    shade
+}
+
+dependencies {
+    shade("io.papermc.paper:paper-api:${rootProject.paper_api_version}") {
+        transitive = false
+    }
+    shade "net.kyori:adventure-api:${rootProject.adventure_version}"
+    shade "net.kyori:adventure-key:${rootProject.adventure_version}"
+    shade "net.kyori:adventure-text-minimessage:${rootProject.adventure_version}"
+    shade("net.kyori:adventure-text-serializer-gson:${rootProject.adventure_version}") {
+        exclude group: 'com.google.code.gson', module: 'gson'
+    }
+    shade "net.kyori:adventure-text-serializer-json:${rootProject.adventure_version}"
+    shade "net.kyori:adventure-text-serializer-legacy:${rootProject.adventure_version}"
+    shade "net.kyori:adventure-text-serializer-plain:${rootProject.adventure_version}"
+    shade "net.kyori:examination-api:${rootProject.examination_version}"
+    shade "net.kyori:examination-string:${rootProject.examination_version}"
+    // 注意：MixinExtras 不 shade，作为独立 jar 由 Forge 以 GAMELIBRARY 方式从 mods/ 加载
+    //（自带 FMLModType=GAMELIBRARY + META-INF/jars 嵌套布局；shade 会引发模块导出冲突）
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('META-INF/mods.toml') {
+        expand 'version': project.version
+    }
+}
+
+// 打包：shade 依赖（paper-api/adventure/mixinextras）合并进 jar，排除 bukkit 运行时由 Arclight 提供
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes('MixinConfigs': 'paperarc-common.mixins.json,paperarc-mojmap.mixins.json,paperarc-forge.mixins.json')
+    }
+    from {
+        configurations.shade.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    exclude 'org/bukkit/**'
+    exclude 'org/spigotmc/**'
+    exclude 'module-info.class'
+    exclude 'META-INF/versions/**'
+    // gson 由 Arclight 运行时提供（避免模块系统冲突：paperarc 与 gson 同时导出 com.google.gson.reflect）
+    exclude 'com/google/gson/**'
+    // MixinExtras 由 mods/ 独立提供（GAMELIBRARY），不打包（避免模块导出冲突）
+    exclude 'com/llamalad7/**'
+    // 排除 shade 依赖自带的 META-INF/jars 嵌套 jar（如 mixinextras-forge 的 jarjar 布局）
+    exclude 'META-INF/jars/**'
+    // MixinExtras 由 mods/ 独立提供（GAMELIBRARY），不打包（避免模块导出冲突）
+    exclude 'com/llamalad7/**'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+

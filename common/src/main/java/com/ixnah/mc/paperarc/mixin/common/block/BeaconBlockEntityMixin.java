@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.entity.BeaconBlockEntity;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -29,9 +30,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(BeaconBlockEntity.class)
 public abstract class BeaconBlockEntityMixin {
 
-    @Shadow
-    @Final
-    private ContainerData dataAccess;
+    @Accessor("dataAccess")
+    abstract ContainerData paperarc$getDataAccess();
 
     @Inject(method = "createMenu", at = @At("HEAD"), cancellable = true)
     private void paperarc$blockLockCheck(int syncId, Inventory playerInventory, Player player,
@@ -47,7 +47,7 @@ public abstract class BeaconBlockEntityMixin {
         LockCode lock = ((LockCodeAccessor) blockEntity).paperarc$getLockKey();
         Component containerName = ((BeaconBlockEntity) blockEntity).getDisplayName();
         if (com.ixnah.mc.paperarc.bridge.ContainerUnlockSupport.canUnlockWithEvent(serverPlayer, lock, containerName, blockEntity)) {
-            cir.setReturnValue(new BeaconMenu(syncId, playerInventory, this.dataAccess,
+            cir.setReturnValue(new BeaconMenu(syncId, playerInventory, this.paperarc$getDataAccess(),
                     ContainerLevelAccess.create(blockEntity.getLevel(), blockEntity.getBlockPos())));
         } else {
             cir.setReturnValue(null);

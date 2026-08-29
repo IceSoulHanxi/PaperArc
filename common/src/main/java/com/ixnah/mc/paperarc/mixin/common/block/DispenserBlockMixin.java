@@ -35,7 +35,7 @@ public abstract class DispenserBlockMixin {
     @Inject(method = "dispenseFrom",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;levelEvent(ILnet/minecraft/core/BlockPos;I)V"),
             cancellable = true)
-    private void paperarc$failedDispense(ServerLevel world, BlockState state, BlockPos pos, CallbackInfo ci) {
+    private void paperarc$failedDispense(ServerLevel world, BlockPos pos, CallbackInfo ci) {
         if (!new BlockFailedDispenseEvent(CraftBlock.at(world, pos)).callEvent()) {
             ci.cancel();
         }
@@ -44,7 +44,7 @@ public abstract class DispenserBlockMixin {
     @Inject(method = "dispenseFrom",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/core/dispenser/DispenseItemBehavior;dispense(Lnet/minecraft/core/BlockSource;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/ItemStack;"),
             cancellable = true)
-    private void paperarc$preDispense(ServerLevel world, BlockState state, BlockPos pos, CallbackInfo ci,
+    private void paperarc$preDispense(ServerLevel world, BlockPos pos, CallbackInfo ci,
                                       @Local(ordinal = 0) int slot, @Local(ordinal = 0) ItemStack stack) {
         BlockPreDispenseEvent event =
                 new BlockPreDispenseEvent(CraftBlock.at(world, pos), CraftItemStack.asCraftMirror(stack), slot);

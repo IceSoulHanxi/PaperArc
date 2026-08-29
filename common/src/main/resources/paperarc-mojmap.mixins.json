@@ -5,9 +5,7 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "block.AnvilMenuAnvilDamagedMixin",
-    "block.FireBlockPrimeMixin",
     "block.PistonBaseBlockMixin",
-    "block.TntBlockPrimeMixin",
     "entity.AnimalFinalizeSpawnMixin",
     "entity.FrogFertilizeMixin",
     "entity.PandaJumpMixin",

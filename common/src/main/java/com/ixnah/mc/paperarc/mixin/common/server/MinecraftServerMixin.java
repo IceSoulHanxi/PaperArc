@@ -8,8 +8,8 @@ import java.util.function.BooleanSupplier;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import net.minecraft.server.MinecraftServer;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -35,8 +35,8 @@ public abstract class MinecraftServerMixin {
 
     private static final long TICK_TIME_NANOS = 50_000_000L; // 20 TPS
 
-    @Shadow
-    private int tickCount;
+    @Accessor("tickCount")
+    abstract int paperarc$getTickCount();
 
     @Unique
     private long paperarc$tickStartNanos;
@@ -56,7 +56,7 @@ public abstract class MinecraftServerMixin {
         at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;tickChildren(Ljava/util/function/BooleanSupplier;)V")
     )
     private void paperarc$onTickBegin(BooleanSupplier hasTimeLeft, CallbackInfo ci) {
-        PaperArcEvents.fire(new ServerTickStartEvent(this.tickCount + 1));
+        PaperArcEvents.fire(new ServerTickStartEvent(this.paperarc$getTickCount() + 1));
     }
 
     @Inject(method = "tickServer", at = @At("HEAD"))
@@ -74,6 +74,6 @@ public abstract class MinecraftServerMixin {
         long end = System.nanoTime();
         double durationMs = (end - this.paperarc$tickStartNanos) / 1_000_000.0D;
         long remaining = TICK_TIME_NANOS - (end - this.paperarc$tickStartNanos);
-        PaperArcEvents.fire(new ServerTickEndEvent(this.tickCount, durationMs, remaining));
+        PaperArcEvents.fire(new ServerTickEndEvent(this.paperarc$getTickCount(), durationMs, remaining));
     }
 }

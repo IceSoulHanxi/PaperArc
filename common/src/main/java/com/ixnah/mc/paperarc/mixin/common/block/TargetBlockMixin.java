@@ -34,7 +34,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(TargetBlock.class)
 public abstract class TargetBlockMixin {
 
-    @Shadow
+    @Shadow(aliases = "m_57408_")
     private static int getRedstoneStrength(BlockHitResult hitResult, Vec3 location) {
         throw new AssertionError();
     }

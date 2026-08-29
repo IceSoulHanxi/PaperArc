@@ -17,7 +17,9 @@ import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Invoker;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -47,20 +49,32 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ServerPlayer.class)
 public abstract class ServerPlayerSetSpawnMixin {
 
-    @Shadow
-    private BlockPos respawnPosition;
+    @Accessor("respawnPosition")
+    abstract BlockPos paperarc$getRespawnPosition();
 
-    @Shadow
-    private ResourceKey<Level> respawnDimension;
+    @Accessor("respawnPosition")
+    abstract void paperarc$setRespawnPosition(BlockPos value);
 
-    @Shadow
-    private float respawnAngle;
+    @Accessor("respawnDimension")
+    abstract ResourceKey<Level> paperarc$getRespawnDimension();
 
-    @Shadow
-    private boolean respawnForced;
+    @Accessor("respawnDimension")
+    abstract void paperarc$setRespawnDimension(ResourceKey<Level> value);
 
-    @Shadow
-    public abstract void sendSystemMessage(net.minecraft.network.chat.Component message);
+    @Accessor("respawnAngle")
+    abstract float paperarc$getRespawnAngle();
+
+    @Accessor("respawnAngle")
+    abstract void paperarc$setRespawnAngle(float value);
+
+    @Accessor("respawnForced")
+    abstract boolean paperarc$getRespawnForced();
+
+    @Accessor("respawnForced")
+    abstract void paperarc$setRespawnForced(boolean value);
+
+    @Invoker("sendSystemMessage")
+    abstract void paperarc$sendSystemMessage(net.minecraft.network.chat.Component message);
 
     @Inject(
         method = "setRespawnPosition(Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/core/BlockPos;FZZ)V",
@@ -82,7 +96,7 @@ public abstract class ServerPlayerSetSpawnMixin {
         Location spawnLoc = null;
         boolean willNotify = false;
         if (pos != null) {
-            boolean same = pos.equals(this.respawnPosition) && dimension.equals(this.respawnDimension);
+            boolean same = pos.equals(this.paperarc$getRespawnPosition()) && dimension.equals(this.paperarc$getRespawnDimension());
             spawnLoc = new Location(PaperArcBridge.bukkitWorld(newLevel),
                 pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, angle, 0.0F);
             willNotify = sendMessage && !same;
@@ -109,17 +123,17 @@ public abstract class ServerPlayerSetSpawnMixin {
             boolean newForced = event.isForced();
 
             if (event.willNotifyPlayer()) {
-                this.sendSystemMessage(paperarc$adventureToVanilla(event.getNotification()));
+                this.paperarc$sendSystemMessage(paperarc$adventureToVanilla(event.getNotification()));
             }
-            this.respawnPosition = newPos;
-            this.respawnDimension = newDim;
-            this.respawnAngle = newAngle;
-            this.respawnForced = newForced;
+            this.paperarc$setRespawnPosition(newPos);
+            this.paperarc$setRespawnDimension(newDim);
+            this.paperarc$setRespawnAngle(newAngle);
+            this.paperarc$setRespawnForced(newForced);
         } else {
-            this.respawnPosition = null;
-            this.respawnDimension = Level.OVERWORLD;
-            this.respawnAngle = 0.0F;
-            this.respawnForced = false;
+            this.paperarc$setRespawnPosition(null);
+            this.paperarc$setRespawnDimension(Level.OVERWORLD);
+            this.paperarc$setRespawnAngle(0.0F);
+            this.paperarc$setRespawnForced(false);
         }
         ci.cancel(); // state applied from the event above; skip the vanilla body
     }

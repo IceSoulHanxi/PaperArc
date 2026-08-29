@@ -6,7 +6,9 @@ import org.bukkit.World;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Invoker;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -39,30 +41,30 @@ public abstract class WorldBorderMovingBorderExtentMixin {
         this.paperarc$outer = outer;
     }
 
-    @Shadow @Final
-    private double from;
+    @Accessor("from")
+    abstract double paperarc$getFrom();
 
-    @Shadow @Final
-    private double to;
+    @Accessor("to")
+    abstract double paperarc$getTo();
 
-    @Shadow @Final
-    private double lerpDuration;
+    @Accessor("lerpDuration")
+    abstract double paperarc$getLerpDuration();
 
-    @Shadow
-    public abstract long getLerpRemainingTime();
+    @Invoker("getLerpRemainingTime")
+    abstract long paperarc$getLerpRemainingTime();
 
     @Inject(method = "update", at = @At("HEAD"))
     private void paperarc$onBoundsChangeFinish(CallbackInfoReturnable<Object> cir) {
         World bukkitWorld = com.ixnah.mc.paperarc.bridge.WorldBorderSupport.findWorld(this.paperarc$outer);
-        if (bukkitWorld == null || this.getLerpRemainingTime() > 0L) {
+        if (bukkitWorld == null || this.paperarc$getLerpRemainingTime() > 0L) {
             return;
         }
         new WorldBorderBoundsChangeFinishEvent(
                 bukkitWorld,
                 bukkitWorld.getWorldBorder(),
-                this.from,
-                this.to,
-                this.lerpDuration
+                this.paperarc$getFrom(),
+                this.paperarc$getTo(),
+                this.paperarc$getLerpDuration()
         ).callEvent();
     }
 }

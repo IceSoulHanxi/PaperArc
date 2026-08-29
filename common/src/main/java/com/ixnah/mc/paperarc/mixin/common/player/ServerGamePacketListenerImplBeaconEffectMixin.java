@@ -13,6 +13,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 
 import java.util.Optional;
@@ -35,7 +36,7 @@ import java.util.Optional;
 @Mixin(ServerGamePacketListenerImpl.class)
 public abstract class ServerGamePacketListenerImplBeaconEffectMixin {
 
-    @Shadow @Final public ServerPlayer player;
+    @Accessor("player") @Final public abstract ServerPlayer paperarc$getPlayer();
 
     @WrapOperation(
         method = "handleSetBeaconPacket",
@@ -60,7 +61,7 @@ public abstract class ServerGamePacketListenerImplBeaconEffectMixin {
         PotionEffectType bukkitPrimary = paperarc$convert(primary);
         PotionEffectType bukkitSecondary = paperarc$convert(secondary);
         PlayerChangeBeaconEffectEvent event = new PlayerChangeBeaconEffectEvent(
-            PaperArcBridge.bukkitPlayer(this.player),
+            PaperArcBridge.bukkitPlayer(this.paperarc$getPlayer()),
             bukkitPrimary, bukkitSecondary, beacon
         );
         if (!event.callEvent()) {

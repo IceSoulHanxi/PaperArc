@@ -17,12 +17,12 @@ import org.spongepowered.asm.mixin.injection.At;
 /**
  * PlayerBedFailEnterEvent 触发点。
  * <p>
- * 对照 Paper：BedBlock#useWithoutItem 中 startSleepInBed 返回 Left（入睡失败）
- * 时发事件（FailReason 按 BedSleepingProblem.ordinal 映射，两枚举常量顺序
+ * 对照 Paper：BedBlock#use（1.20.1 未拆分 useWithoutItem，use 即旧版交互入口）中 startSleepInBed
+ * 返回 Left（入睡失败）时发事件（FailReason 按 BedSleepingProblem.ordinal 映射，两枚举常量顺序
  * 已核对一致），取消时不爆炸、不提示消息。Paper 还把爆炸分支改为读
  * event.getWillExplode() 并允许插件改写消息；见偏差说明。
  * <p>
- * 实现：wrap useWithoutItem 内 startSleepInBed INVOKE。事件取消时返回
+ * 实现：wrap use 内 startSleepInBed INVOKE。事件取消时返回
  * Either.Right(Unit.INSTANCE) 使 ifLeft 回调整体跳过，等价于 Paper 的
  * `if (!event.callEvent()) return;`。
  * <p>
@@ -38,7 +38,7 @@ import org.spongepowered.asm.mixin.injection.At;
 public abstract class BedBlockBedFailEnterMixin {
 
     @WrapOperation(
-        method = "useWithoutItem",
+        method = "use",
         at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/world/entity/player/Player;startSleepInBed(Lnet/minecraft/core/BlockPos;)Lcom/mojang/datafixers/util/Either;"

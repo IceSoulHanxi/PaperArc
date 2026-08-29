@@ -3,6 +3,7 @@ package com.ixnah.mc.paperarc.mixin.common.block;
 import com.ixnah.mc.paperarc.mixin.common.player.ServerPlayerSetSpawnMixin;
 import com.destroystokyo.paper.event.player.PlayerSetSpawnEvent;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -17,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /**
  * Cause marker for {@link PlayerSetSpawnEvent}: the respawn anchor path.
  * Marks RESPAWN_ANCHOR for the duration of
- * {@code RespawnAnchorBlock#useWithoutItem}; cleared again at RETURN.
+ * {@code RespawnAnchorBlock#use}; cleared again at RETURN.
  *
  * Arclight's own RespawnAnchorBlockMixin injects at the
  * {@code setRespawnPosition} INVOKE inside the same method; these hooks sit at
@@ -26,15 +27,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(RespawnAnchorBlock.class)
 public class RespawnAnchorBlockCauseMixin {
 
-    @Inject(method = "useWithoutItem", at = @At("HEAD"))
+    @Inject(method = "use", at = @At("HEAD"))
     private void paperarc$pushAnchorCause(BlockState state, Level world, BlockPos pos, Player player,
-                                          BlockHitResult hit, CallbackInfoReturnable<InteractionResult> cir) {
+                                          InteractionHand hand, BlockHitResult hit,
+                                          CallbackInfoReturnable<InteractionResult> cir) {
         com.ixnah.mc.paperarc.bridge.SpawnCauseSupport.push(PlayerSetSpawnEvent.Cause.RESPAWN_ANCHOR);
     }
 
-    @Inject(method = "useWithoutItem", at = @At("RETURN"))
+    @Inject(method = "use", at = @At("RETURN"))
     private void paperarc$clearAnchorCause(BlockState state, Level world, BlockPos pos, Player player,
-                                           BlockHitResult hit, CallbackInfoReturnable<InteractionResult> cir) {
+                                           InteractionHand hand, BlockHitResult hit,
+                                           CallbackInfoReturnable<InteractionResult> cir) {
         com.ixnah.mc.paperarc.bridge.SpawnCauseSupport.clear();
     }
 }

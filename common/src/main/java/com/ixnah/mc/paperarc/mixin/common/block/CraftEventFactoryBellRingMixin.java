@@ -30,6 +30,7 @@ public abstract class CraftEventFactoryBellRingMixin {
 
     @WrapOperation(
             method = "handleBellRingEvent",
+            remap = false,
             at = @At(
                     value = "NEW",
                     target = "(Lorg/bukkit/block/Block;Lorg/bukkit/block/BlockFace;Lorg/bukkit/entity/Entity;)Lorg/bukkit/event/block/BellRingEvent;",

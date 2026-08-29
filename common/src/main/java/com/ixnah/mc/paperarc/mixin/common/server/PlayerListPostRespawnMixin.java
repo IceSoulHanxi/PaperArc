@@ -35,7 +35,8 @@ public abstract class PlayerListPostRespawnMixin {
     private static final ThreadLocal<Boolean> paperarc$isRespawn = new ThreadLocal<>();
 
     @Inject(method = "respawn(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/server/level/ServerLevel;ZLorg/bukkit/Location;ZLorg/bukkit/event/player/PlayerRespawnEvent$RespawnReason;)Lnet/minecraft/server/level/ServerPlayer;",
-            at = @At("HEAD"))
+            at = @At("HEAD"),
+            remap = false)
     private void paperarc$recordNaturalRespawn(ServerPlayer playerIn, net.minecraft.server.level.ServerLevel worldIn,
                                                boolean flag, Location location, boolean avoidSuffocation,
                                                org.bukkit.event.player.PlayerRespawnEvent.RespawnReason respawnReason,
@@ -49,7 +50,8 @@ public abstract class PlayerListPostRespawnMixin {
             value = "INVOKE",
             target = "Lnet/minecraft/server/players/PlayerList;sendAllPlayerInfo(Lnet/minecraft/server/level/ServerPlayer;)V",
             remap = false
-        )
+        ),
+        remap = false
     )
     private void paperarc$onPostRespawn(PlayerList self, ServerPlayer playerIn, Operation<Void> original) {
         original.call(self, playerIn);

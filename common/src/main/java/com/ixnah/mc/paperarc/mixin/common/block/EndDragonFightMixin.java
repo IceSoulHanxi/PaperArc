@@ -15,6 +15,7 @@ import org.bukkit.craftbukkit.v1_20_R1.boss.CraftDragonBattle;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -36,28 +37,26 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(EndDragonFight.class)
 public abstract class EndDragonFightMixin {
 
-    @Shadow
-    @Final
-    private ServerLevel level;
+    @Accessor("level")
+    abstract ServerLevel paperarc$getLevel();
 
-    @Shadow
-    @Final
-    private BlockPos origin;
+    @Accessor("origin")
+    abstract BlockPos paperarc$getOrigin();
 
-    @Shadow
-    private boolean previouslyKilled;
+    @Accessor("previouslyKilled")
+    abstract boolean paperarc$getPreviouslyKilled();
 
     @Inject(method = "setDragonKilled",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/server/level/ServerLevel;setBlockAndUpdate(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)Z"),
             cancellable = true)
     private void paperarc$dragonEggForm(EnderDragon dragon, CallbackInfo ci) {
-        if (!this.previouslyKilled) {
-            BlockPos eggPosition = this.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING,
-                    EndPodiumFeature.getLocation(this.origin));
-            CraftBlockState eggState = CraftBlockStates.getBlockState(this.level, eggPosition);
+        if (!this.paperarc$getPreviouslyKilled()) {
+            BlockPos eggPosition = this.paperarc$getLevel().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING,
+                    EndPodiumFeature.getLocation(this.paperarc$getOrigin()));
+            CraftBlockState eggState = CraftBlockStates.getBlockState(this.paperarc$getLevel(), eggPosition);
             eggState.setData(Blocks.DRAGON_EGG.defaultBlockState());
-            DragonEggFormEvent event = new DragonEggFormEvent(CraftBlock.at(this.level, eggPosition), eggState,
+            DragonEggFormEvent event = new DragonEggFormEvent(CraftBlock.at(this.paperarc$getLevel(), eggPosition), eggState,
                     new CraftDragonBattle((EndDragonFight) (Object) this));
             if (event.callEvent()) {
                 event.getNewState().update(true);

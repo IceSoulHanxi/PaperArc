@@ -10,6 +10,8 @@ import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftInventoryLectern;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Accessor;
+import org.spongepowered.asm.mixin.gen.Invoker;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -33,18 +35,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(LecternMenu.class)
 public abstract class LecternMenuPageChangeMixin {
 
-    @Shadow
-    @Final
-    private Container lectern;
+    @Accessor("lectern")
+    abstract Container paperarc$getLectern();
 
-    @Shadow
-    @Final
-    private ContainerData lecternData;
+    @Accessor("lecternData")
+    abstract ContainerData paperarc$getLecternData();
 
     @Unique
     private void paperarc$firePageChange(Player player, PlayerLecternPageChangeEvent.PageChangeDirection direction,
                                          int oldPage, int delta, CallbackInfoReturnable<Boolean> cir) {
-        CraftInventoryLectern inv = new CraftInventoryLectern(this.lectern);
+        CraftInventoryLectern inv = new CraftInventoryLectern(this.paperarc$getLectern());
         PlayerLecternPageChangeEvent event = new PlayerLecternPageChangeEvent(
             PaperArcBridge.bukkitPlayer(player),
             inv.getHolder(),
@@ -57,12 +57,12 @@ public abstract class LecternMenuPageChangeMixin {
             cir.setReturnValue(false); // Paper：取消时返回 false
             return;
         }
-        this.setData(0, event.getNewPage());
+        this.paperarc$setData(0, event.getNewPage());
         cir.setReturnValue(true); // 跳过原版 setData 指令
     }
 
-    @Shadow
-    public abstract void setData(int id, int value);
+    @Invoker("setData")
+    public abstract void paperarc$setData(int id, int value);
 
     @Inject(
         method = "clickMenuButton",
@@ -71,7 +71,7 @@ public abstract class LecternMenuPageChangeMixin {
     )
     private void paperarc$onPageRight(Player player, int id, CallbackInfoReturnable<Boolean> cir) {
         this.paperarc$firePageChange(player, PlayerLecternPageChangeEvent.PageChangeDirection.RIGHT,
-            this.lecternData.get(0), 1, cir);
+            this.paperarc$getLecternData().get(0), 1, cir);
     }
 
     @Inject(
@@ -81,6 +81,6 @@ public abstract class LecternMenuPageChangeMixin {
     )
     private void paperarc$onPageLeft(Player player, int id, CallbackInfoReturnable<Boolean> cir) {
         this.paperarc$firePageChange(player, PlayerLecternPageChangeEvent.PageChangeDirection.LEFT,
-            this.lecternData.get(0), -1, cir);
+            this.paperarc$getLecternData().get(0), -1, cir);
     }
 }

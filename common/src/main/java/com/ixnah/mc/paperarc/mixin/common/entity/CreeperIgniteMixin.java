@@ -10,7 +10,9 @@ import net.minecraft.world.entity.monster.Creeper;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Invoker;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 
 /**
@@ -23,10 +25,10 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(Creeper.class)
 public abstract class CreeperIgniteMixin {
 
-    @Shadow @Final private static EntityDataAccessor<Boolean> DATA_IS_IGNITED;
+    @Shadow(aliases = "f_32275_") @Final private static EntityDataAccessor<Boolean> DATA_IS_IGNITED;
 
-    @Shadow
-    public abstract boolean isIgnited();
+    @Invoker("isIgnited")
+    abstract boolean paperarc$isIgnited();
 
     @Unique
     private boolean paperarc$suppressIgniteEvent;
@@ -38,7 +40,7 @@ public abstract class CreeperIgniteMixin {
     private void paperarc$ignite(SynchedEntityData instance, EntityDataAccessor<Boolean> accessor, Object value,
                                  Operation<Void> original) {
         boolean ignited = (Boolean) value;
-        if (paperarc$suppressIgniteEvent || this.isIgnited() == ignited) {
+        if (paperarc$suppressIgniteEvent || this.paperarc$isIgnited() == ignited) {
             original.call(instance, accessor, value);
             return;
         }

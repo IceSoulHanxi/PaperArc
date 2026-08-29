@@ -9,6 +9,7 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -31,19 +32,18 @@ import java.net.SocketAddress;
 @Mixin(Connection.class)
 public abstract class ConnectionMixin {
 
-    @Shadow
-    private volatile PacketListener packetListener;
+    @Accessor("packetListener")
+    abstract PacketListener paperarc$getPacketListener();
 
-    @Shadow
-    @Final
-    private SocketAddress address;
+    @Accessor("address")
+    abstract SocketAddress paperarc$getAddress();
 
     @Inject(
         method = "disconnect(Lnet/minecraft/network/chat/Component;)V",
         at = @At("RETURN")
     )
     private void paperarc$onConnectionClose(net.minecraft.network.chat.Component details, CallbackInfo ci) {
-        if (!(this.packetListener instanceof ServerGamePacketListenerImpl common)) {
+        if (!(this.paperarc$getPacketListener() instanceof ServerGamePacketListenerImpl common)) {
             return;
         }
         GameProfile profile = common.player.getGameProfile();
@@ -51,7 +51,7 @@ public abstract class ConnectionMixin {
             return; // 登录完成前断开，无玩家身份
         }
         InetAddress inetAddress =
-            this.address instanceof InetSocketAddress socketAddress ? socketAddress.getAddress() : null;
+            this.paperarc$getAddress() instanceof InetSocketAddress socketAddress ? socketAddress.getAddress() : null;
         PaperArcEvents.fire(new PlayerConnectionCloseEvent(profile.getId(), profile.getName(), inetAddress, false));
     }
 }

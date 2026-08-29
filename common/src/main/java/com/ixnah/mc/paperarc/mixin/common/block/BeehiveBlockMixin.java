@@ -13,14 +13,11 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.bukkit.craftbukkit.v1_20_R1.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.v1_20_R1.block.CraftBlock;
 import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -36,10 +33,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(BeehiveBlock.class)
 public abstract class BeehiveBlockMixin {
 
-    @Shadow
-    @Final
-    public static IntegerProperty HONEY_LEVEL;
-
     private static final ThreadLocal<java.util.List<org.bukkit.inventory.ItemStack>> paperarc$shearDrops = new ThreadLocal<>();
 
     @Inject(method = "use", at = @At("HEAD"), cancellable = true)
@@ -50,7 +43,7 @@ public abstract class BeehiveBlockMixin {
             return;
         }
         ItemStack stack = player.getItemInHand(hand);
-        if (state.getValue(HONEY_LEVEL) < 5 || !stack.is(Items.SHEARS)) {
+        if (state.getValue(BeehiveBlock.HONEY_LEVEL) < 5 || !stack.is(Items.SHEARS)) {
             return;
         }
         java.util.List<org.bukkit.inventory.ItemStack> drops = new java.util.ArrayList<>();

@@ -11,6 +11,8 @@ import org.bukkit.Location;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Accessor;
+import org.spongepowered.asm.mixin.gen.Invoker;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -34,12 +36,11 @@ import java.util.Set;
 @Mixin(PathNavigation.class)
 public abstract class PathNavigationMixin {
 
-    @Shadow
-    @Final
-    protected Mob mob;
+    @Accessor("mob")
+    abstract Mob paperarc$getMob();
 
-    @Shadow
-    protected abstract Path createPath(Set<BlockPos> positions, int range, boolean useHeadPos, int distance, float followRange);
+    @Invoker("createPath")
+    abstract Path paperarc$createPath(Set<BlockPos> positions, int range, boolean useHeadPos, int distance, float followRange);
 
     private static final ThreadLocal<Boolean> paperarc$repathing = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
@@ -53,7 +54,7 @@ public abstract class PathNavigationMixin {
         if (paperarc$repathing.get()) {
             return; // inner call issued by us below — do not fire events again
         }
-        if (!(mob.level() instanceof ServerLevel serverLevel) || positions.isEmpty()) {
+        if (!(paperarc$getMob().level() instanceof ServerLevel serverLevel) || positions.isEmpty()) {
             return;
         }
         Set<BlockPos> allowed = new HashSet<>();
@@ -61,7 +62,7 @@ public abstract class PathNavigationMixin {
         for (BlockPos pos : positions) {
             Location loc = new Location(PaperArcBridge.bukkitWorld(serverLevel), pos.getX(), pos.getY(), pos.getZ());
             EntityPathfindEvent event = new EntityPathfindEvent(
-                    PaperArcBridge.bukkitEntity(this.mob), loc, null);
+                    PaperArcBridge.bukkitEntity(this.paperarc$getMob()), loc, null);
             if (event.callEvent()) {
                 allowed.add(pos);
             } else {
@@ -77,7 +78,7 @@ public abstract class PathNavigationMixin {
         }
         paperarc$repathing.set(Boolean.TRUE);
         try {
-            cir.setReturnValue(this.createPath(allowed, range, useHeadPos, distance, followRange));
+            cir.setReturnValue(this.paperarc$createPath(allowed, range, useHeadPos, distance, followRange));
         } finally {
             paperarc$repathing.set(Boolean.FALSE);
         }
