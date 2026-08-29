@@ -212,6 +212,30 @@ public abstract class CraftLivingEntityApiMixinPart2 {
     }
 
     /**
+     * Hand-Raised / Item-Use API (LivingEntity-Hand-Raised-Item-Use-API.patch).
+     */
+    @Unique
+    public int getItemUseRemainingTime() {
+        return this.getHandle().getUseItemRemainingTicks();
+    }
+
+    @Unique
+    public int getHandRaisedTime() {
+        return this.getHandle().getTicksUsingItem();
+    }
+
+    @Unique
+    public boolean isHandRaised() {
+        return this.getHandle().isUsingItem();
+    }
+
+    @Unique
+    public EquipmentSlot getHandRaised() {
+        return this.getHandle().getUsedItemHand() == InteractionHand.MAIN_HAND
+                ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
+    }
+
+    /**
      * 7. boolean isJumping()
      */
     @Unique

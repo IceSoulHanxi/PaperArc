@@ -19,4 +19,10 @@ public interface LightningStrikeIfaceMixin {
 
     @Unique
     public abstract org.bukkit.entity.Entity getCausingEntity();
+    @Unique
+    public abstract int getLifeTicks();
+    @Unique
+    public abstract void setLifeTicks(int lifeTicks);
+    @Unique
+    public abstract void setCausingPlayer(org.bukkit.entity.Player player);
 }

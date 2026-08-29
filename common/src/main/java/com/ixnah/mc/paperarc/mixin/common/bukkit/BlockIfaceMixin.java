@@ -52,4 +52,6 @@ public interface BlockIfaceMixin {
 
     @Unique
     public abstract org.bukkit.SoundGroup getBlockSoundGroup();
+    @Unique
+    public abstract java.lang.String getTranslationKey();
 }

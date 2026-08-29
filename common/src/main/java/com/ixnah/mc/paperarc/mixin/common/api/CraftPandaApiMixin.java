@@ -89,5 +89,15 @@ public abstract class CraftPandaApiMixin {
         // share identical constant names, so map by name.
         return org.bukkit.entity.Panda.Gene.valueOf(this.getHandle().getVariant().name());
     }
+
+    @Unique
+    public boolean isSitting() {
+        return this.getHandle().isSitting();
+    }
+
+    @Unique
+    public void setSitting(boolean sitting) {
+        this.getHandle().sit(sitting);
+    }
     // Paper end - Missing Entity API
 }

@@ -73,4 +73,23 @@ public interface WorldIfaceMixin {
 
     @Unique
     public abstract void setSendViewDistance(int p0);
+    @Unique
+    public abstract org.bukkit.Location locateNearestBiome(org.bukkit.Location location, org.bukkit.block.Biome biome, int radius);
+
+    @Unique
+    public abstract org.bukkit.Location locateNearestBiome(org.bukkit.Location location, org.bukkit.block.Biome biome, int radius, int step);
+    @Unique
+    public abstract boolean isUltrawarm();
+    @Unique
+    public abstract boolean hasSkylight();
+    @Unique
+    public abstract boolean hasBedrockCeiling();
+    @Unique
+    public abstract boolean doesBedWork();
+    @Unique
+    public abstract boolean doesRespawnAnchorWork();
+    @Unique
+    public abstract int getNoTickViewDistance();
+    @Unique
+    public abstract void setNoTickViewDistance(int viewDistance);
 }

@@ -139,4 +139,8 @@ public interface ServerIfaceMixin {
 
     @Unique
     public abstract boolean isOwnedByCurrentRegion(org.bukkit.World p0, int p1, int p2, int p3);
+    @Unique
+    public abstract org.bukkit.generator.ChunkGenerator.ChunkData createVanillaChunkData(org.bukkit.World world, int x, int z);
+    @Unique
+    public abstract org.bukkit.command.CommandMap getCommandMap();
 }

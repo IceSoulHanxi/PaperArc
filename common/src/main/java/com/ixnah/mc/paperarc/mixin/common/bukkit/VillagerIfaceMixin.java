@@ -34,4 +34,6 @@ public interface VillagerIfaceMixin {
 
     @Unique
     public abstract void clearReputations();
+    @Unique
+    public abstract void setReputations(java.util.Map<java.util.UUID, com.destroystokyo.paper.entity.villager.Reputation> reputations);
 }

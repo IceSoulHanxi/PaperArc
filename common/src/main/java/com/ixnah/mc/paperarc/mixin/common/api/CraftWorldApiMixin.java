@@ -12,6 +12,7 @@ import java.util.function.Predicate;
 
 import com.google.common.base.Preconditions;
 
+import com.mojang.datafixers.util.Pair;
 import io.papermc.paper.math.Position;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -38,10 +39,13 @@ import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_20_R1.CraftGameEvent;
 import org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_20_R1.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.v1_20_R1.util.CraftNamespacedKey;
+import org.bukkit.craftbukkit.v1_20_R1.util.CraftLocation;
 import org.bukkit.craftbukkit.v1_20_R1.CraftParticle;
 import org.bukkit.craftbukkit.v1_20_R1.CraftRaid;
 import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
@@ -94,6 +98,32 @@ public abstract class CraftWorldApiMixin {
     @Unique
     public double getCoordinateScale() {
         return this.getHandle().dimensionType().coordinateScale();
+    }
+
+    @Unique
+    public boolean isUltrawarm() {
+        return this.getHandle().dimensionType().ultraWarm();
+    }
+
+    @Unique
+    public boolean hasSkylight() {
+        return this.getHandle().dimensionType().hasSkyLight();
+    }
+
+    @Unique
+    public boolean hasBedrockCeiling() {
+        // Paper 原样：hasBedrockCeiling 误映射为 hasSkyLight（上游笔误保留）
+        return this.getHandle().dimensionType().hasSkyLight();
+    }
+
+    @Unique
+    public boolean doesBedWork() {
+        return this.getHandle().dimensionType().bedWorks();
+    }
+
+    @Unique
+    public boolean doesRespawnAnchorWork() {
+        return this.getHandle().dimensionType().respawnAnchorWorks();
     }
 
     @Unique
@@ -181,6 +211,36 @@ public abstract class CraftWorldApiMixin {
     public void setSimulationDistance(int simulationDistance) {
         Preconditions.checkArgument(simulationDistance >= -1, "simulationDistance must be >= -1");
         ApiState.put(this, "simulationDistance", simulationDistance);
+    }
+
+    @Unique
+    public int getNoTickViewDistance() {
+        // vanilla 无 no-tick 视距概念，Paper 补丁本身也委托 getViewDistance()
+        return this.getViewDistance();
+    }
+
+    @Unique
+    public void setNoTickViewDistance(int viewDistance) {
+        this.setViewDistance(viewDistance);
+    }
+
+    @Unique
+    public org.bukkit.Location locateNearestBiome(Location origin, Biome biome, int radius) {
+        return this.locateNearestBiome(origin, biome, radius, 8);
+    }
+
+    @Unique
+    public org.bukkit.Location locateNearestBiome(Location origin, Biome biome, int radius, int step) {
+        BlockPos originPos = CraftLocation.toBlockPosition(origin);
+        Pair<BlockPos, net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome>> pair =
+                this.getHandle().findClosestBiome3d(
+                        holder -> holder.is(CraftNamespacedKey.toMinecraft(biome.getKey())),
+                        originPos, radius, step, step);
+        if (pair == null) {
+            return null;
+        }
+        BlockPos nearest = pair.getFirst();
+        return new Location((World) (Object) this, nearest.getX(), nearest.getY(), nearest.getZ());
     }
 
     @Unique

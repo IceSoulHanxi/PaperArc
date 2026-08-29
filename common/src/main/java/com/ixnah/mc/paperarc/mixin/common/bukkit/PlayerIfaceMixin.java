@@ -184,4 +184,18 @@ public interface PlayerIfaceMixin {
 
     @Unique
     public abstract void increaseWardenWarningLevel();
+    @Unique
+    public abstract int getNoTickViewDistance();
+    @Unique
+    public abstract void setNoTickViewDistance(int viewDistance);
+    @Unique
+    public abstract java.lang.String getResourcePackHash();
+    @Unique
+    public abstract boolean hasResourcePack();
+    @Unique
+    public abstract com.destroystokyo.paper.profile.PlayerProfile getPlayerProfile();
+    @Unique
+    public abstract org.bukkit.entity.Firework boostElytra(org.bukkit.inventory.ItemStack itemStack);
+    @Unique
+    public abstract void setRotation(float yaw, float pitch);
 }

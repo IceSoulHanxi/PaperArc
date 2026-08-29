@@ -30,8 +30,6 @@ public abstract class CraftExperienceOrbApiMixin {
     private static final String PAPERARC$KEY_SOURCE = "paperarc$sourceEntityId";
     @Unique
     private static final String PAPERARC$KEY_TRIGGER = "paperarc$triggerEntityId";
-    @Unique
-    private static final String PAPERARC$KEY_REASON = "paperarc$spawnReason";
 
     // Owner for side-map entries: the NMS orb, so state survives Craft mirror recreation.
     @Unique

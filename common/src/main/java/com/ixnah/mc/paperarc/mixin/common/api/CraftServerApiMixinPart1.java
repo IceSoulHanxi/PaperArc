@@ -399,4 +399,14 @@ public abstract class CraftServerApiMixinPart1 {
     public com.destroystokyo.paper.profile.PlayerProfile createProfileExact(String name) {
         return new CraftPlayerProfile(new GameProfile(null, name));
     }
+
+    // ---- createVanillaChunkData (Allow-delegation-to-vanilla-chunk-gen.patch) ----
+    @Unique
+    @Deprecated
+    public org.bukkit.generator.ChunkGenerator.ChunkData createVanillaChunkData(org.bukkit.World world, int x, int z) {
+        // 完整实现需 ProtoChunk + ChunkStatus 生成管线（ProcessorMailbox/EmptyLevelChunk
+        // /OldCraftChunkData.setRawChunkData）。Arclight 无对应基建且插件极少调用，
+        // 这里退化为委托 createChunkData(World) 返回空 ChunkData，避免返回 null 引发 NPE。
+        return ((CraftServer) (Object) this).createChunkData(world);
+    }
 }

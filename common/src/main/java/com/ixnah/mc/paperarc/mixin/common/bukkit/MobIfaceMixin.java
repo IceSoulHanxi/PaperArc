@@ -40,4 +40,6 @@ public interface MobIfaceMixin {
 
     @Unique
     public abstract int getPossibleExperienceReward();
+    @Unique
+    public abstract org.bukkit.inventory.EntityEquipment getEquipment();
 }

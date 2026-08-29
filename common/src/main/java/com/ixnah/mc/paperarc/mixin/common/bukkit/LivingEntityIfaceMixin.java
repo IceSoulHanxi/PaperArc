@@ -103,4 +103,12 @@ public interface LivingEntityIfaceMixin {
 
     @Unique
     public abstract void setBodyYaw(float p0);
+    @Unique
+    public abstract int getItemUseRemainingTime();
+    @Unique
+    public abstract int getHandRaisedTime();
+    @Unique
+    public abstract boolean isHandRaised();
+    @Unique
+    public abstract org.bukkit.inventory.EquipmentSlot getHandRaised();
 }

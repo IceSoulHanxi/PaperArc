@@ -35,16 +35,21 @@ import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.projectile.FireworkRocketEntity;
+import net.minecraft.world.item.ItemStack;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.DyeColor;
 import org.bukkit.EntityEffect;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_20_R1.CraftServer;
 import org.bukkit.craftbukkit.v1_20_R1.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.v1_20_R1.util.CraftChatMessage;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -643,6 +648,22 @@ public abstract class CraftPlayerApiMixinPart2 {
             return;
         }
         paperarc$send(new ClientboundSetTitlesAnimationPacket(title.getFadeIn(), title.getStay(), title.getFadeOut()));
+    }
+
+    // ---- boostElytra (Player-elytra-boost-API.patch) ----
+    @Unique
+    public org.bukkit.entity.Firework boostElytra(org.bukkit.inventory.ItemStack firework) {
+        Preconditions.checkState(this.getHandle().isFallFlying(), "Player must be gliding");
+        Preconditions.checkArgument(firework != null, "firework == null");
+        Preconditions.checkArgument(firework.getType() == Material.FIREWORK_ROCKET,
+                "Firework must be Material.FIREWORK_ROCKET");
+
+        ItemStack item = CraftItemStack.asNMSCopy(firework);
+        ServerLevel world = this.getHandle().serverLevel();
+        FireworkRocketEntity entity = new FireworkRocketEntity(world, item, this.getHandle());
+        return world.addFreshEntity(entity)
+                ? (org.bukkit.entity.Firework) PaperArcBridge.bukkitEntity(entity)
+                : null;
     }
 
     // PAPERARC$APPEND_MARKER

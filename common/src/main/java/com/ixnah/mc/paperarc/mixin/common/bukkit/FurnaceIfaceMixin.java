@@ -25,4 +25,6 @@ public interface FurnaceIfaceMixin {
 
     @Unique
     public abstract void setRecipeUsedCount(org.bukkit.inventory.CookingRecipe p0, int p1);
+    @Unique
+    public abstract void setRecipesUsed(java.util.Map<org.bukkit.inventory.CookingRecipe<?>, java.lang.Integer> recipesUsed);
 }

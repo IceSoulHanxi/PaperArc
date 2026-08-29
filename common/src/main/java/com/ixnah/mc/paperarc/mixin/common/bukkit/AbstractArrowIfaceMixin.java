@@ -25,4 +25,8 @@ public interface AbstractArrowIfaceMixin {
 
     @Unique
     public abstract void setHitSound(org.bukkit.Sound p0);
+    @Unique
+    public abstract void setNoPhysics(boolean noPhysics);
+    @Unique
+    public abstract boolean hasNoPhysics();
 }

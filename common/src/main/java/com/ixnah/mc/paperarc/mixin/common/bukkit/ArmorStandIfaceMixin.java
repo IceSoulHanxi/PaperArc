@@ -70,4 +70,12 @@ public interface ArmorStandIfaceMixin {
 
     @Unique
     public abstract void setHeadRotations(io.papermc.paper.math.Rotations p0);
+    @Unique
+    public abstract org.bukkit.inventory.EntityEquipment getEquipment();
+    @Unique
+    public abstract void setDisabledSlots(org.bukkit.inventory.EquipmentSlot... slots);
+    @Unique
+    public abstract void addDisabledSlots(org.bukkit.inventory.EquipmentSlot... slots);
+    @Unique
+    public abstract void removeDisabledSlots(org.bukkit.inventory.EquipmentSlot... slots);
 }

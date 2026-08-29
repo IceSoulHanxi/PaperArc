@@ -25,4 +25,8 @@ public interface PandaIfaceMixin {
 
     @Unique
     public abstract void setUnhappyTicks(int p0);
+    @Unique
+    public abstract void setSitting(boolean sitting);
+    @Unique
+    public abstract boolean isSitting();
 }

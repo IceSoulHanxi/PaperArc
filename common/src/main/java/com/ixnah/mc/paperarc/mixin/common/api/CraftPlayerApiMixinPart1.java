@@ -225,6 +225,41 @@ public abstract class CraftPlayerApiMixinPart1 {
         return ApiState.get(this, "resourcePackStatus", null);
     }
 
+    // ---- getResourcePackHash / hasResourcePack ----
+    @Unique
+    public String getResourcePackHash() {
+        return ApiState.get(this, "resourcePackHash", null);
+    }
+
+    @Unique
+    public boolean hasResourcePack() {
+        return "SUCCESSFULLY_LOADED".equals(ApiState.get(this, "resourcePackStatus", null));
+    }
+
+    // ---- getNoTickViewDistance ----
+    @Unique
+    public int getViewDistance() {
+        // spigot Player 无 per-player 视距，回退服务器级 view distance
+        return paperarc$playerList().getViewDistance();
+    }
+
+    @Unique
+    public int getNoTickViewDistance() {
+        // vanilla 无 no-tick 视距概念，回退服务器级 view distance（与 getSendViewDistance 同款降级）
+        return paperarc$playerList().getViewDistance();
+    }
+
+    @Unique
+    public void setNoTickViewDistance(int viewDistance) {
+        // 与 Part2 setViewDistance 同款：写入 NMS requestedViewDistance 字段
+        try {
+            java.lang.reflect.Field f = net.minecraft.server.level.ServerPlayer.class.getDeclaredField("requestedViewDistance");
+            f.setAccessible(true);
+            f.setInt(getHandle(), viewDistance);
+        } catch (ReflectiveOperationException ignored) {
+        }
+    }
+
     // ---- getSendViewDistance ----
     @Unique
     public int getSendViewDistance() {

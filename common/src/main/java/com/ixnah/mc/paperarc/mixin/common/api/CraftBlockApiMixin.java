@@ -111,6 +111,11 @@ public abstract class CraftBlockApiMixin {
         return destroyed && result;
     }
 
+    @Unique
+    public String getTranslationKey() {
+        return this.getNMS().getBlock().getDescriptionId();
+    }
+
     /**
      * vanilla 无公开 getExpDrop（Paper 用 AT 加宽），等价语义：
      * 反射调 protected BlockBehaviour#spawnAfterBreak(state, level, pos, tool, true) 落经验。

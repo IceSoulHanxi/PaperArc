@@ -28,4 +28,8 @@ public interface TridentIfaceMixin {
 
     @Unique
     public abstract void setHasDealtDamage(boolean p0);
+    @Unique
+    public abstract void setDamage(double damage);
+    @Unique
+    public abstract double getDamage();
 }

@@ -120,6 +120,7 @@
     "api.EnchantmentMenuAccessorMixin",
     "api.EyeOfEnderAccessorMixin",
     "api.HopperBlockEntityInvokerMixin",
+    "api.LightningBoltAccessorMixin",
     "api.PaperEventApiMixin",
     "api.SkeletonAccessorMixin",
     "block.BaseContainerBlockEntityMixin",

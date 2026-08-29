@@ -100,4 +100,14 @@ public abstract class CraftTridentApiMixin {
             throw new IllegalStateException("Failed to write NMS ThrownTrident.dealtDamage", e);
         }
     }
+
+    @Unique
+    public double getDamage() {
+        return this.getHandle().getBaseDamage();
+    }
+
+    @Unique
+    public void setDamage(double damage) {
+        this.getHandle().setBaseDamage(damage);
+    }
 }
