@@ -590,4 +590,17 @@ public abstract class CraftServerApiMixin {
             player.recalculatePermissions();
         }
     }
+
+    /**
+     * Bridge for the {@link org.bukkit.Server#getCommandMap()} declared on the
+     * runtime {@code org.bukkit.Server} interface by {@code ServerIfaceMixin}.
+     * Arclight's {@code CraftServer} only has {@code SimpleCommandMap getCommandMap()}
+     * (compiled without the interface method, so no covariant bridge was generated);
+     * this mixin body supplies the {@code CommandMap}-typed bridge so
+     * {@code invokeinterface} on the augmented interface resolves.
+     */
+    @Unique
+    public org.bukkit.command.CommandMap getCommandMap() {
+        return ((org.bukkit.craftbukkit.v1_20_R1.CraftServer) (Object) this).getCommandMap();
+    }
 }

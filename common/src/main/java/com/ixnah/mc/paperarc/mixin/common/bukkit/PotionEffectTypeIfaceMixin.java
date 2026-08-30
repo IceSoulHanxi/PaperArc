@@ -25,10 +25,9 @@ public abstract class PotionEffectTypeIfaceMixin {
     @Unique
     public Map<Attribute, AttributeModifier> getEffectAttributes() {
         Map<Attribute, AttributeModifier> map = new HashMap<>();
-        net.minecraft.world.effect.MobEffect handle =
-                ((CraftPotionEffectType) (Object) this).getHandle();
-        handle.getAttributeModifiers().forEach((attribute, modifier) ->
-                map.put(CraftAttributeMap.fromMinecraft(attribute.toString()),
+        handle().getAttributeModifiers().forEach((attribute, modifier) ->
+                map.put(CraftAttributeMap.fromMinecraft(
+                                net.minecraft.core.registries.BuiltInRegistries.ATTRIBUTE.getKey(attribute).toString()),
                         CraftAttributeInstance.convert(modifier)));
         return Map.copyOf(map);
     }
@@ -36,8 +35,7 @@ public abstract class PotionEffectTypeIfaceMixin {
     @Unique
     public double getAttributeModifierAmount(Attribute attribute, int effectAmplifier) {
         Preconditions.checkArgument(effectAmplifier >= 0, "Cannot have negative amplifier");
-        net.minecraft.world.effect.MobEffect handle =
-                ((CraftPotionEffectType) (Object) this).getHandle();
+        net.minecraft.world.effect.MobEffect handle = handle();
         net.minecraft.world.entity.ai.attributes.Attribute nmsAttribute =
                 CraftAttributeMap.toMinecraft(attribute);
         Map<net.minecraft.world.entity.ai.attributes.Attribute,
@@ -55,7 +53,14 @@ public abstract class PotionEffectTypeIfaceMixin {
 
     @Unique
     private net.minecraft.world.effect.MobEffect handle() {
-        return ((CraftPotionEffectType) (Object) this).getHandle();
+        // PotionEffectType.SPEED etc. are PotionEffectTypeWrapper instances at runtime;
+        // unwrap via getType() before the CraftPotionEffectType cast.
+        org.bukkit.potion.PotionEffectType type =
+                (org.bukkit.potion.PotionEffectType) (Object) this;
+        while (type instanceof org.bukkit.potion.PotionEffectTypeWrapper wrapper) {
+            type = wrapper.getType();
+        }
+        return ((CraftPotionEffectType) type).getHandle();
     }
 
     @Unique
