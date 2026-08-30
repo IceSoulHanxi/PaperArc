@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.Unique;
 import com.google.common.base.Preconditions;
 
 import com.ixnah.mc.paperarc.bridge.CampfireBlockEntityBridge;
+import com.ixnah.mc.paperarc.bridge.craft.CraftBlockEntityStateBridge;
 import net.minecraft.world.level.block.entity.CampfireBlockEntity;
 
 /**
@@ -22,18 +23,16 @@ import net.minecraft.world.level.block.entity.CampfireBlockEntity;
  * {@link com.ixnah.mc.paperarc.bridge.CampfireBlockEntityBridge}.
  *
  * {@code CraftBlockEntityState#getSnapshot()} is protected; it is reached via
- * @Shadow on the CraftCampfire host (subclass of CraftBlockEntityState) — no
- * reflection.
+ * the merged {@link CraftBlockEntityStateBridge} (provider mixin on the base
+ * class) instead of a subclass @Shadow, which Mixin fails to resolve on
+ * CraftCampfire.
  */
 @Mixin(CraftCampfire.class)
 public abstract class CraftCampfireApiMixin {
 
-    @Shadow
-    protected abstract net.minecraft.world.level.block.entity.BlockEntity getSnapshot();
-
     @Unique
     private CampfireBlockEntity paperarc$snapshot() {
-        Object snapshot = this.getSnapshot();
+        Object snapshot = ((CraftBlockEntityStateBridge) (Object) this).paperarc$getSnapshot();
         return snapshot instanceof CampfireBlockEntity cbe ? cbe : null;
     }
 

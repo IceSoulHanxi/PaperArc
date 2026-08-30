@@ -12,6 +12,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import com.ixnah.mc.paperarc.bridge.AbstractFurnaceBlockEntityBridge;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
+import com.ixnah.mc.paperarc.bridge.craft.CraftBlockEntityStateBridge;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.v1_20_R1.CraftServer;
 import org.bukkit.craftbukkit.v1_20_R1.block.CraftBlockState;
@@ -19,7 +20,6 @@ import org.bukkit.craftbukkit.v1_20_R1.block.CraftFurnace;
 import org.bukkit.craftbukkit.v1_20_R1.util.CraftNamespacedKey;
 import org.bukkit.inventory.CookingRecipe;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 /**
@@ -31,18 +31,18 @@ import org.spongepowered.asm.mixin.Unique;
  * multiplier is a Paper-patch member injected into the NMS block entity by
  * {@code AbstractFurnaceBlockEntityFieldsMixin} and reached through
  * {@link com.ixnah.mc.paperarc.bridge.AbstractFurnaceBlockEntityBridge}. The
- * protected {@code CraftBlockEntityState#getSnapshot()} is reached through
- * @Shadow on the CraftFurnace host (subclass of CraftBlockEntityState) — no
- * reflection.
+ * protected {@code CraftBlockEntityState#getSnapshot()} is reached through the
+ * merged {@link CraftBlockEntityStateBridge} (provider mixin on the base class)
+ * instead of a subclass @Shadow.</p>
  */
 @Mixin(CraftFurnace.class)
 public abstract class CraftFurnaceApiMixin {
 
-    @Shadow
-    protected abstract net.minecraft.world.level.block.entity.BlockEntity getSnapshot();
-
-    // Paper start - cook speed multiplier API
-
+    @Unique
+    private AbstractFurnaceBlockEntity paperarc$snapshot() {
+        Object snapshot = ((CraftBlockEntityStateBridge) (Object) this).paperarc$getSnapshot();
+        return snapshot instanceof AbstractFurnaceBlockEntity afbe ? afbe : null;
+    }
     @Unique
     public double getCookSpeedMultiplier() {
         AbstractFurnaceBlockEntity snapshot = this.paperarc$snapshot();
@@ -107,13 +107,6 @@ public abstract class CraftFurnaceApiMixin {
         AbstractFurnaceBlockEntity snapshot = this.paperarc$snapshot();
         // recipesUsed 由 AT 加宽（f_58320_）后直访
         return (Map<ResourceLocation, Integer>) (Map<?, ?>) snapshot.recipesUsed;
-    }
-
-    @Unique
-    private AbstractFurnaceBlockEntity paperarc$snapshot() {
-        // CraftFurnace 宿主是 CraftBlockEntityState 子类，@Shadow getSnapshot() 直访
-        Object snapshot = this.getSnapshot();
-        return snapshot instanceof AbstractFurnaceBlockEntity afbe ? afbe : null;
     }
 
     @Unique

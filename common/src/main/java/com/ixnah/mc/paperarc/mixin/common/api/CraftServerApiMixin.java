@@ -568,59 +568,11 @@ public abstract class CraftServerApiMixin {
     @Unique
     public PotionBrewer getPotionBrewer() {
         if (this.potionBrewer == null) {
-            this.potionBrewer = new PaperarcPotionBrewer();
+            this.potionBrewer = new com.ixnah.mc.paperarc.bridge.PaperarcPotionBrewer();
         }
         return this.potionBrewer;
     }
 
-    /**
-     * PotionBrewer delegating the vanilla lookup methods to the CraftBukkit
-     * base {@link org.bukkit.craftbukkit.v1_20_R1.potion.CraftPotionBrewer} (present in
-     * the deobf classpath) and keeping Paper's custom potion-mix extensions in an
-     * in-memory side map (vanilla brewing registry untouched).
-     */
-    private static final class PaperarcPotionBrewer implements PotionBrewer {
-
-        private static final org.bukkit.craftbukkit.v1_20_R1.potion.CraftPotionBrewer CB_BREWER = new org.bukkit.craftbukkit.v1_20_R1.potion.CraftPotionBrewer();
-        private static final List<PotionMix> MIXES = new ArrayList<>();
-
-        @Override
-        public void addPotionMix(PotionMix mix) {
-            synchronized (MIXES) {
-                MIXES.removeIf(existing -> existing.getKey().equals(mix.getKey()));
-                MIXES.add(mix);
-            }
-        }
-
-        @Override
-        public void removePotionMix(NamespacedKey key) {
-            synchronized (MIXES) {
-                MIXES.removeIf(existing -> existing.getKey().equals(key));
-            }
-        }
-
-        @Override
-        public void resetPotionMixes() {
-            synchronized (MIXES) {
-                MIXES.clear();
-            }
-        }
-
-        @Override
-        public Collection<PotionEffect> getEffects(PotionType type, boolean upgraded, boolean extended) {
-            return CB_BREWER.getEffects(type, upgraded, extended);
-        }
-
-        @Override
-        public Collection<PotionEffect> getEffectsFromDamage(int damage) {
-            return CB_BREWER.getEffectsFromDamage(damage);
-        }
-
-        @Override
-        public org.bukkit.potion.PotionEffect createEffect(org.bukkit.potion.PotionEffectType potion, int duration, int amplifier) {
-            return CB_BREWER.createEffect(potion, duration, amplifier);
-        }
-    }
 
     @Unique
     public void reloadPermissions() {
