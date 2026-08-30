@@ -13,6 +13,10 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(CraftMob.class)
 public abstract class CraftMobApiMixin {
 
+    // Paper 用字段持有 Pathfinder（每个 CraftMob 一个）；注入 Craft 字段。
+    @Unique
+    private com.destroystokyo.paper.entity.Pathfinder pathfinder;
+
     @Shadow
     public abstract Mob getHandle();
 
@@ -106,17 +110,14 @@ public abstract class CraftMobApiMixin {
 
     /**
      * Paper Mob Pathfinding API。每个 CraftMob 实例复用同一个 Pathfinder
-     * （Paper 用字段持有；这里用 ApiState 弱键 side-map 缓存），内部委托 NMS
-     * PathNavigation，见 com.ixnah.mc.paperarc.bridge.PaperPathfinder。
+     * （Paper 用字段持有；注入 Craft 字段），内部委托 NMS PathNavigation，
+     * 见 com.ixnah.mc.paperarc.bridge.PaperPathfinder。
      */
     @Unique
     public com.destroystokyo.paper.entity.Pathfinder getPathfinder() {
-        com.destroystokyo.paper.entity.Pathfinder pathfinder =
-                com.ixnah.mc.paperarc.bridge.ApiState.get(this, "pathfinder", null);
-        if (pathfinder == null) {
-            pathfinder = new com.ixnah.mc.paperarc.bridge.PaperPathfinder(this.getHandle());
-            com.ixnah.mc.paperarc.bridge.ApiState.put(this, "pathfinder", pathfinder);
+        if (this.pathfinder == null) {
+            this.pathfinder = new com.ixnah.mc.paperarc.bridge.PaperPathfinder(this.getHandle());
         }
-        return pathfinder;
+        return this.pathfinder;
     }
 }

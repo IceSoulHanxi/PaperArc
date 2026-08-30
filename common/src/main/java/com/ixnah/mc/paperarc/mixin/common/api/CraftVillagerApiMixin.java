@@ -2,7 +2,6 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.destroystokyo.paper.entity.villager.Reputation;
 import com.google.common.base.Preconditions;
-import com.ixnah.mc.paperarc.bridge.ApiState;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.VillagerData;
 import org.bukkit.craftbukkit.v1_20_R1.entity.CraftVillager;
@@ -19,7 +18,7 @@ import java.util.UUID;
  * More-vanilla-friendly-methods-to-update-trades and Villager-Restocks-API
  * additions on {@link CraftVillager}.
  *
- * <p>Mappings to this codebase's NMS (mojmap 1.21.1):
+ * <p>Mappings to this codebase's NMS (mojmap 1.20.1):
  * <ul>
  *   <li>{@code getRestocksToday()} / {@code setRestocksToday(int)} → private
  *       field {@code Villager#numberOfRestocksToday} (@Shadow).</li>
@@ -29,9 +28,8 @@ import java.util.UUID;
  *   <li>{@code increaseLevel(int)} → {@link VillagerData} level bump with the
  *       same bounds Paper uses ({@code VillagerData.MAX_VILLAGER_LEVEL}).</li>
  *   <li>Reputation API → Paper stores per-CraftVillager
- *       {@code Map<UUID, Reputation>} in a CB-side field; vanilla NMS has no
- *       storage for it, so the map is kept in {@link ApiState} keyed by the NMS
- *       handle (side-map).</li>
+ *       {@code Map<UUID, Reputation>} in a CB-side field; injected here as
+ *       {@code reputations} (aligned with Paper, no prefix).</li>
  * </ul>
  */
 @Mixin(CraftVillager.class)
@@ -40,8 +38,9 @@ public abstract class CraftVillagerApiMixin {
     @Shadow
     public abstract Villager getHandle();
 
+    /** Paper CB-side per-villager reputation map. */
     @Unique
-    private static final String PAPERARC$KEY_REPUTATIONS = "villager$reputations";
+    private Map<UUID, Reputation> reputations = new HashMap<>();
 
     @Unique
     public boolean addTrades(int amount) {
@@ -77,51 +76,32 @@ public abstract class CraftVillagerApiMixin {
 
     @Unique
     public Map<UUID, Reputation> getReputations() {
-        Map<UUID, Reputation> reputations = paperarc$reputations(false);
-        return reputations == null ? new HashMap<>() : new HashMap<>(reputations);
+        return new HashMap<>(this.reputations);
     }
 
     @Unique
     public Reputation getReputation(UUID uniqueId) {
-        Map<UUID, Reputation> reputations = paperarc$reputations(false);
-        return reputations == null ? null : reputations.get(uniqueId);
+        return this.reputations.get(uniqueId);
     }
 
     @Unique
     public void setReputation(UUID uniqueId, Reputation reputation) {
         Preconditions.checkArgument(uniqueId != null, "uniqueId cannot be null");
         Preconditions.checkArgument(reputation != null, "reputation cannot be null");
-        paperarc$reputations(true).put(uniqueId, reputation);
+        this.reputations.put(uniqueId, reputation);
     }
 
     @Unique
     public void setReputations(Map<UUID, Reputation> reputations) {
         Preconditions.checkArgument(reputations != null, "reputations cannot be null");
-        if (reputations.isEmpty()) {
-            ApiState.remove(this.getHandle(), PAPERARC$KEY_REPUTATIONS);
-        } else {
-            ApiState.put(this.getHandle(), PAPERARC$KEY_REPUTATIONS, new HashMap<>(reputations));
+        this.reputations.clear();
+        if (!reputations.isEmpty()) {
+            this.reputations.putAll(reputations);
         }
     }
 
     @Unique
     public void clearReputations() {
-        ApiState.remove(this.getHandle(), PAPERARC$KEY_REPUTATIONS);
-    }
-
-    /**
-     * Side-map accessor: Paper keeps a per-CraftVillager
-     * {@code Map<UUID, Reputation>} field; here it lives in {@link ApiState}
-     * keyed by the NMS villager handle so it dies with the entity.
-     */
-    @Unique
-    private Map<UUID, Reputation> paperarc$reputations(boolean createIfAbsent) {
-        Map<UUID, Reputation> map =
-            ApiState.get(this.getHandle(), PAPERARC$KEY_REPUTATIONS, (Map<UUID, Reputation>) null);
-        if (map == null && createIfAbsent) {
-            map = new HashMap<>();
-            ApiState.put(this.getHandle(), PAPERARC$KEY_REPUTATIONS, map);
-        }
-        return map;
+        this.reputations.clear();
     }
 }

@@ -39,7 +39,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
-import com.ixnah.mc.paperarc.bridge.ApiState;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 
 /**
@@ -68,6 +67,10 @@ public abstract class CraftHumanEntityApiMixin {
 
     @Shadow
     public abstract Player getHandle();
+
+    // Paper 在 NMS LivingEntity 上重新添加 hurtDirection 字段；Arclight 无，注入 Craft 字段。
+    @Unique
+    private float hurtDirection;
 
     @Unique
     private static final MethodHandle PAPERARC$CLOSE_CONTAINER = paperarc$buildCloseHandle();
@@ -236,9 +239,8 @@ public abstract class CraftHumanEntityApiMixin {
 
     @Unique
     public void setHurtDirection(float hurtDirection) {
-        // side-map: 1.21.1 vanilla has no hurtDir storage field on LivingEntity and
-        // Arclight does not carry Paper's re-added field; nothing reads it back yet
-        ApiState.put(this, "hurtDirection", hurtDirection);
+        // 注入字段：1.20.1 vanilla 无 hurtDir 存储字段且 Arclight 无 Paper 补丁字段
+        this.hurtDirection = hurtDirection;
     }
 
     // ------------------------------------------------------------------

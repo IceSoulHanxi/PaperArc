@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
-import com.ixnah.mc.paperarc.bridge.ApiState;
+import com.ixnah.mc.paperarc.bridge.WanderingTraderBridge;
 
 import java.lang.reflect.Field;
 
@@ -19,40 +19,35 @@ import java.lang.reflect.Field;
  * getWanderingTowards/setWanderingTowards map onto vanilla {@code wanderTarget}
  * storage (private field widened via AT f_35840_ and read directly; the public
  * {@code setWanderTarget(BlockPos)} setter is called directly).
- * canDrinkMilk/canDrinkPotion have no vanilla NMS storage (Paper adds the
- * fields in its own patch), so they are kept in {@link ApiState} with Paper's
- * initial value {@code true} as the default.
+ * canDrinkMilk/canDrinkPotion are Paper fields injected into the NMS
+ * {@code WanderingTrader} by {@code WanderingTraderFieldsMixin} and reached
+ * through {@link com.ixnah.mc.paperarc.bridge.WanderingTraderBridge} (Paper's
+ * initial value {@code true}).
  */
 @Mixin(CraftWanderingTrader.class)
 public abstract class CraftWanderingTraderApiMixin {
-
-    @Unique
-    private static final String PAPERARC$KEY_MILK = "wanderingTrader.canDrinkMilk";
-
-    @Unique
-    private static final String PAPERARC$KEY_POTION = "wanderingTrader.canDrinkPotion";
 
     @Shadow
     public abstract WanderingTrader getHandle();
 
     @Unique
     public boolean canDrinkMilk() {
-        return ApiState.get(getHandle(), PAPERARC$KEY_MILK, true);
+        return ((WanderingTraderBridge) getHandle()).paper$canDrinkMilk();
     }
 
     @Unique
     public void setCanDrinkMilk(boolean bool) {
-        ApiState.put(getHandle(), PAPERARC$KEY_MILK, bool);
+        ((WanderingTraderBridge) getHandle()).paper$setCanDrinkMilk(bool);
     }
 
     @Unique
     public boolean canDrinkPotion() {
-        return ApiState.get(getHandle(), PAPERARC$KEY_POTION, true);
+        return ((WanderingTraderBridge) getHandle()).paper$canDrinkPotion();
     }
 
     @Unique
     public void setCanDrinkPotion(boolean bool) {
-        ApiState.put(getHandle(), PAPERARC$KEY_POTION, bool);
+        ((WanderingTraderBridge) getHandle()).paper$setCanDrinkPotion(bool);
     }
 
     @Unique

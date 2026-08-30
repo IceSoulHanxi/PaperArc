@@ -1,7 +1,6 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.google.common.base.Preconditions;
-import com.ixnah.mc.paperarc.bridge.ApiState;
 import io.papermc.paper.math.Position;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -29,8 +28,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(CraftSculkCatalyst.class)
 public abstract class CraftSculkCatalystApiMixin {
 
+    // Paper 无 per-catalyst bloom 存储（side addition）；注入 Craft 字段。
     @Unique
-    private static final String PAPERARC_BLOOM_KEY = "paperarc:bloom";
+    private boolean bloom;
 
     @Unique
     private boolean isPlaced() {
@@ -62,11 +62,11 @@ public abstract class CraftSculkCatalystApiMixin {
 
     @Unique
     public boolean isBloom() {
-        return ApiState.get(this, PAPERARC_BLOOM_KEY, Boolean.FALSE);
+        return this.bloom;
     }
 
     @Unique
     public void setBloom(boolean bloom) {
-        ApiState.put(this, PAPERARC_BLOOM_KEY, bloom);
+        this.bloom = bloom;
     }
 }

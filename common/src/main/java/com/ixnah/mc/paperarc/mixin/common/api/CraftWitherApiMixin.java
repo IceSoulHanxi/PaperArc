@@ -1,21 +1,22 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
+import com.ixnah.mc.paperarc.bridge.WitherBossBridge;
+import net.minecraft.world.entity.boss.wither.WitherBoss;
 import org.bukkit.craftbukkit.v1_20_R1.entity.CraftWither;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
-import com.ixnah.mc.paperarc.bridge.ApiState;
-import net.minecraft.world.entity.boss.wither.WitherBoss;
-
 /**
  * Adds Paper's Missing-Entity-API additions to CraftWither.
  *
- * Paper ref: patches/server/Missing-Entity-API.patch (CraftWither + WitherBoss hunks).
+ * <p>Paper ref: patches/server/Missing-Entity-API.patch (CraftWither + WitherBoss hunks).
  * All methods delegate straight to NMS WitherBoss except setCanTravelThroughPortals:
- * Paper stores the flag in a private {@code canPortal} field added to WitherBoss, which
- * does not exist in vanilla mojmap NMS, so it is kept in the ApiState side-map keyed by
- * the handle instance (no vanilla consumer reads it; noted in report).
+ * Paper stores the flag in a private {@code canPortal} field added to WitherBoss,
+ * injected here by {@code WitherBossFieldsMixin} and reached through
+ * {@link WitherBossBridge}. Paper adds a NMS setter
+ * {@code setCanTravelThroughPortals(boolean)} (used by the bridge under that name)
+ * and no getter, so the read path uses {@code paper$canPortal()}.
  */
 @Mixin(CraftWither.class)
 public abstract class CraftWitherApiMixin {
@@ -46,10 +47,7 @@ public abstract class CraftWitherApiMixin {
 
     @Unique
     public void setCanTravelThroughPortals(boolean value) {
-        // Paper stores a private WitherBoss#canPortal field (Missing-Entity-API.patch);
-        // vanilla mojmap has no such field, so keep it in the ApiState side-map and
-        // honour it at read time.
-        ApiState.put(this.getHandle(), "canPortal", value);
+        ((WitherBossBridge) this.getHandle()).setCanTravelThroughPortals(value);
     }
 
     @Unique
@@ -60,8 +58,7 @@ public abstract class CraftWitherApiMixin {
 
     @Unique
     public boolean canChangeDimensions() {
-        Boolean portal = ApiState.get(this.getHandle(), "canPortal", null);
-        if (portal != null && !portal) {
+        if (!((WitherBossBridge) this.getHandle()).paper$canPortal()) {
             return false;
         }
         return this.getHandle().canChangeDimensions();

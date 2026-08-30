@@ -56,7 +56,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
-import com.ixnah.mc.paperarc.bridge.ApiState;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 /**
  * Adds Paper's CraftWorld APIs missing from Arclight's Spigot CraftBukkit.
@@ -85,6 +84,26 @@ public abstract class CraftWorldApiMixin {
     @Shadow
     public abstract <T> void spawnParticle(org.bukkit.Particle particle, double x, double y, double z, int count,
             double offsetX, double offsetY, double offsetZ, double extra, T data, boolean forceShow);
+
+    // ---- Paper 补充字段（注入 CraftWorld，字段名对齐 Paper patch 无前缀）----
+
+    @Unique
+    private Integer sendViewDistance;
+
+    @Unique
+    private Integer viewDistance;
+
+    @Unique
+    private Integer simulationDistance;
+
+    @Unique
+    private boolean voidDamageEnabled = true;
+
+    @Unique
+    private float voidDamageAmount = 4.0F;
+
+    @Unique
+    private double voidDamageMinBuildHeightOffset;
 
     @Unique
     public double getCoordinateScale() {
@@ -182,26 +201,26 @@ public abstract class CraftWorldApiMixin {
 
     @Unique
     public int getSendViewDistance() {
-        return ApiState.get(this, "sendViewDistance", this.getViewDistance() + 1);
+        return this.sendViewDistance != null ? this.sendViewDistance : this.getViewDistance() + 1;
     }
 
     @Unique
     public void setSendViewDistance(int sendViewDistance) {
         Preconditions.checkArgument(sendViewDistance >= -1, "sendViewDistance must be >= -1");
-        ApiState.put(this, "sendViewDistance", sendViewDistance);
+        this.sendViewDistance = sendViewDistance;
     }
 
     @Unique
     public void setViewDistance(int viewDistance) {
         // vanilla 视距是服务器全局的；这里仅记录每世界覆写值
         Preconditions.checkArgument(viewDistance >= -1, "viewDistance must be >= -1");
-        ApiState.put(this, "viewDistance", viewDistance);
+        this.viewDistance = viewDistance;
     }
 
     @Unique
     public void setSimulationDistance(int simulationDistance) {
         Preconditions.checkArgument(simulationDistance >= -1, "simulationDistance must be >= -1");
-        ApiState.put(this, "simulationDistance", simulationDistance);
+        this.simulationDistance = simulationDistance;
     }
 
     @Unique
@@ -236,33 +255,33 @@ public abstract class CraftWorldApiMixin {
 
     @Unique
     public boolean isVoidDamageEnabled() {
-        return ApiState.get(this, "voidDamageEnabled", Boolean.TRUE);
+        return this.voidDamageEnabled;
     }
 
     @Unique
     public void setVoidDamageEnabled(boolean enabled) {
-        ApiState.put(this, "voidDamageEnabled", enabled);
+        this.voidDamageEnabled = enabled;
     }
 
     @Unique
     public float getVoidDamageAmount() {
-        return ApiState.get(this, "voidDamageAmount", 4.0F);
+        return this.voidDamageAmount;
     }
 
     @Unique
     public void setVoidDamageAmount(float amount) {
         Preconditions.checkArgument(amount >= 0.0F, "amount must be >= 0");
-        ApiState.put(this, "voidDamageAmount", amount);
+        this.voidDamageAmount = amount;
     }
 
     @Unique
     public double getVoidDamageMinBuildHeightOffset() {
-        return ApiState.get(this, "voidDamageMinBuildHeightOffset", 0.0D);
+        return this.voidDamageMinBuildHeightOffset;
     }
 
     @Unique
     public void setVoidDamageMinBuildHeightOffset(double offset) {
-        ApiState.put(this, "voidDamageMinBuildHeightOffset", offset);
+        this.voidDamageMinBuildHeightOffset = offset;
     }
 
     @Unique

@@ -1,6 +1,6 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
-import com.ixnah.mc.paperarc.bridge.ApiState;
+import com.ixnah.mc.paperarc.bridge.PhantomBridge;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.monster.Phantom;
 import org.bukkit.Location;
@@ -17,11 +17,11 @@ import org.spongepowered.asm.mixin.Unique;
  * accessor, so it is widened via AT (f_33098_) and accessed directly — no
  * reflection.</p>
  *
- * <p>{@code shouldBurnInDay} and {@code spawningEntity} live in fields added by
- * Paper's server patches which do not exist in this Arclight-based runtime, so
- * they are stored side-map style in {@link ApiState} keyed by the NMS entity
- * ({@code shouldBurnInDay} defaults to {@code true}, {@code spawningEntity} to
- * {@code null}, both matching Paper's defaults).</p>
+ * <p>{@code shouldBurnInDay} and {@code spawningEntity} are fields added by
+ * Paper's server patches; they are injected into the NMS {@code Phantom} by
+ * {@code PhantomFieldsMixin} and reached through
+ * {@link com.ixnah.mc.paperarc.bridge.PhantomBridge} (defaults match Paper:
+ * {@code shouldBurnInDay=true}, {@code spawningEntity=null}).</p>
  */
 @Mixin(CraftPhantom.class)
 public abstract class CraftPhantomApiMixin {
@@ -30,24 +30,18 @@ public abstract class CraftPhantomApiMixin {
     public abstract Phantom getHandle();
 
     @Unique
-    private static final String PAPERARC$SHOULD_BURN_KEY = "shouldBurnInDay";
-
-    @Unique
-    private static final String PAPERARC$SPAWNING_ENTITY_KEY = "spawningEntity";
-
-    @Unique
     public java.util.UUID getSpawningEntity() {
-        return ApiState.get(getHandle(), PAPERARC$SPAWNING_ENTITY_KEY, (java.util.UUID) null);
+        return ((com.ixnah.mc.paperarc.bridge.PhantomBridge) getHandle()).paper$getSpawningEntity();
     }
 
     @Unique
     public boolean shouldBurnInDay() {
-        return ApiState.get(getHandle(), PAPERARC$SHOULD_BURN_KEY, Boolean.TRUE);
+        return ((com.ixnah.mc.paperarc.bridge.PhantomBridge) getHandle()).shouldBurnInDay();
     }
 
     @Unique
     public void setShouldBurnInDay(boolean shouldBurnInDay) {
-        ApiState.put(getHandle(), PAPERARC$SHOULD_BURN_KEY, shouldBurnInDay);
+        ((com.ixnah.mc.paperarc.bridge.PhantomBridge) getHandle()).setShouldBurnInDay(shouldBurnInDay);
     }
 
     @Unique

@@ -1,7 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.google.common.base.Preconditions;
-import com.ixnah.mc.paperarc.bridge.ApiState;
+import com.ixnah.mc.paperarc.bridge.EntityBridge;
 import com.ixnah.mc.paperarc.bridge.scheduler.SimpleEntityScheduler;
 import io.papermc.paper.entity.TeleportFlag;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -45,11 +45,20 @@ import java.util.concurrent.CompletableFuture;
 public abstract class CraftEntityApiMixin {
 
     @Unique
-    private static final String PAPERARC_ORIGIN_KEY = "paperarc:origin";
-    @Unique
-    private static final String PAPERARC_FIXED_POSE_KEY = "paperarc:fixedPose";
-    @Unique
-    private static final String PAPERARC_FREEZE_LOCKED_KEY = "paperarc:freezeLocked";
+    public Location getOrigin() {
+        // Paper stores origin in NMS fields (Entity-Origin-API.patch) injected by
+        // EntityFieldsMixin and reached through EntityBridge
+        EntityBridge bridge = (EntityBridge) this.getHandle();
+        org.bukkit.util.Vector origin = bridge.getOriginVector();
+        if (origin == null) {
+            return null;
+        }
+        org.bukkit.World world = null;
+        if (bridge.getOriginWorld() != null) {
+            world = org.bukkit.Bukkit.getWorld(bridge.getOriginWorld());
+        }
+        return origin.toLocation(world);
+    }
 
     @Shadow
     public abstract Entity getHandle();
@@ -243,39 +252,30 @@ public abstract class CraftEntityApiMixin {
 
     @Unique
     public boolean hasFixedPose() {
-        // Paper-added NMS field `fixedPose`; side-map mirror keeps the value
-        // when the runtime field is unavailable
-        if (paperarc$field(Entity.class, "fixedPose") != null) {
-            return paperarc$getBoolField(this.getHandle(), "fixedPose", false);
-        }
-        return ApiState.get(this.getHandle(), PAPERARC_FIXED_POSE_KEY, Boolean.FALSE);
+        return ((com.ixnah.mc.paperarc.bridge.EntityBridge) this.getHandle()).paper$fixedPose();
     }
 
     @Unique
     public void setPose(org.bukkit.entity.Pose pose, boolean fixed) {
         Preconditions.checkArgument(pose != null, "pose cannot be null");
         Entity handle = this.getHandle();
+        com.ixnah.mc.paperarc.bridge.EntityBridge bridge =
+                (com.ixnah.mc.paperarc.bridge.EntityBridge) handle;
+        bridge.paper$setFixedPose(false);
         handle.setPose(net.minecraft.world.entity.Pose.valueOf(pose.name()));
-        ApiState.put(handle, PAPERARC_FIXED_POSE_KEY, fixed);
-        paperarc$setBoolField(handle, "fixedPose", fixed);
+        bridge.paper$setFixedPose(fixed);
     }
 
     // ===== freeze tick lock API =====
 
     @Unique
     public boolean isFreezeTickingLocked() {
-        // Paper-added NMS field `freezeLocked`; side-map mirror as fallback
-        if (paperarc$field(Entity.class, "freezeLocked") != null) {
-            return paperarc$getBoolField(this.getHandle(), "freezeLocked", false);
-        }
-        return ApiState.get(this.getHandle(), PAPERARC_FREEZE_LOCKED_KEY, Boolean.FALSE);
+        return ((com.ixnah.mc.paperarc.bridge.EntityBridge) this.getHandle()).paper$freezeLocked();
     }
 
     @Unique
     public void lockFreezeTicks(boolean locked) {
-        Entity handle = this.getHandle();
-        ApiState.put(handle, PAPERARC_FREEZE_LOCKED_KEY, locked);
-        paperarc$setBoolField(handle, "freezeLocked", locked);
+        ((com.ixnah.mc.paperarc.bridge.EntityBridge) this.getHandle()).paper$setFreezeLocked(locked);
     }
 
 
@@ -302,13 +302,6 @@ public abstract class CraftEntityApiMixin {
             }
         }
         return CreatureSpawnEvent.SpawnReason.DEFAULT;
-    }
-
-    @Unique
-    public Location getOrigin() {
-        // Paper stores origin in NMS fields added by their patch; no such storage
-        // here -> side-map keyed by the NMS handle, null when unset
-        return ApiState.get(this.getHandle(), PAPERARC_ORIGIN_KEY, null);
     }
 
     @Unique

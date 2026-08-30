@@ -1,59 +1,17 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
-import com.google.common.base.Preconditions;
-
-import com.ixnah.mc.paperarc.bridge.ApiState;
-import net.minecraft.world.level.block.entity.BrewingStandBlockEntity;
 import org.bukkit.craftbukkit.v1_20_R1.block.CraftBrewingStand;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 
 /**
- * Port of Paper's Add-recipeBrewTime.patch additions on {@link CraftBrewingStand}:
- * {@code BrewingStand#getRecipeBrewTime()} / {@code setRecipeBrewTime(int)}.
+ * Reserved for Paper brewing additions on {@link CraftBrewingStand}.
  *
- * <p>Paper's implementation reads/writes the public int field
- * {@code recipeBrewTime} (default 400) which it adds to
- * {@link BrewingStandBlockEntity} — that field only exists in the patched
- * runtime jar, not in the vanilla mojmap NMS, so it is kept in the
- * {@link ApiState} side map keyed by the snapshot block entity (default 400).
- * {@code CraftBlockEntityState#getSnapshot()} is protected and reached via
- * @Shadow on the CraftBrewingStand host — no reflection.</p>
+ * <p>paper-api 1.20.1's {@code BrewingStand} interface only exposes
+ * {@code getBrewingTime()}/{@code setBrewingTime(int)} and
+ * {@code getFuelLevel()}/{@code setFuelLevel(int)} — the 1.21-era
+ * {@code getRecipeBrewTime()}/{@code setRecipeBrewTime(int)} pair is not part
+ * of the 1.20.1 API surface, so no supplementary methods are needed here.</p>
  */
 @Mixin(CraftBrewingStand.class)
 public abstract class CraftBrewingStandApiMixin {
-
-    @Unique
-    private static final String PAPERARC$RECIPE_BREW_TIME_KEY = "paperarc$recipeBrewTime";
-
-    @Shadow
-    protected abstract net.minecraft.world.level.block.entity.BlockEntity getSnapshot();
-
-    @Unique
-    public int getRecipeBrewTime() {
-        BrewingStandBlockEntity snapshot = this.paperarc$snapshot();
-        if (snapshot == null) {
-            return 400; // Paper/vanilla default recipe brew time
-        }
-        Integer stored = ApiState.get(snapshot, PAPERARC$RECIPE_BREW_TIME_KEY, null);
-        return stored == null ? 400 : stored;
-    }
-
-    @Unique
-    public void setRecipeBrewTime(int recipeBrewTime) {
-        Preconditions.checkArgument(recipeBrewTime > 0, "recipeBrewTime must be positive");
-        BrewingStandBlockEntity snapshot = this.paperarc$snapshot();
-        if (snapshot == null) {
-            return;
-        }
-        ApiState.put(snapshot, PAPERARC$RECIPE_BREW_TIME_KEY, recipeBrewTime);
-    }
-
-    @Unique
-    private BrewingStandBlockEntity paperarc$snapshot() {
-        // CraftBrewingStand 宿主是 CraftBlockEntityState 子类，@Shadow getSnapshot() 直访
-        Object snapshot = this.getSnapshot();
-        return snapshot instanceof BrewingStandBlockEntity bs ? bs : null;
-    }
 }

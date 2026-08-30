@@ -10,7 +10,7 @@ import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
-import com.ixnah.mc.paperarc.bridge.ApiState;
+import com.ixnah.mc.paperarc.bridge.AbstractFurnaceBlockEntityBridge;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.v1_20_R1.CraftServer;
@@ -28,17 +28,15 @@ import org.spongepowered.asm.mixin.Unique;
  *
  * <p>{@code recipesUsed} (f_58320_) and {@code cookingTotalTime} (f_58319_)
  * are vanilla fields widened via AT and accessed directly. The cook speed
- * multiplier and Paper's {@code getRecipesUsed()} accessor are Paper-patch
- * members that do not exist in the vanilla runtime NMS, so they are kept in
- * the {@link ApiState} side map keyed by the NMS block entity. The protected
- * {@code CraftBlockEntityState#getSnapshot()} is reached through @Shadow on
- * the CraftFurnace host (subclass of CraftBlockEntityState) — no reflection.
+ * multiplier is a Paper-patch member injected into the NMS block entity by
+ * {@code AbstractFurnaceBlockEntityFieldsMixin} and reached through
+ * {@link com.ixnah.mc.paperarc.bridge.AbstractFurnaceBlockEntityBridge}. The
+ * protected {@code CraftBlockEntityState#getSnapshot()} is reached through
+ * @Shadow on the CraftFurnace host (subclass of CraftBlockEntityState) — no
+ * reflection.
  */
 @Mixin(CraftFurnace.class)
 public abstract class CraftFurnaceApiMixin {
-
-    @Unique
-    private static final String PAPERARC$COOK_SPEED_KEY = "paperarc$cookSpeedMultiplier";
 
     @Shadow
     protected abstract net.minecraft.world.level.block.entity.BlockEntity getSnapshot();
@@ -48,11 +46,8 @@ public abstract class CraftFurnaceApiMixin {
     @Unique
     public double getCookSpeedMultiplier() {
         AbstractFurnaceBlockEntity snapshot = this.paperarc$snapshot();
-        if (snapshot == null) {
-            return 1.0D;
-        }
-        Double stored = ApiState.get(snapshot, PAPERARC$COOK_SPEED_KEY, null);
-        return stored == null ? 1.0D : stored;
+        return snapshot == null ? 1.0D
+                : ((AbstractFurnaceBlockEntityBridge) snapshot).paper$getCookSpeedMultiplier();
     }
 
     @Unique
@@ -60,12 +55,9 @@ public abstract class CraftFurnaceApiMixin {
         Preconditions.checkArgument(multiplier >= 0, "Furnace speed multiplier cannot be negative");
         Preconditions.checkArgument(multiplier <= 200, "Furnace speed multiplier cannot more than 200");
         AbstractFurnaceBlockEntity snapshot = this.paperarc$snapshot();
-        if (snapshot == null) {
-            return;
+        if (snapshot != null) {
+            ((AbstractFurnaceBlockEntityBridge) snapshot).paper$setCookSpeedMultiplier(multiplier);
         }
-        ApiState.put(snapshot, PAPERARC$COOK_SPEED_KEY, multiplier);
-        // Paper 同时按新倍率重算 cookingTotalTime；倍率语义由 side-map 生效，
-        // 运行时不改动 vanilla 的烧炼节奏（无 Paper 补丁字段可写）。
     }
 
     // Paper start - Furnace RecipesUsed API

@@ -1,7 +1,6 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.google.common.base.Preconditions;
-import com.ixnah.mc.paperarc.bridge.ApiState;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -23,9 +22,9 @@ import java.util.UUID;
  *   <li>{@code hasLeftShooter()} / {@code setHasLeftShooter(boolean)} → private
  *       field {@code leftOwner} (@Shadow).</li>
  *   <li>{@code hasBeenShot()} / {@code setHasBeenShot(boolean)} → Paper keeps
- *       this flag in an NMS-patched field that vanilla 1.21.1 {@code Projectile}
- *       has no storage for, so it is kept in {@link ApiState} keyed by the NMS
- *       handle (side-map, default {@code false}).</li>
+ *       this flag in the NMS-patched {@code Projectile.hasBeenShot} field; the
+ *       vanilla 1.20.1 NMS has the equivalent private field f_150164_, widened
+ *       via AT (mojmap name {@code hasBeenShot}) and read/written directly.</li>
  *   <li>{@code canHitEntity(Entity)} → protected NMS
  *       {@code Projectile#canHitEntity(Entity)} via cached reflection.</li>
  *   <li>{@code hitEntity(...)} → protected NMS {@code Projectile#onHit(HitResult)}
@@ -40,9 +39,6 @@ public abstract class CraftProjectileApiMixin {
     public abstract Projectile getHandle();
 
     @Unique
-    private static final String PAPERARC$KEY_HAS_BEEN_SHOT = "hasBeenShot";
-
-    @Unique
     public boolean canHitEntity(org.bukkit.entity.Entity entity) {
         return this.getHandle().canHitEntity(((CraftEntity) entity).getHandle());
     }
@@ -54,7 +50,7 @@ public abstract class CraftProjectileApiMixin {
 
     @Unique
     public boolean hasBeenShot() {
-        return ApiState.get(this.getHandle(), PAPERARC$KEY_HAS_BEEN_SHOT, Boolean.FALSE);
+        return this.getHandle().hasBeenShot;
     }
 
     @Unique
@@ -80,7 +76,7 @@ public abstract class CraftProjectileApiMixin {
 
     @Unique
     public void setHasBeenShot(boolean hasBeenShot) {
-        ApiState.put(this.getHandle(), PAPERARC$KEY_HAS_BEEN_SHOT, hasBeenShot);
+        this.getHandle().hasBeenShot = hasBeenShot;
     }
 
     @Unique

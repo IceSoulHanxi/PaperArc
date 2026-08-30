@@ -1,7 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.google.common.base.Preconditions;
-import com.ixnah.mc.paperarc.bridge.ApiState;
+import com.ixnah.mc.paperarc.bridge.FallingBlockEntityBridge;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -19,9 +19,10 @@ import org.spongepowered.asm.mixin.Unique;
  * Adds Paper's Expand-FallingBlock-API to {@link CraftFallingBlock}.
  *
  * <p>The {@code autoExpire} flag lives in an NMS field added by Paper's server
- * patch ({@code FallingBlockEntity.autoExpire}) which does not exist in this
- * Arclight-based runtime, so it is stored side-map style in {@link ApiState}
- * keyed by the NMS entity (default {@code true}, matching Paper's default).</p>
+ * patch ({@code FallingBlockEntity.autoExpire}); it is injected into the NMS
+ * class by {@code FallingBlockEntityFieldsMixin} and reached through
+ * {@link com.ixnah.mc.paperarc.bridge.FallingBlockEntityBridge} (default
+ * {@code true}, matching Paper's default).</p>
  *
  * <p>{@code FallingBlockEntity.blockState} is private in vanilla 1.21.1 with no
  * public setter, so {@link #setBlockData(BlockState)} writes it directly (the
@@ -40,16 +41,13 @@ public abstract class CraftFallingBlockApiMixin {
     }
 
     @Unique
-    private static final String PAPERARC$AUTO_EXPIRE_KEY = "autoExpire";
-
-    @Unique
     public boolean doesAutoExpire() {
-        return ApiState.get(getHandle(), PAPERARC$AUTO_EXPIRE_KEY, Boolean.TRUE);
+        return ((com.ixnah.mc.paperarc.bridge.FallingBlockEntityBridge) getHandle()).paper$autoExpire();
     }
 
     @Unique
     public void shouldAutoExpire(boolean autoExpires) {
-        ApiState.put(getHandle(), PAPERARC$AUTO_EXPIRE_KEY, autoExpires);
+        ((com.ixnah.mc.paperarc.bridge.FallingBlockEntityBridge) getHandle()).paper$setAutoExpire(autoExpires);
     }
 
     @Unique
