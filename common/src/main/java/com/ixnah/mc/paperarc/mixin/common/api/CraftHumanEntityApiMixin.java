@@ -335,4 +335,15 @@ public abstract class CraftHumanEntityApiMixin {
             throw new IllegalStateException("PaperArc: Player shoulder setter not found", t);
         }
     }
+
+    /**
+     * Paper's InventoryCloseEvent-Reason-API overload. Vanilla 1.20.1 has only the
+     * no-arg {@code ServerPlayer.closeContainer()}; the Paper-injected
+     * {@code closeContainer(Reason)} overload does not exist, so the reason is
+     * accepted for interface compatibility and the vanilla close path is used.
+     */
+    @Unique
+    public void closeInventory(org.bukkit.event.inventory.InventoryCloseEvent.Reason reason) {
+        this.getHandle().closeContainer();
+    }
 }

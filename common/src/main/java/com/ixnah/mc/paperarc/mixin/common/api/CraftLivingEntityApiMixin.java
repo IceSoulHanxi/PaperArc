@@ -507,4 +507,25 @@ public abstract class CraftLivingEntityApiMixin {
         }
         this.getHandle().startUsingItem(nmsHand);
     }
+
+    /**
+     * Paper's Add-a-consumer-parameter-to-ProjectileSource-launchP.patch:
+     * {@code launchProjectile(Class, Vector, Consumer)} — delegates to the
+     * spigot-baseline {@code launchProjectile(Class, Vector)} implemented by
+     * {@code CraftLivingEntity}, then invokes the consumer on the result.
+     */
+    @Shadow
+    public abstract <T extends org.bukkit.entity.Projectile> T launchProjectile(
+            Class<? extends T> projectile, org.bukkit.util.Vector velocity);
+
+    @Unique
+    public <T extends org.bukkit.entity.Projectile> T launchProjectile(
+            Class<? extends T> projectile, org.bukkit.util.Vector velocity,
+            org.bukkit.util.Consumer<T> function) {
+        T launch = this.launchProjectile(projectile, velocity);
+        if (function != null) {
+            function.accept(launch);
+        }
+        return launch;
+    }
 }

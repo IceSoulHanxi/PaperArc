@@ -39,4 +39,13 @@ public abstract class CraftPersistentDataContainerApiMixin {
             this.putAll(compound.tags);
         }
     }
+
+    /**
+     * Paper's PersistentDataContainer {@code has(NamespacedKey)} overload; the
+     * tag map is keyed by the full key string.
+     */
+    @Unique
+    public boolean has(org.bukkit.NamespacedKey key) {
+        return this.customDataTags.containsKey(key.toString());
+    }
 }
