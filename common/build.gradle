@@ -132,6 +132,30 @@ processResources {
     }
 }
 
+// 从 paper-api jar 提取 ExperienceOrb$SpawnReason.class 字节，嵌入 META-INF/paperarc/runtime/
+// （不放在 org/bukkit/** 下——模块系统会认为 paperarc 也导出 org.bukkit.entity 包，导致
+//  与 arclight 的 ResolutionException；由运行时 SpawnReasonInjector defineClass 注入）
+tasks.register('embedSpawnReason') {
+    def outDir = file("${buildDir}/resources/main/META-INF/paperarc/runtime")
+    def paperApi = configurations.compileClasspath.files.find { it.name.startsWith('paper-api-') }
+    inputs.file(paperApi)
+    outputs.dir(outDir)
+    doLast {
+        outDir.mkdirs()
+        def out = new File(outDir, 'spawnreason.bin')
+        new java.util.zip.ZipFile(paperApi).withCloseable { zip ->
+            def entry = zip.getEntry('org/bukkit/entity/ExperienceOrb$SpawnReason.class')
+            if (entry == null) {
+                throw new GradleException('ExperienceOrb$SpawnReason.class not found in paper-api jar')
+            }
+            zip.getInputStream(entry).withCloseable { ins ->
+                out.withOutputStream { os -> ins.transferTo(os) }
+            }
+        }
+    }
+}
+processResources.dependsOn('embedSpawnReason')
+
 // 打包：shade 依赖（paper-api/adventure/mixinextras）合并进 jar，排除 bukkit 运行时由 Arclight 提供
 jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE

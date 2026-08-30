@@ -14,13 +14,16 @@ import java.util.UUID;
  *
  * {@code count} is widened via AT (public net.minecraft.world.entity.ExperienceOrb
  * f_147072_) and accessed directly — no reflection. The CB-added NMS fields
- * {@code sourceEntityId} and {@code triggerEntityId} are injected into the NMS
- * orb by {@code ExperienceOrbFieldsMixin} and reached through
- * {@link com.ixnah.mc.paperarc.bridge.ExperienceOrbBridge}; they default to
- * {@code null} until a spawn-site tracking bridge populates them.
+ * {@code sourceEntityId}, {@code triggerEntityId} and {@code spawnReason} are
+ * injected into the NMS orb by {@code ExperienceOrbFieldsMixin} and reached
+ * through {@link com.ixnah.mc.paperarc.bridge.ExperienceOrbBridge}; they
+ * default to {@code null} (IDs) / {@code UNKNOWN} (spawnReason) until a
+ * spawn-site tracking bridge populates them.
  *
- * <p>{@code spawnReason} is not exposed (its paper-api enum type is absent from
- * the Arclight runtime).</p>
+ * <p>{@code spawnReason} is exposed again: its paper-api enum type
+ * {@code org.bukkit.entity.ExperienceOrb.SpawnReason} is injected into the
+ * classloader at mod construction by {@code SpawnReasonInjector} (embedded
+ * class bytes), so the runtime now has the type needed by the mixin signature.</p>
  */
 @Mixin(CraftExperienceOrb.class)
 public abstract class CraftExperienceOrbApiMixin {
@@ -46,6 +49,15 @@ public abstract class CraftExperienceOrbApiMixin {
     @Unique
     public UUID getTriggerEntityId() {
         return ((ExperienceOrbBridge) this.getHandle()).paper$getTriggerEntityId();
+    }
+
+    @Unique
+    public org.bukkit.entity.ExperienceOrb.SpawnReason getSpawnReason() {
+        int ordinal = ((ExperienceOrbBridge) this.getHandle()).paper$getSpawnReasonOrdinal();
+        org.bukkit.entity.ExperienceOrb.SpawnReason[] values =
+                org.bukkit.entity.ExperienceOrb.SpawnReason.values();
+        return ordinal >= 0 && ordinal < values.length ? values[ordinal]
+                : org.bukkit.entity.ExperienceOrb.SpawnReason.UNKNOWN;
     }
 
 }

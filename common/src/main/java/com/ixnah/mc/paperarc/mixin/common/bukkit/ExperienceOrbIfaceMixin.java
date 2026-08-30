@@ -16,4 +16,7 @@ public interface ExperienceOrbIfaceMixin {
 
     @Unique
     public abstract java.util.UUID getSourceEntityId();
+
+    @Unique
+    public abstract org.bukkit.entity.ExperienceOrb.SpawnReason getSpawnReason();
 }
