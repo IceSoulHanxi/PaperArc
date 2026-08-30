@@ -528,4 +528,17 @@ public abstract class CraftLivingEntityApiMixin {
         }
         return launch;
     }
+
+    /**
+     * Paper's living-entity-allow-attribute-registration.patch:
+     * {@code Attributable#registerAttribute(Attribute)} — inserts the attribute into
+     * the handle's {@code AttributeMap} via the mixin-injected
+     * {@code AttributeMap#registerAttribute(Attribute)} (mojmap AttributeMapFieldsMixin).
+     */
+    @Unique
+    public void registerAttribute(org.bukkit.attribute.Attribute attribute) {
+        com.google.common.base.Preconditions.checkArgument(attribute != null, "attribute");
+        ((com.ixnah.mc.paperarc.bridge.AttributeMapBridge) this.getHandle().attributes)
+                .registerAttribute(org.bukkit.craftbukkit.v1_20_R1.attribute.CraftAttributeMap.toMinecraft(attribute));
+    }
 }
