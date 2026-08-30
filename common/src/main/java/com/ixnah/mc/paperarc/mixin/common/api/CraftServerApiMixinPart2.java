@@ -167,13 +167,7 @@ public abstract class CraftServerApiMixinPart2 {
     public boolean isTickingWorlds() {
         // Approximation of Paper's flag via MinecraftServer#isStopped(): worlds
         // stay loaded/ticking until the server has fully stopped.
-        try {
-            Object stopped = net.minecraft.server.MinecraftServer.class.getMethod("isStopped")
-                    .invoke(this.getServer());
-            return !((Boolean) stopped);
-        } catch (ReflectiveOperationException e) {
-            return true;
-        }
+        return !this.getServer().isStopped();
     }
 
     @Unique

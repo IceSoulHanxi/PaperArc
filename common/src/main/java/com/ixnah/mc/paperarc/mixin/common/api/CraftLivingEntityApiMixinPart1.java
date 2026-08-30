@@ -43,23 +43,6 @@ public abstract class CraftLivingEntityApiMixinPart1 {
     public abstract LivingEntity getHandle();
 
     @Unique
-    private static volatile Method PAPERARC$COMPLETE_USING_ITEM_METHOD;
-
-    @Unique
-    private static volatile Method PAPERARC$CRAFT_STACK_GET_HANDLE_METHOD;
-
-    @Unique
-    private static Method paperarc$method(Class<?> owner, String name, Class<?>... params) {
-        try {
-            Method resolved = owner.getDeclaredMethod(name, params);
-            resolved.setAccessible(true);
-            return resolved;
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("PaperArc: NMS method not found: " + owner.getName() + "." + name, e);
-        }
-    }
-
-    @Unique
     public void broadcastSlotBreak(EquipmentSlot slot) {
         net.minecraft.world.entity.EquipmentSlot nmsSlot = CraftEquipmentSlot.getNMS(slot);
         LivingEntity handle = this.getHandle();
@@ -96,18 +79,8 @@ public abstract class CraftLivingEntityApiMixinPart1 {
 
     @Unique
     public void completeUsingActiveItem() {
-        try {
-            if (PAPERARC$COMPLETE_USING_ITEM_METHOD == null) {
-                synchronized (CraftLivingEntityApiMixinPart1.class) {
-                    if (PAPERARC$COMPLETE_USING_ITEM_METHOD == null) {
-                        PAPERARC$COMPLETE_USING_ITEM_METHOD = paperarc$method(LivingEntity.class, "completeUsingItem");
-                    }
-                }
-            }
-            PAPERARC$COMPLETE_USING_ITEM_METHOD.invoke(this.getHandle());
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("PaperArc: failed to complete using active item", e);
-        }
+        // LivingEntity#completeUsingItem 由 AT 加宽（m_8095_）后直访
+        this.getHandle().completeUsingItem();
     }
 
     @Unique
@@ -121,21 +94,11 @@ public abstract class CraftLivingEntityApiMixinPart1 {
         if (!(stack instanceof CraftItemStack craftStack)) {
             return stack;
         }
-        try {
-            if (PAPERARC$CRAFT_STACK_GET_HANDLE_METHOD == null) {
-                synchronized (CraftLivingEntityApiMixinPart1.class) {
-                    if (PAPERARC$CRAFT_STACK_GET_HANDLE_METHOD == null) {
-                        PAPERARC$CRAFT_STACK_GET_HANDLE_METHOD = paperarc$method(CraftItemStack.class, "getHandle");
-                    }
-                }
-            }
-            net.minecraft.world.item.ItemStack nmsStack =
-                (net.minecraft.world.item.ItemStack) PAPERARC$CRAFT_STACK_GET_HANDLE_METHOD.invoke(craftStack);
-            nmsStack.hurtAndBreak(amount, this.getHandle(), (ignored) -> {});
-            return craftStack;
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("PaperArc: failed to damage item stack", e);
-        }
+        // CraftItemStack#handle 是包私有字段、无公有 getHandle；asNMSCopy 对
+        // CraftItemStack 直接返回内部 handle，零反射。
+        net.minecraft.world.item.ItemStack nmsStack = CraftItemStack.asNMSCopy(craftStack);
+        nmsStack.hurtAndBreak(amount, this.getHandle(), (ignored) -> {});
+        return craftStack;
     }
 
     @Unique

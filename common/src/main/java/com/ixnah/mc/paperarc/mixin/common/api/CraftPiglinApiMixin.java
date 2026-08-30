@@ -10,8 +10,8 @@ import org.spongepowered.asm.mixin.Unique;
 /**
  * Adds Paper's Missing-Entity-API piglin methods to {@link CraftPiglin}.
  *
- * <p>{@code Piglin.isChargingCrossbow()} is private in vanilla 1.21.1, so the
- * getter invokes it reflectively; the setter uses the public
+ * <p>{@code Piglin.isChargingCrossbow()} is private in vanilla 1.20.1; it is
+ * widened via AT (m_34773_()Z) and called directly; the setter uses the public
  * {@code Piglin#setChargingCrossbow(boolean)}. The dancing setters follow
  * Paper's implementation by manipulating brain memories.</p>
  */
@@ -22,35 +22,8 @@ public abstract class CraftPiglinApiMixin {
     public abstract Piglin getHandle();
 
     @Unique
-    private static volatile java.lang.reflect.Method PAPERARC$IS_CHARGING_CROSSBOW;
-
-    @Unique
-    private static java.lang.reflect.Method paperarc$isChargingCrossbow() {
-        java.lang.reflect.Method m = PAPERARC$IS_CHARGING_CROSSBOW;
-        if (m == null) {
-            synchronized (CraftPiglinApiMixin.class) {
-                if (PAPERARC$IS_CHARGING_CROSSBOW == null) {
-                    try {
-                        java.lang.reflect.Method resolved = Piglin.class.getDeclaredMethod("isChargingCrossbow");
-                        resolved.setAccessible(true);
-                        PAPERARC$IS_CHARGING_CROSSBOW = resolved;
-                    } catch (ReflectiveOperationException e) {
-                        throw new IllegalStateException("NMS Piglin.isChargingCrossbow() not found", e);
-                    }
-                    m = PAPERARC$IS_CHARGING_CROSSBOW;
-                }
-            }
-        }
-        return m;
-    }
-
-    @Unique
     public boolean isChargingCrossbow() {
-        try {
-            return (Boolean) paperarc$isChargingCrossbow().invoke(getHandle());
-        } catch (java.lang.reflect.InvocationTargetException | IllegalAccessException e) {
-            throw new IllegalStateException("Failed to invoke NMS Piglin.isChargingCrossbow()", e);
-        }
+        return getHandle().isChargingCrossbow();
     }
 
     @Unique

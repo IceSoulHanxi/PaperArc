@@ -251,13 +251,9 @@ public abstract class CraftPlayerApiMixinPart1 {
 
     @Unique
     public void setNoTickViewDistance(int viewDistance) {
-        // 与 Part2 setViewDistance 同款：写入 NMS requestedViewDistance 字段
-        try {
-            java.lang.reflect.Field f = net.minecraft.server.level.ServerPlayer.class.getDeclaredField("requestedViewDistance");
-            f.setAccessible(true);
-            f.setInt(getHandle(), viewDistance);
-        } catch (ReflectiveOperationException ignored) {
-        }
+        // vanilla 1.20.1 的 ServerPlayer 无 requestedViewDistance 字段（Paper 补丁字段），
+        // 且 getNoTickViewDistance 本身降级为服务器级视距；这里存 side-map 供读取回退。
+        ApiState.put(this, "noTickViewDistance", viewDistance);
     }
 
     // ---- getSendViewDistance ----

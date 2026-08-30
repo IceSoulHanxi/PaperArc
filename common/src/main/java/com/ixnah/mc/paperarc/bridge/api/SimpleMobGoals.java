@@ -83,25 +83,12 @@ public final class SimpleMobGoals implements MobGoals {
     private final Map<Mob, List<TrackedGoal<?>>> tracked = new WeakHashMap<>();
 
     /**
-     * {@code Mob.goalSelector} is protected on this compile/runtime classpath;
-     * the Access Widener cannot cover it here (batch constraint forbids touching
-     * other files), so reach it through a lazily-cached reflective getter.
+     * {@code Mob.goalSelector} is public final in this build — accessed directly,
+     * no reflection.
      */
-    private static volatile java.lang.reflect.Field PAPERARC_GOAL_SELECTOR_FIELD;
-
     private static net.minecraft.world.entity.ai.goal.GoalSelector goalSelectorOf(
             net.minecraft.world.entity.Mob mob) {
-        try {
-            java.lang.reflect.Field field = PAPERARC_GOAL_SELECTOR_FIELD;
-            if (field == null) {
-                field = net.minecraft.world.entity.Mob.class.getDeclaredField("goalSelector");
-                field.setAccessible(true);
-                PAPERARC_GOAL_SELECTOR_FIELD = field;
-            }
-            return (net.minecraft.world.entity.ai.goal.GoalSelector) field.get(mob);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("PaperArc: cannot access Mob.goalSelector", e);
-        }
+        return mob.goalSelector;
     }
 
     private synchronized List<TrackedGoal<?>> snapshot(Mob mob) {

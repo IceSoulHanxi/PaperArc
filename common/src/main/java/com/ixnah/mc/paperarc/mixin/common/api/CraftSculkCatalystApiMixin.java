@@ -5,7 +5,6 @@ import com.ixnah.mc.paperarc.bridge.ApiState;
 import io.papermc.paper.math.Position;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.entity.SculkCatalystBlockEntity;
 import org.bukkit.craftbukkit.v1_20_R1.block.CraftSculkCatalyst;
 import com.ixnah.mc.paperarc.bridge.craft.CraftBlockStateBridge;
@@ -14,23 +13,24 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
-import java.lang.reflect.Method;
-
 /**
  * Port of Paper's SculkCatalyst-bloom-API additions on
  * {@link CraftSculkCatalyst}: {@code bloom(Position, int)} plus the
  * {@code isBloom()}/{@code setBloom(boolean)} accessors declared by
  * paper-api (no vanilla per-catalyst storage exists, so those two use the
  * ApiState side map).
+ *
+ * <p>Paper's NMS-side {@code CatalystListener#bloom(...)} is a Paper patch
+ * method that does not exist in the vanilla runtime jar, so it cannot be AT'd;
+ * {@code bloom(Position, int)} degrades to spreading sculk cursors only (the
+ * vanilla-visible effect of a catalyst bloom), and the reflectively-resolved
+ * private call is dropped — no reflection.</p>
  */
 @Mixin(CraftSculkCatalyst.class)
 public abstract class CraftSculkCatalystApiMixin {
 
     @Unique
     private static final String PAPERARC_BLOOM_KEY = "paperarc:bloom";
-
-    @Unique
-    private static volatile Method paperarc$catalystBloom;
 
     @Unique
     private boolean isPlaced() {
@@ -54,14 +54,10 @@ public abstract class CraftSculkCatalystApiMixin {
         Preconditions.checkState(this.isPlaced(), "Cannot bloom an unplaced state");
         ServerLevel level = ((org.bukkit.craftbukkit.v1_20_R1.CraftWorld) this.getWorld()).getHandle();
         SculkCatalystBlockEntity catalyst = (SculkCatalystBlockEntity) this.getTileEntityFromWorld();
-        try {
-            Method bloom = paperarc$catalystBloomMethod();
-            bloom.invoke(catalyst.getListener(), level, catalyst.getBlockPos(), catalyst.getBlockState(), level.getRandom());
-            catalyst.getListener().getSculkSpreader().addCursors(
-                BlockPos.containing(position.x(), position.y(), position.z()), charge);
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException("Failed to invoke CatalystListener#bloom", e);
-        }
+        // Paper 的 CatalystListener#bloom 是 Paper 补丁私有方法，vanilla 运行时无——
+        // 降级为只播撒 sculk 光标（催化绽放的可见效果）。
+        catalyst.getListener().getSculkSpreader().addCursors(
+            BlockPos.containing(position.x(), position.y(), position.z()), charge);
     }
 
     @Unique
@@ -72,28 +68,5 @@ public abstract class CraftSculkCatalystApiMixin {
     @Unique
     public void setBloom(boolean bloom) {
         ApiState.put(this, PAPERARC_BLOOM_KEY, bloom);
-    }
-
-    /**
-     * Vanilla {@code CatalystListener#bloom(ServerLevel, BlockPos, BlockState,
-     * RandomSource)} is private; Paper widens it via AT, we resolve it once
-     * reflectively (Arclight runs mojmap at runtime so the name is stable).
-     */
-    @Unique
-    private static Method paperarc$catalystBloomMethod() throws NoSuchMethodException {
-        Method method = paperarc$catalystBloom;
-        if (method == null) {
-            synchronized (CraftSculkCatalystApiMixin.class) {
-                if (paperarc$catalystBloom == null) {
-                    Method declared = SculkCatalystBlockEntity.CatalystListener.class.getDeclaredMethod("bloom",
-                        ServerLevel.class, BlockPos.class,
-                        net.minecraft.world.level.block.state.BlockState.class, RandomSource.class);
-                    declared.setAccessible(true);
-                    paperarc$catalystBloom = declared;
-                }
-                method = paperarc$catalystBloom;
-            }
-        }
-        return method;
     }
 }

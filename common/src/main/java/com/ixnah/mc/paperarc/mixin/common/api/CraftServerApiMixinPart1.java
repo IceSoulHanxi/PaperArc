@@ -9,7 +9,6 @@ import com.ixnah.mc.paperarc.bridge.api.SimpleMobGoals;
 import com.ixnah.mc.paperarc.bridge.scheduler.SimpleAsyncScheduler;
 import com.ixnah.mc.paperarc.bridge.scheduler.SimpleGlobalRegionScheduler;
 import java.io.File;
-import java.lang.reflect.Field;
 import java.util.Locale;
 import java.util.Optional;
 import net.minecraft.SharedConstants;
@@ -70,8 +69,7 @@ public abstract class CraftServerApiMixinPart1 {
             "\u00A7cI'm sorry, but you do not have permission to perform this command."
                     + " Please contact the server administrators if you believe that this is in error.";
 
-    /** Lazily resolved MinecraftServer.tickCount (private in vanilla NMS). */
-    private static volatile Field PAPERARC_TICK_COUNT_FIELD;
+    /** MinecraftServer.tickCount 由 AT 加宽（f_129766_），直访。 */
 
     @Shadow
     public abstract net.minecraft.server.dedicated.DedicatedServer getServer();
@@ -138,29 +136,14 @@ public abstract class CraftServerApiMixinPart1 {
         return this.getServer().getAverageTickTime();
     }
 
-    @Unique
-    private static Field paperarc$tickCountField() throws ReflectiveOperationException {
-        Field field = PAPERARC_TICK_COUNT_FIELD;
-        if (field == null) {
-            field = net.minecraft.server.MinecraftServer.class.getDeclaredField("tickCount");
-            field.setAccessible(true);
-            PAPERARC_TICK_COUNT_FIELD = field;
-        }
-        return field;
-    }
-
     /**
      * Paper maintains its own per-server tick counter; vanilla NMS keeps the
      * equivalent total in the private {@code MinecraftServer.tickCount} field,
-     * read here reflectively (no public accessor exists).
+     * widened via AT (f_129766_) and read directly — no reflection.
      */
     @Unique
     public int getCurrentTick() {
-        try {
-            return paperarc$tickCountField().getInt(this.getServer());
-        } catch (ReflectiveOperationException e) {
-            return -1;
-        }
+        return this.getServer().tickCount;
     }
 
     @Unique

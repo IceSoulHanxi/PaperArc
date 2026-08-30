@@ -11,41 +11,14 @@ import org.spongepowered.asm.mixin.Unique;
  * {@link CraftPanda}.
  *
  * Sneeze/unhappy counters map to public NMS accessors. The eat counter is
- * private in vanilla NMS ({@code getEatCounter}/{@code setEatCounter}), so
- * those two are invoked reflectively; Paper reaches them via its own access
- * widener, which a Craft-host mixin cannot replicate.
+ * private in vanilla NMS ({@code getEatCounter}/{@code setEatCounter}); both are
+ * widened via AT (m_29170_ / m_29214_) and accessed directly — no reflection.
  */
 @Mixin(CraftPanda.class)
 public abstract class CraftPandaApiMixin {
 
     @Shadow
     public abstract Panda getHandle();
-
-    @Unique
-    private static volatile java.lang.reflect.Method PAPERARC$GET_EAT_COUNTER;
-
-    @Unique
-    private static volatile java.lang.reflect.Method PAPERARC$SET_EAT_COUNTER;
-
-    @Unique
-    private static void paperarc$resolveEatCounterMethods() {
-        if (PAPERARC$GET_EAT_COUNTER == null || PAPERARC$SET_EAT_COUNTER == null) {
-            synchronized (CraftPandaApiMixin.class) {
-                if (PAPERARC$GET_EAT_COUNTER == null || PAPERARC$SET_EAT_COUNTER == null) {
-                    try {
-                        java.lang.reflect.Method getter = Panda.class.getDeclaredMethod("getEatCounter");
-                        getter.setAccessible(true);
-                        java.lang.reflect.Method setter = Panda.class.getDeclaredMethod("setEatCounter", int.class);
-                        setter.setAccessible(true);
-                        PAPERARC$GET_EAT_COUNTER = getter;
-                        PAPERARC$SET_EAT_COUNTER = setter;
-                    } catch (ReflectiveOperationException e) {
-                        throw new IllegalStateException("NMS Panda eat counter methods not found", e);
-                    }
-                }
-            }
-        }
-    }
 
     // Paper start - Missing Entity API
     @Unique
@@ -60,22 +33,12 @@ public abstract class CraftPandaApiMixin {
 
     @Unique
     public int getEatingTicks() {
-        paperarc$resolveEatCounterMethods();
-        try {
-            return (Integer) PAPERARC$GET_EAT_COUNTER.invoke(this.getHandle());
-        } catch (java.lang.reflect.InvocationTargetException | IllegalAccessException e) {
-            throw new IllegalStateException("Failed to read NMS Panda eat counter", e);
-        }
+        return this.getHandle().getEatCounter();
     }
 
     @Unique
     public void setEatingTicks(int ticks) {
-        paperarc$resolveEatCounterMethods();
-        try {
-            PAPERARC$SET_EAT_COUNTER.invoke(this.getHandle(), ticks);
-        } catch (java.lang.reflect.InvocationTargetException | IllegalAccessException e) {
-            throw new IllegalStateException("Failed to write NMS Panda eat counter", e);
-        }
+        this.getHandle().setEatCounter(ticks);
     }
 
     @Unique

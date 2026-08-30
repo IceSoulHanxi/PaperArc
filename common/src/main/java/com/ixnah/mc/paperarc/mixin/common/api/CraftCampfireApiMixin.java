@@ -1,9 +1,8 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
-import java.lang.reflect.Method;
-
 import org.bukkit.craftbukkit.v1_20_R1.block.CraftCampfire;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 import com.google.common.base.Preconditions;
@@ -23,46 +22,20 @@ import net.minecraft.world.level.block.entity.CampfireBlockEntity;
  * state survives as long as the snapshot object does, but is not persisted to disk
  * and vanilla cookTick does not consume it.
  *
- * {@code CraftBlockEntityState#getSnapshot()} is protected (subclass-target mixins
- * cannot shadow inherited members), so it is reached reflectively, matching the
- * established CraftFurnaceApiMixin pattern.
+ * {@code CraftBlockEntityState#getSnapshot()} is protected; it is reached via
+ * @Shadow on the CraftCampfire host (subclass of CraftBlockEntityState) — no
+ * reflection.
  */
 @Mixin(CraftCampfire.class)
 public abstract class CraftCampfireApiMixin {
 
-    @Unique
-    private static final String PAPERARC$SNAPSHOT_OWNER = "org.bukkit.craftbukkit.v1_20_R1.block.CraftBlockEntityState";
-
-    @Unique
-    private static volatile Method PAPERARC$SNAPSHOT_METHOD;
-
-    @Unique
-    private static Method paperarc$snapshotMethod() {
-        Method m = PAPERARC$SNAPSHOT_METHOD;
-        if (m == null) {
-            synchronized (CraftCampfireApiMixin.class) {
-                if (PAPERARC$SNAPSHOT_METHOD == null) {
-                    try {
-                        Method resolved = Class.forName(PAPERARC$SNAPSHOT_OWNER).getDeclaredMethod("getSnapshot");
-                        resolved.setAccessible(true);
-                        PAPERARC$SNAPSHOT_METHOD = resolved;
-                    } catch (ReflectiveOperationException e) {
-                        throw new IllegalStateException("PaperArc: cannot access CraftBlockEntityState#getSnapshot()", e);
-                    }
-                }
-                m = PAPERARC$SNAPSHOT_METHOD;
-            }
-        }
-        return m;
-    }
+    @Shadow
+    protected abstract net.minecraft.world.level.block.entity.BlockEntity getSnapshot();
 
     @Unique
     private CampfireBlockEntity paperarc$snapshot() {
-        try {
-            return (CampfireBlockEntity) paperarc$snapshotMethod().invoke(this);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("PaperArc: failed to read campfire snapshot", e);
-        }
+        Object snapshot = this.getSnapshot();
+        return snapshot instanceof CampfireBlockEntity cbe ? cbe : null;
     }
 
     @Unique

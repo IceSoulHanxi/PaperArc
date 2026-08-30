@@ -8,8 +8,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
-import java.lang.reflect.Field;
-
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 
 /**
@@ -18,37 +16,14 @@ import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
  *
  * Summoner access maps to vanilla public {@code Vex#getOwner()/setOwner(Mob)}.
  * The lifetime state lives in vanilla private fields {@code hasLimitedLife}
- * and {@code limitedLifeTicks} (Paper's NMS patch only widens access), so they
- * are read/written reflectively.
+ * and {@code limitedLifeTicks}, widened via AT (f_33978_ / f_33979_) and
+ * accessed directly — no reflection.
  */
 @Mixin(CraftVex.class)
 public abstract class CraftVexApiMixin {
 
     @Shadow
     public abstract Vex getHandle();
-
-    @Unique
-    private static volatile Field PAPERARC$HAS_LIMITED_LIFE;
-
-    @Unique
-    private static volatile Field PAPERARC$LIMITED_LIFE_TICKS;
-
-    @Unique
-    private static synchronized void paperarc$resolveFields() {
-        if (PAPERARC$HAS_LIMITED_LIFE != null) {
-            return;
-        }
-        try {
-            Field hasLimitedLife = Vex.class.getDeclaredField("hasLimitedLife");
-            hasLimitedLife.setAccessible(true);
-            PAPERARC$HAS_LIMITED_LIFE = hasLimitedLife;
-            Field limitedLifeTicks = Vex.class.getDeclaredField("limitedLifeTicks");
-            limitedLifeTicks.setAccessible(true);
-            PAPERARC$LIMITED_LIFE_TICKS = limitedLifeTicks;
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("NMS Vex lifetime fields not found", e);
-        }
-    }
 
     @Unique
     public Mob getSummoner() {
@@ -64,41 +39,21 @@ public abstract class CraftVexApiMixin {
 
     @Unique
     public boolean hasLimitedLifetime() {
-        paperarc$resolveFields();
-        try {
-            return PAPERARC$HAS_LIMITED_LIFE.getBoolean(getHandle());
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("NMS Vex.hasLimitedLife not accessible", e);
-        }
+        return getHandle().hasLimitedLife;
     }
 
     @Unique
     public void setLimitedLifetime(boolean hasLimitedLifetime) {
-        paperarc$resolveFields();
-        try {
-            PAPERARC$HAS_LIMITED_LIFE.setBoolean(getHandle(), hasLimitedLifetime);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Failed to write NMS Vex.hasLimitedLife", e);
-        }
+        getHandle().hasLimitedLife = hasLimitedLifetime;
     }
 
     @Unique
     public int getLimitedLifetimeTicks() {
-        paperarc$resolveFields();
-        try {
-            return PAPERARC$LIMITED_LIFE_TICKS.getInt(getHandle());
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("NMS Vex.limitedLifeTicks not accessible", e);
-        }
+        return getHandle().limitedLifeTicks;
     }
 
     @Unique
     public void setLimitedLifetimeTicks(int ticks) {
-        paperarc$resolveFields();
-        try {
-            PAPERARC$LIMITED_LIFE_TICKS.setInt(getHandle(), ticks);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Failed to write NMS Vex.limitedLifeTicks", e);
-        }
+        getHandle().limitedLifeTicks = ticks;
     }
 }

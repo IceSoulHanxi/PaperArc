@@ -5,14 +5,12 @@ import org.bukkit.craftbukkit.v1_20_R1.entity.CraftItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
-import java.lang.reflect.Field;
-
 /**
  * Ports Paper additions missing from Arclight CraftBukkit {@link CraftItem}:
  * <ul>
  *   <li>Paper "Add-API-for-item-entity-health": {@code getHealth()}/{@code setHealth(int)}
- *       delegate to the vanilla {@code ItemEntity#health} field (mojmap name; private in
- *       this NMS build, so accessed via a cached reflective {@link Field}).</li>
+ *       delegate to the vanilla {@code ItemEntity#health} field, widened via AT
+ *       (f_31987_) and accessed directly — no reflection.</li>
  *   <li>Paper "Item-canEntityPickup" ({@code canMobPickup}), "Item-no-age-no-player-pickup"
  *       ({@code canPlayerPickup}, {@code shouldAge}): these flags are Paper-added
  *       {@code ItemEntity} fields with no counterpart in the spigot-based NMS build, so
@@ -30,9 +28,6 @@ public abstract class CraftItemApiMixin {
     private static final String PAPERARC$SHOULD_AGE = "shouldAge";
 
     @Unique
-    private static volatile Field PAPERARC$HEALTH_FIELD;
-
-    @Unique
     protected final net.minecraft.world.entity.item.ItemEntity paperarc$handle() {
         // 1.20.1 CraftEntity#getHandle() returns Entity; the actual ItemEntity is
         // reachable via the single-arg constructor (CraftServer, ItemEntity).
@@ -43,31 +38,12 @@ public abstract class CraftItemApiMixin {
 
     @Unique
     public int getHealth() {
-        try {
-            return paperarc$healthField().getInt(this.paperarc$handle());
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("NMS ItemEntity#health not accessible", e);
-        }
+        return this.paperarc$handle().health;
     }
 
     @Unique
     public void setHealth(int health) {
-        try {
-            paperarc$healthField().setInt(this.paperarc$handle(), health);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("NMS ItemEntity#health not accessible", e);
-        }
-    }
-
-    @Unique
-    private static Field paperarc$healthField() throws ReflectiveOperationException {
-        Field f = PAPERARC$HEALTH_FIELD;
-        if (f == null) {
-            f = net.minecraft.world.entity.item.ItemEntity.class.getDeclaredField("health");
-            f.setAccessible(true);
-            PAPERARC$HEALTH_FIELD = f;
-        }
-        return f;
+        this.paperarc$handle().health = health;
     }
 
     // ---- Item-canEntityPickup ----

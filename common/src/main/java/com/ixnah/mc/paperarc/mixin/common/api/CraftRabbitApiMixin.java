@@ -10,8 +10,8 @@ import org.spongepowered.asm.mixin.Unique;
  * Adds Paper's Rabbit moreCarrotTicks API.
  *
  * Paper publicizes the private NMS field {@code Rabbit.moreCarrotTicks} via an
- * access transformer; a Craft-host mixin cannot shadow NMS privates, so the
- * field is accessed reflectively (mojmap runtime name: moreCarrotTicks).
+ * access transformer; here it is widened via AT (f_29653_) and accessed
+ * directly — no reflection.
  */
 @Mixin(CraftRabbit.class)
 public abstract class CraftRabbitApiMixin {
@@ -20,43 +20,12 @@ public abstract class CraftRabbitApiMixin {
     public abstract Rabbit getHandle();
 
     @Unique
-    private static volatile java.lang.reflect.Field PAPERARC$MORE_CARROT_TICKS_FIELD;
-
-    @Unique
-    private static java.lang.reflect.Field paperarc$moreCarrotTicksField() {
-        java.lang.reflect.Field f = PAPERARC$MORE_CARROT_TICKS_FIELD;
-        if (f == null) {
-            synchronized (CraftRabbitApiMixin.class) {
-                if (PAPERARC$MORE_CARROT_TICKS_FIELD == null) {
-                    try {
-                        java.lang.reflect.Field resolved = Rabbit.class.getDeclaredField("moreCarrotTicks");
-                        resolved.setAccessible(true);
-                        PAPERARC$MORE_CARROT_TICKS_FIELD = resolved;
-                    } catch (ReflectiveOperationException e) {
-                        throw new IllegalStateException("NMS Rabbit.moreCarrotTicks field not found", e);
-                    }
-                }
-                f = PAPERARC$MORE_CARROT_TICKS_FIELD;
-            }
-        }
-        return f;
-    }
-
-    @Unique
     public int getMoreCarrotTicks() {
-        try {
-            return paperarc$moreCarrotTicksField().getInt(getHandle());
-        } catch (IllegalAccessException e) {
-            return 0;
-        }
+        return getHandle().moreCarrotTicks;
     }
 
     @Unique
     public void setMoreCarrotTicks(int ticks) {
-        try {
-            paperarc$moreCarrotTicksField().setInt(getHandle(), ticks);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Failed to set NMS Rabbit.moreCarrotTicks", e);
-        }
+        getHandle().moreCarrotTicks = ticks;
     }
 }

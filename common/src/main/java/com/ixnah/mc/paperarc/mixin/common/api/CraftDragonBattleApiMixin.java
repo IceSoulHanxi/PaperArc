@@ -21,12 +21,13 @@ import java.util.List;
 /**
  * Adds Paper's DragonBattle API (More-DragonBattle-API).
  *
- * Vanilla NMS keeps {@code gateways}, {@code respawnCrystals}, {@code GATEWAY_COUNT}
- * and both {@code spawnNewGateway} overloads private, so they are accessed via
- * reflection. Paper's NMS-side helpers ({@code spawnNewGatewayIfPossible},
- * {@code getSpikeCrystals}) are mirrored locally. The CB-added {@code valid} flag on
- * NMS entities does not exist in the runtime NMS jar, so crystal liveness checks use
- * only {@code !isRemoved() && isAlive()}.
+ * Vanilla NMS keeps {@code gateways}, {@code respawnCrystals}, {@code GATEWAY_COUNT},
+ * {@code level} and both {@code spawnNewGateway} overloads private; they are widened
+ * via AT (f_156741_ / f_64062_ / f_64061_ / f_64075_ / m_64089_ / m_64109_) and
+ * accessed directly — no reflection. Paper's NMS-side helpers
+ * ({@code spawnNewGatewayIfPossible}, {@code getSpikeCrystals}) are mirrored locally.
+ * The CB-added {@code valid} flag on NMS entities does not exist in the runtime NMS
+ * jar, so crystal liveness checks use only {@code !isRemoved() && isAlive()}.
  */
 @Mixin(CraftDragonBattle.class)
 public abstract class CraftDragonBattleApiMixin {
@@ -35,66 +36,31 @@ public abstract class CraftDragonBattleApiMixin {
     private EndDragonFight handle;
 
     @Unique
-    private static int paperarc$gatewayCount() {
-        try {
-            Field f = EndDragonFight.class.getDeclaredField("GATEWAY_COUNT");
-            f.setAccessible(true);
-            return f.getInt(null);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("NMS EndDragonFight.GATEWAY_COUNT not found", e);
-        }
-    }
-
-    @Unique
     @SuppressWarnings("unchecked")
     private List<Integer> paperarc$gateways() {
-        try {
-            Field f = EndDragonFight.class.getDeclaredField("gateways");
-            f.setAccessible(true);
-            return (List<Integer>) f.get(this.handle);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("NMS EndDragonFight.gateways not found", e);
-        }
+        return (List<Integer>) this.handle.gateways;
     }
 
     @Unique
     @SuppressWarnings("unchecked")
     private List<EndCrystal> paperarc$respawnCrystals() {
-        try {
-            Field f = EndDragonFight.class.getDeclaredField("respawnCrystals");
-            f.setAccessible(true);
-            return (List<EndCrystal>) f.get(this.handle);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("NMS EndDragonFight.respawnCrystals not found", e);
-        }
+        return (List<EndCrystal>) this.handle.respawnCrystals;
     }
 
     @Unique
     private void paperarc$spawnNewGateway(BlockPos pos) {
-        try {
-            Method m = EndDragonFight.class.getDeclaredMethod("spawnNewGateway", BlockPos.class);
-            m.setAccessible(true);
-            m.invoke(this.handle, pos);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("NMS EndDragonFight.spawnNewGateway(BlockPos) not found", e);
-        }
+        this.handle.spawnNewGateway(pos);
     }
 
     @Unique
     public int getGatewayCount() {
-        return paperarc$gatewayCount() - this.paperarc$gateways().size();
+        return EndDragonFight.GATEWAY_COUNT - this.paperarc$gateways().size();
     }
 
     @Unique
     public boolean spawnNewGateway() {
         if (!this.paperarc$gateways().isEmpty()) {
-            try {
-                Method m = EndDragonFight.class.getDeclaredMethod("spawnNewGateway");
-                m.setAccessible(true);
-                m.invoke(this.handle);
-            } catch (ReflectiveOperationException e) {
-                throw new IllegalStateException("NMS EndDragonFight.spawnNewGateway() not found", e);
-            }
+            this.handle.spawnNewGateway();
             return true;
         }
         return false;
@@ -122,14 +88,7 @@ public abstract class CraftDragonBattleApiMixin {
 
     @Unique
     public List<EnderCrystal> getHealingCrystals() {
-        ServerLevel level;
-        try {
-            Field f = EndDragonFight.class.getDeclaredField("level");
-            f.setAccessible(true);
-            level = (ServerLevel) f.get(this.handle);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("NMS EndDragonFight.level not found", e);
-        }
+        ServerLevel level = this.handle.level;
         List<EnderCrystal> enderCrystals = new ArrayList<>();
         // Mirror of Paper's NMS getSpikeCrystals().
         for (net.minecraft.world.level.levelgen.feature.SpikeFeature.EndSpike spike :

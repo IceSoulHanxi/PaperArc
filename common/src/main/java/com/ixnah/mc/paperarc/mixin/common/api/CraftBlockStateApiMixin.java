@@ -2,7 +2,6 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
@@ -11,8 +10,6 @@ import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-
-import java.lang.reflect.Field;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -65,26 +62,11 @@ public abstract class CraftBlockStateApiMixin {
 
     /**
      * Paper reads {@code Block#hasCollision} through an access transformer.
-     * The field is protected in NeoForge mappings and we cannot widen it from
-     * a single-target mixin, so read it reflectively (Arclight runs
-     * Mojang-mapped at runtime).
+     * The field is widened via AT (f_60443_) and read directly — no reflection.
      */
     @Unique
-    private volatile static Field paperarc$hasCollisionField;
-
-    @Unique
     private boolean paperarc$hasCollision(net.minecraft.world.level.block.Block block) {
-        try {
-            Field field = paperarc$hasCollisionField;
-            if (field == null) {
-                field = BlockBehaviour.class.getDeclaredField("hasCollision");
-                field.setAccessible(true);
-                paperarc$hasCollisionField = field;
-            }
-            return (Boolean) field.get(block);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Failed to access BlockBehaviour#hasCollision", e);
-        }
+        return block.hasCollision;
     }
 
     /**

@@ -151,14 +151,6 @@ public abstract class CraftPlayerApiMixinPart2 {
     }
 
     @Unique
-    private static void paperarc$setIntField(Class<?> clazz, Object target, String name, int value)
-            throws ReflectiveOperationException {
-        Field f = clazz.getDeclaredField(name);
-        f.setAccessible(true);
-        f.setInt(target, value);
-    }
-
-    @Unique
     private static String paperarc$sha1Hex(byte[] hash) {
         if (hash == null || hash.length == 0) {
             return "";
@@ -188,14 +180,7 @@ public abstract class CraftPlayerApiMixinPart2 {
     @Unique
     public void playerListName(net.kyori.adventure.text.Component playerListName) {
         ApiState.put(this, PAPERARC$KEY_PLAYER_LIST_NAME, playerListName);
-        // Best-effort: mirror into vanilla Player.listName (private) so future
-        // tab-list packets carry the new name.
-        try {
-            java.lang.reflect.Field f = net.minecraft.world.entity.player.Player.class.getDeclaredField("listName");
-            f.setAccessible(true);
-            f.set(getHandle(), paperarc$vanilla(playerListName));
-        } catch (ReflectiveOperationException ignored) {
-        }
+        // vanilla 1.20.1 的 Player.listName 是 Paper 补丁字段，运行时不存在，仅存 side-map。
     }
 
     @Unique
@@ -367,14 +352,9 @@ public abstract class CraftPlayerApiMixinPart2 {
     public void setPlayerProfile(com.destroystokyo.paper.profile.PlayerProfile profile) {
         Preconditions.checkNotNull(profile, "profile");
         ServerPlayer self = getHandle();
-        // asAuthlibCopy accepts ANY paper-api PlayerProfile implementation
-        // (Paper parity): deep-copies id/name/properties into a GameProfile.
+        // Player.gameProfile 由 AT 加宽（f_36084_）后直访；tab-list 重同步逻辑同 Paper。
         GameProfile gameProfile = com.ixnah.mc.paperarc.bridge.CraftPlayerProfile.asAuthlibCopy(profile);
-        try {
-            paperarc$gameProfileField().set(self, gameProfile);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Failed to swap ServerPlayer GameProfile", e);
-        }
+        self.gameProfile = gameProfile;
         if (self.connection == null) {
             return;
         }
@@ -418,47 +398,16 @@ public abstract class CraftPlayerApiMixinPart2 {
         }
     }
 
-    /** Cached reflection handle on the private-final {@code Player.gameProfile} field. */
-    private static volatile Field PAPERARC$GAME_PROFILE_FIELD;
-
-    @Unique
-    private static Field paperarc$gameProfileField() throws ReflectiveOperationException {
-        Field field = PAPERARC$GAME_PROFILE_FIELD;
-        if (field == null) {
-            field = net.minecraft.world.entity.player.Player.class.getDeclaredField("gameProfile");
-            field.setAccessible(true);
-            PAPERARC$GAME_PROFILE_FIELD = field;
-        }
-        return field;
-    }
-
-    private static volatile Field PAPERARC$ENTITY_MAP_FIELD;
-
-    @Unique
-    private static Field paperarc$entityMapField() throws ReflectiveOperationException {
-        Field field = PAPERARC$ENTITY_MAP_FIELD;
-        if (field == null) {
-            field = net.minecraft.server.level.ChunkMap.class.getDeclaredField("entityMap");
-            field.setAccessible(true);
-            PAPERARC$ENTITY_MAP_FIELD = field;
-        }
-        return field;
-    }
-
-    /**
-     * The tracker entry of {@code target} inside {@code viewer}'s level chunk
-     * map (private fastutil map, reflectively read once cached); null when
-     * the target is not tracked by that viewer.
-     */
+    /** Player.gameProfile 由 AT 加宽（f_36084_），无需缓存 Field。 */
     @Unique
     private static Object paperarc$trackedEntity(
             ServerPlayer viewer, int targetId) {
         try {
-            Object map = paperarc$entityMapField().get(
-                    ((net.minecraft.server.level.ServerLevel) viewer.level()).getChunkSource().chunkMap);
-            Object entry = ((it.unimi.dsi.fastutil.ints.Int2ObjectMap<?>) map).get(targetId);
-            return entry;
-        } catch (ReflectiveOperationException | ClassCastException e) {
+            // ChunkMap.entityMap 由 AT 加宽（f_140150_）后直访。
+            it.unimi.dsi.fastutil.ints.Int2ObjectMap<?> map = ((net.minecraft.server.level.ServerLevel) viewer.level())
+                    .getChunkSource().chunkMap.entityMap;
+            return map.get(targetId);
+        } catch (ClassCastException e) {
             return null;
         }
     }
@@ -495,10 +444,8 @@ public abstract class CraftPlayerApiMixinPart2 {
 
     @Unique
     public void setViewDistance(int viewDistance) {
-        try {
-            paperarc$setIntField(ServerPlayer.class, getHandle(), "requestedViewDistance", viewDistance);
-        } catch (ReflectiveOperationException ignored) {
-        }
+        // vanilla 1.20.1 的 ServerPlayer.requestedViewDistance 是 Paper 补丁字段，运行时不存在，存 side-map。
+        ApiState.put(this, PAPERARC$KEY_SEND_VIEW_DISTANCE, viewDistance);
     }
 
     @Unique
@@ -528,10 +475,7 @@ public abstract class CraftPlayerApiMixinPart2 {
         if (tracker == null) {
             return;
         }
-        try {
-            paperarc$setIntField(tracker.getClass(), tracker, "ticksSinceLastWarning", time);
-        } catch (ReflectiveOperationException ignored) {
-        }
+        tracker.ticksSinceLastWarning = time;
     }
 
     @Unique
@@ -540,10 +484,7 @@ public abstract class CraftPlayerApiMixinPart2 {
         if (tracker == null) {
             return;
         }
-        try {
-            paperarc$setIntField(tracker.getClass(), tracker, "cooldownTicks", cooldown);
-        } catch (ReflectiveOperationException ignored) {
-        }
+        tracker.cooldownTicks = cooldown;
     }
 
     @Unique
@@ -552,10 +493,7 @@ public abstract class CraftPlayerApiMixinPart2 {
         if (tracker == null) {
             return;
         }
-        try {
-            paperarc$setIntField(tracker.getClass(), tracker, "warningLevel", warningLevel);
-        } catch (ReflectiveOperationException ignored) {
-        }
+        tracker.warningLevel = warningLevel;
     }
 
     @Unique
@@ -632,9 +570,8 @@ public abstract class CraftPlayerApiMixinPart2 {
             ClientboundPlayerInfoUpdatePacket.Entry old = entries.get(0);
             entries.set(0, new ClientboundPlayerInfoUpdatePacket.Entry(old.profileId(), old.profile(),
                     false, old.latency(), old.gameMode(), old.displayName(), old.chatSession()));
-            java.lang.reflect.Field f = ClientboundPlayerInfoUpdatePacket.class.getDeclaredField("entries");
-            f.setAccessible(true);
-            f.set(packet, entries);
+            // entries 由 AT 加宽（f_244436_）后直访
+            packet.entries = entries;
             paperarc$send(packet);
             return true;
         } catch (Exception e) {

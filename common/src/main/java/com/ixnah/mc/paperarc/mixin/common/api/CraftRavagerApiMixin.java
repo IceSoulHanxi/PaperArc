@@ -12,73 +12,14 @@ import org.spongepowered.asm.mixin.Unique;
  *
  * Getters delegate to public NMS accessors; the tick fields
  * ({@code attackTick}/{@code stunnedTick}/{@code roarTick}) are private in
- * vanilla NMS — Paper writes them directly via an access widener, which a
- * Craft-host mixin cannot replicate, so they are set reflectively.
+ * vanilla NMS — widened via AT (f_33320_ / f_33321_ / f_33322_) and written
+ * directly, no reflection.
  */
 @Mixin(CraftRavager.class)
 public abstract class CraftRavagerApiMixin {
 
     @Shadow
     public abstract Ravager getHandle();
-
-    @Unique
-    private static volatile java.lang.reflect.Field PAPERARC$ATTACK_TICK;
-
-    @Unique
-    private static volatile java.lang.reflect.Field PAPERARC$STUNNED_TICK;
-
-    @Unique
-    private static volatile java.lang.reflect.Field PAPERARC$ROAR_TICK;
-
-    @Unique
-    private static java.lang.reflect.Field paperarc$resolveField(String name) {
-        try {
-            java.lang.reflect.Field f = Ravager.class.getDeclaredField(name);
-            f.setAccessible(true);
-            return f;
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("NMS Ravager." + name + " field not found", e);
-        }
-    }
-
-    @Unique
-    private static java.lang.reflect.Field paperarc$attackTickField() {
-        java.lang.reflect.Field f = PAPERARC$ATTACK_TICK;
-        if (f == null) {
-            synchronized (CraftRavagerApiMixin.class) {
-                if ((f = PAPERARC$ATTACK_TICK) == null) {
-                    f = PAPERARC$ATTACK_TICK = paperarc$resolveField("attackTick");
-                }
-            }
-        }
-        return f;
-    }
-
-    @Unique
-    private static java.lang.reflect.Field paperarc$stunnedTickField() {
-        java.lang.reflect.Field f = PAPERARC$STUNNED_TICK;
-        if (f == null) {
-            synchronized (CraftRavagerApiMixin.class) {
-                if ((f = PAPERARC$STUNNED_TICK) == null) {
-                    f = PAPERARC$STUNNED_TICK = paperarc$resolveField("stunnedTick");
-                }
-            }
-        }
-        return f;
-    }
-
-    @Unique
-    private static java.lang.reflect.Field paperarc$roarTickField() {
-        java.lang.reflect.Field f = PAPERARC$ROAR_TICK;
-        if (f == null) {
-            synchronized (CraftRavagerApiMixin.class) {
-                if ((f = PAPERARC$ROAR_TICK) == null) {
-                    f = PAPERARC$ROAR_TICK = paperarc$resolveField("roarTick");
-                }
-            }
-        }
-        return f;
-    }
 
     // Paper start - Missing Entity Behavior
     @Unique
@@ -88,11 +29,7 @@ public abstract class CraftRavagerApiMixin {
 
     @Unique
     public void setAttackTicks(int ticks) {
-        try {
-            paperarc$attackTickField().setInt(this.getHandle(), ticks);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Failed to write NMS Ravager.attackTick", e);
-        }
+        this.getHandle().attackTick = ticks;
     }
 
     @Unique
@@ -102,11 +39,7 @@ public abstract class CraftRavagerApiMixin {
 
     @Unique
     public void setStunnedTicks(int ticks) {
-        try {
-            paperarc$stunnedTickField().setInt(this.getHandle(), ticks);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Failed to write NMS Ravager.stunnedTick", e);
-        }
+        this.getHandle().stunnedTick = ticks;
     }
 
     @Unique
@@ -116,11 +49,7 @@ public abstract class CraftRavagerApiMixin {
 
     @Unique
     public void setRoarTicks(int ticks) {
-        try {
-            paperarc$roarTickField().setInt(this.getHandle(), ticks);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Failed to write NMS Ravager.roarTick", e);
-        }
+        this.getHandle().roarTick = ticks;
     }
     // Paper end - Missing Entity Behavior
 }

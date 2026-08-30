@@ -3,7 +3,6 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 import com.destroystokyo.paper.block.TargetBlockInfo;
 import com.destroystokyo.paper.entity.TargetEntityInfo;
 import com.ixnah.mc.paperarc.bridge.ApiState;
-import java.lang.reflect.Field;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
@@ -40,69 +39,6 @@ public abstract class CraftLivingEntityApiMixinPart2 {
 
     @Shadow
     public abstract RayTraceResult rayTraceBlocks(double maxDistance, FluidCollisionMode fluidCollisionMode);
-    // endregion
-
-    // region helpers
-
-    @Unique
-    private static final Object PAPERARC_FIELD_LOCK = new Object();
-
-    @Unique
-    private static volatile Field PAPERARC_JUMPING_FIELD;
-
-    @Unique
-    private static volatile Field PAPERARC_USE_ITEM_REMAINING_FIELD;
-
-    @Unique
-    private static volatile Field PAPERARC_LAST_HURT_BY_PLAYER_FIELD;
-
-    /** Resolves a declared field on NMS LivingEntity (mojmap name) once. */
-    @Unique
-    private static Field paperarc$nmsField(String name) {
-        Field cached;
-        switch (name) {
-            case "jumping":
-                cached = PAPERARC_JUMPING_FIELD;
-                break;
-            case "useItemRemaining":
-                cached = PAPERARC_USE_ITEM_REMAINING_FIELD;
-                break;
-            case "lastHurtByPlayer":
-                cached = PAPERARC_LAST_HURT_BY_PLAYER_FIELD;
-                break;
-            default:
-                throw new IllegalArgumentException("unknown field " + name);
-        }
-        if (cached == null) {
-            synchronized (PAPERARC_FIELD_LOCK) {
-                switch (name) {
-                    case "jumping":
-                        cached = PAPERARC_JUMPING_FIELD;
-                        break;
-                    case "useItemRemaining":
-                        cached = PAPERARC_USE_ITEM_REMAINING_FIELD;
-                        break;
-                    default:
-                        cached = PAPERARC_LAST_HURT_BY_PLAYER_FIELD;
-                        break;
-                }
-                if (cached == null) {
-                    try {
-                        cached = LivingEntity.class.getDeclaredField(name);
-                        cached.setAccessible(true);
-                    } catch (ReflectiveOperationException e) {
-                        throw new IllegalStateException("NMS LivingEntity." + name + " missing", e);
-                    }
-                    switch (name) {
-                        case "jumping" -> PAPERARC_JUMPING_FIELD = cached;
-                        case "useItemRemaining" -> PAPERARC_USE_ITEM_REMAINING_FIELD = cached;
-                        default -> PAPERARC_LAST_HURT_BY_PLAYER_FIELD = cached;
-                    }
-                }
-            }
-        }
-        return cached;
-    }
     // endregion
 
     /**
@@ -240,11 +176,7 @@ public abstract class CraftLivingEntityApiMixinPart2 {
      */
     @Unique
     public boolean isJumping() {
-        try {
-            return paperarc$nmsField("jumping").getBoolean(this.getHandle());
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        }
+        return this.getHandle().jumping;
     }
 
     /**
@@ -279,11 +211,7 @@ public abstract class CraftLivingEntityApiMixinPart2 {
      */
     @Unique
     public void setActiveItemRemainingTime(int ticks) {
-        try {
-            paperarc$nmsField("useItemRemaining").setInt(this.getHandle(), ticks);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        }
+        this.getHandle().useItemRemaining = ticks;
     }
 
     /**
@@ -344,11 +272,7 @@ public abstract class CraftLivingEntityApiMixinPart2 {
      */
     @Unique
     public void setJumping(boolean jumping) {
-        try {
-            paperarc$nmsField("jumping").setBoolean(this.getHandle(), jumping);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        }
+        this.getHandle().jumping = jumping;
     }
 
     /**
@@ -358,20 +282,11 @@ public abstract class CraftLivingEntityApiMixinPart2 {
     public void setKiller(Player killer) {
         LivingEntity handle = this.getHandle();
         if (killer == null) {
-            try {
-                paperarc$nmsField("lastHurtByPlayer").set(handle, null);
-            } catch (IllegalAccessException e) {
-                throw new IllegalStateException(e);
-            }
+            handle.lastHurtByPlayer = null;
             return;
         }
-        net.minecraft.world.entity.player.Player nms =
+        handle.lastHurtByPlayer =
                 ((org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer) killer).getHandle();
-        try {
-            paperarc$nmsField("lastHurtByPlayer").set(handle, nms);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        }
     }
 
     /**

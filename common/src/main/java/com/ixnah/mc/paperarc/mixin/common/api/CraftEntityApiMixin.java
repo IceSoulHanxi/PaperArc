@@ -160,15 +160,14 @@ public abstract class CraftEntityApiMixin {
 
     @Unique
     public boolean isInRain() {
-        // vanilla method is private -> reflection, false when unavailable
-        Object r = paperarc$invoke(this.getHandle(), "isInRain");
-        return r instanceof Boolean b && b;
+        // vanilla private 方法由 AT 加宽（m_20285_）后直访
+        return this.getHandle().isInRain();
     }
 
     @Unique
     public boolean isInBubbleColumn() {
-        Object r = paperarc$invoke(this.getHandle(), "isInBubbleColumn");
-        return r instanceof Boolean b && b;
+        // vanilla private 方法由 AT 加宽（m_20305_）后直访
+        return this.getHandle().isInBubbleColumn();
     }
 
     @Unique
@@ -324,33 +323,21 @@ public abstract class CraftEntityApiMixin {
         if (!(handle.level() instanceof ServerLevel level)) {
             return Collections.emptySet();
         }
-        Field entityMapField = paperarc$field(ChunkMap.class, "entityMap");
-        if (entityMapField == null) {
+        // ChunkMap.entityMap 由 AT 加宽（f_140150_）；TrackedEntity.seenBy 由 AT 加宽（f_140475_）
+        Int2ObjectMap<?> trackers = level.getChunkSource().chunkMap.entityMap;
+        Object tracker = trackers == null ? null : trackers.get(handle.getId());
+        if (tracker == null) {
             return Collections.emptySet();
         }
-        try {
-            Int2ObjectMap<?> trackers = (Int2ObjectMap<?>) entityMapField.get(level.getChunkSource().chunkMap);
-            Object tracker = trackers == null ? null : trackers.get(handle.getId());
-            if (tracker == null) {
-                return Collections.emptySet();
+        Set<Player> players = new HashSet<>();
+        for (Object conn : (Collection<?>) ((net.minecraft.server.level.ChunkMap.TrackedEntity) tracker).seenBy) {
+            ServerPlayer tracked = ((ServerPlayerConnection) conn).getPlayer();
+            Player bukkit = Bukkit.getPlayer(tracked.getUUID());
+            if (bukkit != null) {
+                players.add(bukkit);
             }
-            // ChunkMap.TrackedEntity is package-private -> locate seenBy reflectively
-            Field seenByField = paperarc$field(tracker.getClass(), "seenBy");
-            if (seenByField == null) {
-                return Collections.emptySet();
-            }
-            Set<Player> players = new HashSet<>();
-            for (Object conn : (Collection<?>) seenByField.get(tracker)) {
-                ServerPlayer tracked = ((ServerPlayerConnection) conn).getPlayer();
-                Player bukkit = Bukkit.getPlayer(tracked.getUUID());
-                if (bukkit != null) {
-                    players.add(bukkit);
-                }
-            }
-            return players;
-        } catch (IllegalAccessException | ClassCastException e) {
-            return Collections.emptySet();
         }
+        return players;
     }
 
     @Unique

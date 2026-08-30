@@ -1,9 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
-import java.lang.reflect.Field;
 import java.util.UUID;
 
-import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.item.ItemStack;
@@ -20,10 +18,10 @@ import org.spongepowered.asm.mixin.Unique;
  *
  * Paper reaches {@code FireworkRocketEntity.life}/{@code lifetime} and the private
  * synched-data accessor {@code DATA_ID_FIREWORKS_ITEM} through access transformers;
- * none of those are widened in the runtime NMS, so they are read reflectively here.
- * {@code spawningEntity} is a field Paper injects into the NMS class at launch time
- * and persists via NBT — that storage does not exist at runtime, so the value is
- * derived from the projectile owner instead.
+ * all are widened via AT (f_37022_ / f_37023_ / f_37019_) and accessed directly —
+ * no reflection. {@code spawningEntity} is a field Paper injects into the NMS class
+ * at launch time and persists via NBT — that storage does not exist at runtime, so
+ * the value is derived from the projectile owner instead.
  */
 @Mixin(CraftFirework.class)
 public abstract class CraftFireworkApiMixin {
@@ -33,71 +31,6 @@ public abstract class CraftFireworkApiMixin {
 
     @Shadow
     public abstract FireworkMeta getFireworkMeta();
-
-    @Unique
-    private static volatile Field PAPERARC$ITEM_ACCESSOR_FIELD;
-    @Unique
-    private static volatile Field PAPERARC$LIFE_FIELD;
-    @Unique
-    private static volatile Field PAPERARC$LIFETIME_FIELD;
-
-    @Unique
-    @SuppressWarnings("unchecked")
-    private static EntityDataAccessor<ItemStack> paperarc$itemAccessor() {
-        Field f = PAPERARC$ITEM_ACCESSOR_FIELD;
-        if (f == null) {
-            synchronized (CraftFireworkApiMixin.class) {
-                if (PAPERARC$ITEM_ACCESSOR_FIELD == null) {
-                    try {
-                        Field resolved = FireworkRocketEntity.class.getDeclaredField("DATA_ID_FIREWORKS_ITEM");
-                        resolved.setAccessible(true);
-                        PAPERARC$ITEM_ACCESSOR_FIELD = resolved;
-                    } catch (ReflectiveOperationException e) {
-                        throw new IllegalStateException(
-                                "NMS FireworkRocketEntity.DATA_ID_FIREWORKS_ITEM not found", e);
-                    }
-                }
-                f = PAPERARC$ITEM_ACCESSOR_FIELD;
-            }
-        }
-        try {
-            return (EntityDataAccessor<ItemStack>) f.get(null);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Failed to read firework item data accessor", e);
-        }
-    }
-
-    @Unique
-    private static Field paperarc$resolveCounter(String name) {
-        boolean isLife = name.equals("life");
-        Field f = isLife ? PAPERARC$LIFE_FIELD : PAPERARC$LIFETIME_FIELD;
-        if (f != null) {
-            return f;
-        }
-        synchronized (CraftFireworkApiMixin.class) {
-            try {
-                Field resolved = FireworkRocketEntity.class.getDeclaredField(name);
-                resolved.setAccessible(true);
-                if (isLife) {
-                    PAPERARC$LIFE_FIELD = resolved;
-                } else {
-                    PAPERARC$LIFETIME_FIELD = resolved;
-                }
-                return resolved;
-            } catch (ReflectiveOperationException e) {
-                throw new IllegalStateException("NMS FireworkRocketEntity." + name + " not found", e);
-            }
-        }
-    }
-
-    @Unique
-    private void paperarc$writeCounter(String name, int value) {
-        try {
-            paperarc$resolveCounter(name).setInt(getHandle(), value);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Failed to write NMS FireworkRocketEntity." + name, e);
-        }
-    }
 
     /**
      * Paper records the shooter UUID into a dedicated NMS field (and NBT) at launch;
@@ -124,34 +57,26 @@ public abstract class CraftFireworkApiMixin {
                 ? new ItemStack(Items.FIREWORK_ROCKET)
                 : CraftItemStack.asNMSCopy(itemStack);
         CraftItemStack.setItemMeta(nmsItem, meta); // replicates Paper's applyFireworkEffect
-        handle.getEntityData().set(paperarc$itemAccessor(), nmsItem);
+        handle.getEntityData().set(FireworkRocketEntity.DATA_ID_FIREWORKS_ITEM, nmsItem);
     }
 
     @Unique
     public int getTicksFlown() {
-        try {
-            return paperarc$resolveCounter("life").getInt(getHandle());
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Failed to read NMS FireworkRocketEntity.life", e);
-        }
+        return getHandle().life;
     }
 
     @Unique
     public void setTicksFlown(int ticks) {
-        paperarc$writeCounter("life", ticks);
+        getHandle().life = ticks;
     }
 
     @Unique
     public int getTicksToDetonate() {
-        try {
-            return paperarc$resolveCounter("lifetime").getInt(getHandle());
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Failed to read NMS FireworkRocketEntity.lifetime", e);
-        }
+        return getHandle().lifetime;
     }
 
     @Unique
     public void setTicksToDetonate(int ticks) {
-        paperarc$writeCounter("lifetime", ticks);
+        getHandle().lifetime = ticks;
     }
 }
