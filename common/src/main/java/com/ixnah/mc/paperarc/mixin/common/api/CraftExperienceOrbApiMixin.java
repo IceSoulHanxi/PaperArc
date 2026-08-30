@@ -22,7 +22,7 @@ import java.util.UUID;
  *
  * <p>{@code spawnReason} is exposed again: its paper-api enum type
  * {@code org.bukkit.entity.ExperienceOrb.SpawnReason} is injected into the
- * classloader at mod construction by {@code SpawnReasonInjector} (embedded
+ * classloader at mod construction by {@code RuntimeClassInjector} (embedded
  * class bytes), so the runtime now has the type needed by the mixin signature.</p>
  */
 @Mixin(CraftExperienceOrb.class)

@@ -198,4 +198,14 @@ public interface PlayerIfaceMixin {
     public abstract org.bukkit.entity.Firework boostElytra(org.bukkit.inventory.ItemStack itemStack);
     @Unique
     public abstract void setRotation(float yaw, float pitch);
+    @Unique
+    public abstract void sendMultiBlockChange(java.util.Map<? extends io.papermc.paper.math.Position, org.bukkit.block.data.BlockData> p0);
+    @Unique
+    public abstract void setResourcePack(java.lang.String p0, byte[] p1, net.kyori.adventure.text.Component p2, boolean p3);
+    @Unique
+    public abstract void setResourcePack(java.lang.String p0, java.lang.String p1);
+    @Unique
+    public abstract void setResourcePack(java.lang.String p0, java.lang.String p1, boolean p2);
+    @Unique
+    public abstract void setResourcePack(java.lang.String p0, java.lang.String p1, boolean p2, net.kyori.adventure.text.Component p3);
 }

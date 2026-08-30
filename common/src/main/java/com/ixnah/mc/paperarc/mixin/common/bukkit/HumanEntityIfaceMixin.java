@@ -51,4 +51,7 @@ public interface HumanEntityIfaceMixin {
     public abstract void openSign(org.bukkit.block.Sign p0, org.bukkit.block.sign.Side p1);
     @Unique
     public abstract org.bukkit.inventory.EntityEquipment getEquipment();
+
+    @Unique
+    public abstract void closeInventory(org.bukkit.event.inventory.InventoryCloseEvent.Reason p0);
 }

@@ -100,4 +100,7 @@ public interface EntityIfaceMixin {
 
     @Unique
     public abstract java.lang.String getScoreboardEntryName();
+
+    @Unique
+    public abstract boolean teleport(org.bukkit.Location p0, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause p1, io.papermc.paper.entity.TeleportFlag... p2);
 }
