@@ -11,4 +11,6 @@ public interface AbstractFurnaceBlockEntityBridge {
     double paper$getCookSpeedMultiplier();
 
     void paper$setCookSpeedMultiplier(double multiplier);
+
+    net.minecraft.world.item.crafting.RecipeType<? extends net.minecraft.world.item.crafting.AbstractCookingRecipe> paper$getRecipeType();
 }

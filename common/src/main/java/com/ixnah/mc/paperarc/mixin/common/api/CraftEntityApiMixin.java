@@ -472,4 +472,24 @@ public abstract class CraftEntityApiMixin {
         }
         return scheduler;
     }
+
+    /**
+     * Paper's {@code org.bukkit.Nameable} adventure API ({@code Entity} extends
+     * {@code Nameable}): delegates to {@code Entity#getCustomName()} / {@code setCustomName(Component)}
+     * with gson round-trip between adventure and NMS components.
+     */
+    @Unique
+    public net.kyori.adventure.text.Component customName() {
+        net.minecraft.network.chat.Component nms = this.getHandle().getCustomName();
+        return nms == null ? null
+                : net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson().deserialize(
+                        net.minecraft.network.chat.Component.Serializer.toJson(nms));
+    }
+
+    @Unique
+    public void customName(net.kyori.adventure.text.Component customName) {
+        this.getHandle().setCustomName(customName == null ? null
+                : net.minecraft.network.chat.Component.Serializer.fromJson(
+                        net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson().serialize(customName)));
+    }
 }

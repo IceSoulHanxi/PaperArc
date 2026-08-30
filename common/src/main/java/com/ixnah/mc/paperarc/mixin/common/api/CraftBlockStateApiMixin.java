@@ -69,6 +69,13 @@ public abstract class CraftBlockStateApiMixin {
         return block.hasCollision;
     }
 
+    @Unique
+    public boolean isSnapshot() {
+        // Paper adds a snapshotDisabled flag (default false -> this IS a snapshot);
+        // Arclight's CraftBlockState always works on a detached snapshot copy.
+        return true;
+    }
+
     /**
      * Replacement for Paper's {@code CraftBlockState#requirePlaced()} guard,
      * which does not exist in vanilla CraftBukkit.
