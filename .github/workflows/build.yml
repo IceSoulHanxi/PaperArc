@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 env:
-  # Arclight Trials (1.20.1) 最新提交
-  ARCLIGHT_REF: 6de9fecc
+  # Arclight Trials (1.20.1) 提交——必须用完整 SHA 或分支名（短 SHA 会被 checkout 当作分支名 fetch 而失败）
+  ARCLIGHT_REF: 6de9fecc27cf81f2b7534d46b21631ed2851670b
   # Trials 是 Forge-only + ForgeGradle + Java 17 工具链
   JAVA_VERSION: '17'
   # paperarc 期望的 spigot-deobf 落点（相对 Arclight 根）
@@ -80,13 +80,11 @@ jobs:
         working-directory: PaperArc
         run: |
           mkdir -p out
-          # 1.20.1 只有 Forge（跟随 Arclight Trials）
-          for m in forge; do
-            for f in "$m"/build/libs/paperarc-*.jar; do
-              case "$f" in *-dev-shadow.jar|*-sources.jar) continue ;; esac
-              [ -e "$f" ] || continue
-              cp "$f" "out/${m}-$(basename "$f")"
-            done
+          # 1.20.1 只有 common 单模块（跟随 Arclight Trials），产物为 common-<version>.jar
+          for f in common/build/libs/common-*.jar; do
+            case "$f" in *-dev-shadow.jar|*-sources.jar) continue ;; esac
+            [ -e "$f" ] || continue
+            cp "$f" "out/$(basename "$f")"
           done
           ls -l out/
 
