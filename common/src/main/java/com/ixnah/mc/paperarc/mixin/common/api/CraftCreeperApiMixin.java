@@ -3,7 +3,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 import com.destroystokyo.paper.event.entity.CreeperIgniteEvent;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.world.entity.monster.Creeper;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftCreeper;
+import org.bukkit.craftbukkit.v.entity.CraftCreeper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;

@@ -5,8 +5,8 @@ import com.google.common.base.Preconditions;
 import com.ixnah.mc.paperarc.bridge.PaperarcProfileHandler;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
-import org.bukkit.craftbukkit.v1_20_R1.block.CraftSkull;
-import org.bukkit.craftbukkit.v1_20_R1.profile.CraftPlayerProfile;
+import org.bukkit.craftbukkit.v.block.CraftSkull;
+import org.bukkit.craftbukkit.v.profile.CraftPlayerProfile;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -22,7 +22,7 @@ import java.lang.reflect.Proxy;
  * class (paper-server's {@code CraftPlayerProfile} is absent), so
  * {@code getPlayerProfile} returns a dynamic-proxy adapter over the vanilla
  * {@link GameProfile}, reusing CraftBukkit's
- * {@code org.bukkit.craftbukkit.v1_20_R1.profile.CraftPlayerProfile} for the
+ * {@code org.bukkit.craftbukkit.v.profile.CraftPlayerProfile} for the
  * bukkit-side contract (textures, completeness). Profile completion/update
  * methods degrade to offline no-network behaviour (sync-fallback).
  */

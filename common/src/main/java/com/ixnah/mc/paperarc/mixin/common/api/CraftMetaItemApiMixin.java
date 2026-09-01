@@ -31,7 +31,7 @@ import org.spongepowered.asm.mixin.Unique;
  * section serializer like Paper's {@code PaperAdventure.LEGACY_SECTION_UX}; bungee
  * {@code BaseComponent} variants round-trip through gson.</p>
  */
-@Mixin(targets = "org.bukkit.craftbukkit.v1_20_R1.inventory.CraftMetaItem")
+@Mixin(targets = "org.bukkit.craftbukkit.v.inventory.CraftMetaItem")
 public abstract class CraftMetaItemApiMixin {
 
     @org.spongepowered.asm.mixin.Shadow

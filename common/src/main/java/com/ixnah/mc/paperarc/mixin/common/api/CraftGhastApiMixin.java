@@ -1,7 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import net.minecraft.world.entity.monster.Ghast;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftGhast;
+import org.bukkit.craftbukkit.v.entity.CraftGhast;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;

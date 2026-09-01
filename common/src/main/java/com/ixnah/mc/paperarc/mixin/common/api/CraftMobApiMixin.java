@@ -1,7 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import net.minecraft.world.entity.Mob;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftMob;
+import org.bukkit.craftbukkit.v.entity.CraftMob;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -64,7 +64,7 @@ public abstract class CraftMobApiMixin {
     public void lookAt(org.bukkit.Location location) {
         com.google.common.base.Preconditions.checkNotNull(location, "location cannot be null");
         com.google.common.base.Preconditions.checkArgument(
-                location.getWorld().equals(((org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity) (Object) this).getWorld()),
+                location.getWorld().equals(((org.bukkit.craftbukkit.v.entity.CraftEntity) (Object) this).getWorld()),
                 "location in a different world");
         this.getHandle().getLookControl().setLookAt(location.getX(), location.getY(), location.getZ());
     }
@@ -73,7 +73,7 @@ public abstract class CraftMobApiMixin {
     public void lookAt(org.bukkit.Location location, float headRotationSpeed, float maxHeadPitch) {
         com.google.common.base.Preconditions.checkNotNull(location, "location cannot be null");
         com.google.common.base.Preconditions.checkArgument(
-                location.getWorld().equals(((org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity) (Object) this).getWorld()),
+                location.getWorld().equals(((org.bukkit.craftbukkit.v.entity.CraftEntity) (Object) this).getWorld()),
                 "location in a different world");
         this.getHandle().getLookControl().setLookAt(location.getX(), location.getY(), location.getZ(), headRotationSpeed, maxHeadPitch);
     }
@@ -82,9 +82,9 @@ public abstract class CraftMobApiMixin {
     public void lookAt(org.bukkit.entity.Entity entity) {
         com.google.common.base.Preconditions.checkNotNull(entity, "entity cannot be null");
         com.google.common.base.Preconditions.checkArgument(
-                entity.getWorld().equals(((org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity) (Object) this).getWorld()),
+                entity.getWorld().equals(((org.bukkit.craftbukkit.v.entity.CraftEntity) (Object) this).getWorld()),
                 "entity in a different world");
-        net.minecraft.world.entity.Entity nms = ((org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity) entity).getHandle();
+        net.minecraft.world.entity.Entity nms = ((org.bukkit.craftbukkit.v.entity.CraftEntity) entity).getHandle();
         this.getHandle().getLookControl().setLookAt(nms);
     }
 
@@ -92,9 +92,9 @@ public abstract class CraftMobApiMixin {
     public void lookAt(org.bukkit.entity.Entity entity, float headRotationSpeed, float maxHeadPitch) {
         com.google.common.base.Preconditions.checkNotNull(entity, "entity cannot be null");
         com.google.common.base.Preconditions.checkArgument(
-                entity.getWorld().equals(((org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity) (Object) this).getWorld()),
+                entity.getWorld().equals(((org.bukkit.craftbukkit.v.entity.CraftEntity) (Object) this).getWorld()),
                 "entity in a different world");
-        net.minecraft.world.entity.Entity nms = ((org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity) entity).getHandle();
+        net.minecraft.world.entity.Entity nms = ((org.bukkit.craftbukkit.v.entity.CraftEntity) entity).getHandle();
         this.getHandle().getLookControl().setLookAt(nms, headRotationSpeed, maxHeadPitch);
     }
 

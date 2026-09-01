@@ -2,9 +2,9 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 
 import org.bukkit.SoundGroup;
 import org.bukkit.block.Biome;
-import org.bukkit.craftbukkit.v1_20_R1.CraftSoundGroup;
-import org.bukkit.craftbukkit.v1_20_R1.block.CraftBlockStates;
-import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v.CraftSoundGroup;
+import org.bukkit.craftbukkit.v.block.CraftBlockStates;
+import org.bukkit.craftbukkit.v.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,7 +29,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
  * 缺失的抽象方法（运行时会 AbstractMethodError）。实现参照 Paper 1.21.1
  * 对应 server 补丁，NMS 调用全部为 mojmap。注册清单由集成者统一处理。
  */
-@Mixin(org.bukkit.craftbukkit.v1_20_R1.block.CraftBlock.class)
+@Mixin(org.bukkit.craftbukkit.v.block.CraftBlock.class)
 public abstract class CraftBlockApiMixin {
 
     @Shadow
@@ -175,7 +175,7 @@ public abstract class CraftBlockApiMixin {
     public Biome getComputedBiome() {
         net.minecraft.core.Registry<net.minecraft.world.level.biome.Biome> registry =
             this.world.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.BIOME);
-        return org.bukkit.craftbukkit.v1_20_R1.block.CraftBlock.biomeBaseToBiome(registry,
+        return org.bukkit.craftbukkit.v.block.CraftBlock.biomeBaseToBiome(registry,
             this.world.getNoiseBiome(
                 QuartPos.fromBlock(this.position.getX()),
                 QuartPos.fromBlock(this.position.getY()),

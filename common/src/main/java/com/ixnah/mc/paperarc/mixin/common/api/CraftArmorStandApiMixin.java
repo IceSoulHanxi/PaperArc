@@ -1,7 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
-import org.bukkit.craftbukkit.v1_20_R1.CraftEquipmentSlot;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftArmorStand;
+import org.bukkit.craftbukkit.v.CraftEquipmentSlot;
+import org.bukkit.craftbukkit.v.entity.CraftArmorStand;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -28,7 +28,7 @@ public abstract class CraftArmorStandApiMixin {
     @Unique
     public ItemStack getItem(EquipmentSlot slot) {
         com.google.common.base.Preconditions.checkArgument(slot != null, "slot");
-        return org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack.asCraftMirror(
+        return org.bukkit.craftbukkit.v.inventory.CraftItemStack.asCraftMirror(
                 this.getHandle().getItemBySlot(CraftEquipmentSlot.getNMS(slot)));
     }
 

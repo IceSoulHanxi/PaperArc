@@ -3,7 +3,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 import com.google.common.base.Preconditions;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import org.bukkit.craftbukkit.v1_20_R1.scoreboard.CraftScoreboard;
+import org.bukkit.craftbukkit.v.scoreboard.CraftScoreboard;
 import org.bukkit.entity.Entity;
 import org.bukkit.scoreboard.Criteria;
 import org.bukkit.scoreboard.Objective;

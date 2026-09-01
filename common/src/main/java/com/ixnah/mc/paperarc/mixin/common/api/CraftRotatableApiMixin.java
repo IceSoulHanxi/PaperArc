@@ -4,17 +4,17 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Rotatable;
-import org.bukkit.craftbukkit.v1_20_R1.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.v.block.data.CraftBlockData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
 /**
  * Adds the bukkit {@link Rotatable} API to the concrete
- * org.bukkit.craftbukkit.v1_20_R1.block.impl.CraftRotatable host, which upstream only
+ * org.bukkit.craftbukkit.v.block.impl.CraftRotatable host, which upstream only
  * implements Orientable. Mirrors CraftBukkit's abstract block.data.CraftRotatable
  * implementation over the vanilla ROTATION_0_15 property.
  */
-@Mixin(org.bukkit.craftbukkit.v1_20_R1.block.impl.CraftRotatable.class)
+@Mixin(org.bukkit.craftbukkit.v.block.impl.CraftRotatable.class)
 public abstract class CraftRotatableApiMixin implements Rotatable {
 
     @Unique

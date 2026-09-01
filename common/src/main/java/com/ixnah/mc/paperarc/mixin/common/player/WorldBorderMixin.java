@@ -6,7 +6,7 @@ import io.papermc.paper.event.world.border.WorldBorderCenterChangeEvent;
 import net.minecraft.world.level.border.WorldBorder;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_20_R1.CraftWorldBorder;
+import org.bukkit.craftbukkit.v.CraftWorldBorder;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;

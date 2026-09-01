@@ -2,7 +2,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.ixnah.mc.paperarc.bridge.AbstractSkeletonBridge;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftAbstractSkeleton;
+import org.bukkit.craftbukkit.v.entity.CraftAbstractSkeleton;
 import org.bukkit.entity.Skeleton;
 import com.ixnah.mc.paperarc.bridge.craft.CraftEntityBridge;
 import org.spongepowered.asm.mixin.Mixin;

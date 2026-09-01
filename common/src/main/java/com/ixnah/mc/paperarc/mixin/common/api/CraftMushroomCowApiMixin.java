@@ -2,7 +2,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.animal.MushroomCow;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftMushroomCow;
+import org.bukkit.craftbukkit.v.entity.CraftMushroomCow;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;

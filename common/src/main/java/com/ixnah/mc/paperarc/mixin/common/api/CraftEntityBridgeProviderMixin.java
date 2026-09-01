@@ -3,7 +3,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 import com.ixnah.mc.paperarc.bridge.craft.CraftEntityBridge;
 import net.minecraft.world.entity.Entity;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v.entity.CraftEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 

@@ -5,7 +5,7 @@ import java.util.Collection;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
-import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftMetaBook;
+import org.bukkit.craftbukkit.v.inventory.CraftMetaBook;
 import org.bukkit.inventory.meta.BookMeta;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

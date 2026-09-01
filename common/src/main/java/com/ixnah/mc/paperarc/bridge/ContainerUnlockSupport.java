@@ -6,8 +6,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.LockCode;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.bukkit.Sound;
-import org.bukkit.craftbukkit.v1_20_R1.block.CraftBlock;
-import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v.block.CraftBlock;
+import org.bukkit.craftbukkit.v.inventory.CraftItemStack;
 
 /**
  * Shared logic for Paper's BlockLockCheckEvent

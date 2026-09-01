@@ -7,9 +7,9 @@ import com.google.common.base.Preconditions;
 
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
-import org.bukkit.craftbukkit.v1_20_R1.attribute.CraftAttributeMap;
-import org.bukkit.craftbukkit.v1_20_R1.attribute.CraftAttributeInstance;
-import org.bukkit.craftbukkit.v1_20_R1.potion.CraftPotionEffectType;
+import org.bukkit.craftbukkit.v.attribute.CraftAttributeMap;
+import org.bukkit.craftbukkit.v.attribute.CraftAttributeInstance;
+import org.bukkit.craftbukkit.v.potion.CraftPotionEffectType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 

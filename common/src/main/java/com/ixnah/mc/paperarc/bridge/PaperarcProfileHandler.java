@@ -5,7 +5,7 @@ import com.destroystokyo.paper.profile.PlayerProfile;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
-import org.bukkit.craftbukkit.v1_20_R1.profile.CraftPlayerProfile;
+import org.bukkit.craftbukkit.v.profile.CraftPlayerProfile;
 import org.bukkit.profile.PlayerTextures;
 
 import java.lang.reflect.InvocationHandler;

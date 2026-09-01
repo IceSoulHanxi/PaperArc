@@ -2,7 +2,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.monster.ZombieVillager;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftVillagerZombie;
+import org.bukkit.craftbukkit.v.entity.CraftVillagerZombie;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;

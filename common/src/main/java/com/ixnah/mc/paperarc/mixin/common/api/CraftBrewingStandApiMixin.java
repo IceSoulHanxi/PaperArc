@@ -1,6 +1,6 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
-import org.bukkit.craftbukkit.v1_20_R1.block.CraftBrewingStand;
+import org.bukkit.craftbukkit.v.block.CraftBrewingStand;
 import org.spongepowered.asm.mixin.Mixin;
 
 /**

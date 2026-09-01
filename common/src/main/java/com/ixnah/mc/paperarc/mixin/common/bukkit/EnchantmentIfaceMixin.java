@@ -7,8 +7,8 @@ import java.util.stream.Stream;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 
-import org.bukkit.craftbukkit.v1_20_R1.CraftEquipmentSlot;
-import org.bukkit.craftbukkit.v1_20_R1.enchantments.CraftEnchantment;
+import org.bukkit.craftbukkit.v.CraftEquipmentSlot;
+import org.bukkit.craftbukkit.v.enchantments.CraftEnchantment;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 

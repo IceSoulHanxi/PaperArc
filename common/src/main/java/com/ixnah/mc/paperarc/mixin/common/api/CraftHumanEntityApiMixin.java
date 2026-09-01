@@ -31,9 +31,9 @@ import net.minecraft.world.level.block.entity.SignBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.sign.Side;
-import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_20_R1.block.CraftBlock;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v.CraftWorld;
+import org.bukkit.craftbukkit.v.block.CraftBlock;
+import org.bukkit.craftbukkit.v.entity.CraftEntity;
 import org.bukkit.inventory.InventoryView;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -62,7 +62,7 @@ import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
  * - Shoulder release: vanilla only clears the tag; spawning is done here at the player's
  *   position (Paper spawns via its patched ServerPlayer#release*ShoulderEntity).
  */
-@Mixin(org.bukkit.craftbukkit.v1_20_R1.entity.CraftHumanEntity.class)
+@Mixin(org.bukkit.craftbukkit.v.entity.CraftHumanEntity.class)
 public abstract class CraftHumanEntityApiMixin {
 
     @Shadow

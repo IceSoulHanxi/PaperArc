@@ -1,6 +1,6 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftAbstractVillager;
+import org.bukkit.craftbukkit.v.entity.CraftAbstractVillager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;

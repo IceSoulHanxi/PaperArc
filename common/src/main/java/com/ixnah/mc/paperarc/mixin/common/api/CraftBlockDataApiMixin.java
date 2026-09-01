@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_20_R1.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.v.block.data.CraftBlockData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -25,18 +25,18 @@ public abstract class CraftBlockDataApiMixin {
     @Unique
     public org.bukkit.util.VoxelShape getCollisionShape(Location location) {
         Preconditions.checkArgument(location != null, "location must not be null");
-        org.bukkit.craftbukkit.v1_20_R1.CraftWorld world = (org.bukkit.craftbukkit.v1_20_R1.CraftWorld) location.getWorld();
+        org.bukkit.craftbukkit.v.CraftWorld world = (org.bukkit.craftbukkit.v.CraftWorld) location.getWorld();
         Preconditions.checkArgument(world != null, "location must not have a null world");
         // Paper: CraftLocation.toBlockPosition(location)
-        BlockPos position = org.bukkit.craftbukkit.v1_20_R1.util.CraftLocation.toBlockPosition(location);
+        BlockPos position = org.bukkit.craftbukkit.v.util.CraftLocation.toBlockPosition(location);
         VoxelShape shape = this.getState().getCollisionShape(world.getHandle(), position);
-        return new org.bukkit.craftbukkit.v1_20_R1.util.CraftVoxelShape(shape);
+        return new org.bukkit.craftbukkit.v.util.CraftVoxelShape(shape);
     }
 
     @Unique
     public float getDestroySpeed(final org.bukkit.inventory.ItemStack itemStack, final boolean considerEnchants) {
         // Paper 1.20.1 Add-Destroy-Speed-API.patch 原文；deobf 无 unwrap，用等价 asNMSCopy
-        net.minecraft.world.item.ItemStack nmsItemStack = org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack.asNMSCopy(itemStack);
+        net.minecraft.world.item.ItemStack nmsItemStack = org.bukkit.craftbukkit.v.inventory.CraftItemStack.asNMSCopy(itemStack);
         float speed = nmsItemStack.getDestroySpeed(this.getState());
         if (speed > 1.0F && considerEnchants) {
             int enchantLevel = net.minecraft.world.item.enchantment.EnchantmentHelper.getItemEnchantmentLevel(

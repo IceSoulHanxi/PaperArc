@@ -5,7 +5,7 @@ import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.minecraft.network.chat.Component.Serializer;
-import org.bukkit.craftbukkit.v1_20_R1.block.sign.CraftSignSide;
+import org.bukkit.craftbukkit.v.block.sign.CraftSignSide;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 

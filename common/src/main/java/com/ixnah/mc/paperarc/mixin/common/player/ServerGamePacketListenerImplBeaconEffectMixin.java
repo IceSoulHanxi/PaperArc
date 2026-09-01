@@ -56,7 +56,7 @@ public abstract class ServerGamePacketListenerImplBeaconEffectMixin {
         // 1.20.1 ContainerLevelAccess uses evaluate (no getLocation()); resolve the
         // bukkit beacon block via CraftBlock.at like Paper's access.getLocation().getBlock()
         Block beacon = ((BeaconMenuAccessor) menu).paperarc$getAccess()
-                .evaluate((lvl, pos) -> org.bukkit.craftbukkit.v1_20_R1.block.CraftBlock.at(lvl, pos))
+                .evaluate((lvl, pos) -> org.bukkit.craftbukkit.v.block.CraftBlock.at(lvl, pos))
                 .orElse(null);
         PotionEffectType bukkitPrimary = paperarc$convert(primary);
         PotionEffectType bukkitSecondary = paperarc$convert(secondary);
@@ -86,7 +86,7 @@ public abstract class ServerGamePacketListenerImplBeaconEffectMixin {
     private static PotionEffectType paperarc$convert(Optional<MobEffect> effect) {
         return effect.flatMap(net.minecraft.core.registries.BuiltInRegistries.MOB_EFFECT::getResourceKey)
             .map(key -> PotionEffectType.getByKey(
-                org.bukkit.craftbukkit.v1_20_R1.util.CraftNamespacedKey.fromMinecraft(key.location())))
+                org.bukkit.craftbukkit.v.util.CraftNamespacedKey.fromMinecraft(key.location())))
             .orElse(null);
     }
 }

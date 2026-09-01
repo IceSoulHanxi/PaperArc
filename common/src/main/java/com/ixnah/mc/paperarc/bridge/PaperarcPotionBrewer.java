@@ -13,7 +13,7 @@ import java.util.List;
 
 /**
  * PotionBrewer delegating the vanilla lookup methods to the CraftBukkit base
- * {@link org.bukkit.craftbukkit.v1_20_R1.potion.CraftPotionBrewer} (present in
+ * {@link org.bukkit.craftbukkit.v.potion.CraftPotionBrewer} (present in
  * the deobf classpath) and keeping Paper's custom potion-mix extensions in an
  * in-memory side list (vanilla brewing registry untouched).
  *
@@ -23,8 +23,8 @@ import java.util.List;
  */
 public final class PaperarcPotionBrewer implements PotionBrewer {
 
-    private static final org.bukkit.craftbukkit.v1_20_R1.potion.CraftPotionBrewer CB_BREWER =
-            new org.bukkit.craftbukkit.v1_20_R1.potion.CraftPotionBrewer();
+    private static final org.bukkit.craftbukkit.v.potion.CraftPotionBrewer CB_BREWER =
+            new org.bukkit.craftbukkit.v.potion.CraftPotionBrewer();
     private static final List<PotionMix> MIXES = new ArrayList<>();
 
     @Override

@@ -1,8 +1,8 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftBoat;
-import org.bukkit.craftbukkit.v1_20_R1.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.v.entity.CraftBoat;
+import org.bukkit.craftbukkit.v.util.CraftMagicNumbers;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;

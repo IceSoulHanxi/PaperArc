@@ -55,12 +55,12 @@ import org.bukkit.EntityEffect;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.v1_20_R1.CraftServer;
-import org.bukkit.craftbukkit.v1_20_R1.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_20_R1.util.CraftChatMessage;
+import org.bukkit.craftbukkit.v.CraftServer;
+import org.bukkit.craftbukkit.v.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.v.entity.CraftEntity;
+import org.bukkit.craftbukkit.v.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v.util.CraftChatMessage;
 import org.bukkit.event.player.PlayerResourcePackStatusEvent;
 import org.bukkit.inventory.MainHand;
 import org.spongepowered.asm.mixin.Mixin;
@@ -68,7 +68,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 /**
- * Paper API 方法补齐（合并原 Part1/Part2）：org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer。
+ * Paper API 方法补齐（合并原 Part1/Part2）：org.bukkit.craftbukkit.v.entity.CraftPlayer。
  * 因跨方法共享补充字段（affectsSpawning/sendViewDistance 等），两 Part 已合并为单一 mixin 类。
  */
 @Mixin(CraftPlayer.class)
@@ -121,7 +121,7 @@ public abstract class CraftPlayerApiMixin {
 
     @Unique
     private static PlayerList paperarc$playerList() {
-        return ((org.bukkit.craftbukkit.v1_20_R1.CraftServer) org.bukkit.Bukkit.getServer()).getServer().getPlayerList();
+        return ((org.bukkit.craftbukkit.v.CraftServer) org.bukkit.Bukkit.getServer()).getServer().getPlayerList();
     }
 
     // ---- activeBossBars ----
@@ -161,7 +161,7 @@ public abstract class CraftPlayerApiMixin {
 
             int i = Math.min(paperarc$xpToDurability(orb, remaining), itemstack.getDamageValue());
             org.bukkit.event.player.PlayerItemMendEvent event =
-                org.bukkit.craftbukkit.v1_20_R1.event.CraftEventFactory.callPlayerItemMendEvent(
+                org.bukkit.craftbukkit.v.event.CraftEventFactory.callPlayerItemMendEvent(
                     sp, orb, itemstack, stackEntry.getKey(), i);
             i = event.getRepairAmount();
             orb.discard();
@@ -244,11 +244,11 @@ public abstract class CraftPlayerApiMixin {
             return this.getHandle().canChatInColor();
         }
         if (option == ClientOption.LOCALE) {
-            String lang = ((org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer) (Object) this).getLocale();
+            String lang = ((org.bukkit.craftbukkit.v.entity.CraftPlayer) (Object) this).getLocale();
             return lang == null ? null : java.util.Locale.forLanguageTag(lang.replace('_', '-'));
         }
         if (option == ClientOption.VIEW_DISTANCE) {
-            return ((org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer) (Object) this).getClientViewDistance();
+            return ((org.bukkit.craftbukkit.v.entity.CraftPlayer) (Object) this).getClientViewDistance();
         }
         if (option == ClientOption.TEXT_FILTERING_ENABLED) {
             return this.getHandle().isTextFilteringEnabled();

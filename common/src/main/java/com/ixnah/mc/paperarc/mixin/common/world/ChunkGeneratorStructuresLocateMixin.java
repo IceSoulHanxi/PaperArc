@@ -13,7 +13,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.Structure;
-import org.bukkit.craftbukkit.v1_20_R1.generator.structure.CraftStructure;
+import org.bukkit.craftbukkit.v.generator.structure.CraftStructure;
 import org.spongepowered.asm.mixin.Mixin;
 
 import java.util.ArrayList;

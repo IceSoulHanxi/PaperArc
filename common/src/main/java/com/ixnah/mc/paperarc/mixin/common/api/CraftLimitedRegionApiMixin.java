@@ -2,9 +2,9 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
-import org.bukkit.craftbukkit.v1_20_R1.block.CraftBlockEntityState;
-import org.bukkit.craftbukkit.v1_20_R1.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.v1_20_R1.generator.CraftLimitedRegion;
+import org.bukkit.craftbukkit.v.block.CraftBlockEntityState;
+import org.bukkit.craftbukkit.v.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.v.generator.CraftLimitedRegion;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;

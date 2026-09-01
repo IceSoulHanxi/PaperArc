@@ -14,13 +14,13 @@ import net.minecraft.world.phys.Vec3;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_20_R1.CraftEquipmentSlot;
-import org.bukkit.craftbukkit.v1_20_R1.block.CraftBlock;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftItem;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftLivingEntity;
-import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_20_R1.util.CraftRayTraceResult;
+import org.bukkit.craftbukkit.v.CraftEquipmentSlot;
+import org.bukkit.craftbukkit.v.block.CraftBlock;
+import org.bukkit.craftbukkit.v.entity.CraftEntity;
+import org.bukkit.craftbukkit.v.entity.CraftItem;
+import org.bukkit.craftbukkit.v.entity.CraftLivingEntity;
+import org.bukkit.craftbukkit.v.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v.util.CraftRayTraceResult;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
@@ -31,7 +31,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 /**
- * Paper API 方法补齐（合并原 Part1/Part2）：org.bukkit.craftbukkit.v1_20_R1.entity.CraftLivingEntity。
+ * Paper API 方法补齐（合并原 Part1/Part2）：org.bukkit.craftbukkit.v.entity.CraftLivingEntity。
  * 因跨方法共享补充字段（shieldBlockingDelay 等），两 Part 已合并为单一 mixin 类。
  */
 @Mixin(CraftLivingEntity.class)
@@ -464,7 +464,7 @@ public abstract class CraftLivingEntityApiMixin {
             return;
         }
         handle.lastHurtByPlayer =
-                ((org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer) killer).getHandle();
+                ((org.bukkit.craftbukkit.v.entity.CraftPlayer) killer).getHandle();
     }
 
     /**
@@ -539,6 +539,6 @@ public abstract class CraftLivingEntityApiMixin {
     public void registerAttribute(org.bukkit.attribute.Attribute attribute) {
         com.google.common.base.Preconditions.checkArgument(attribute != null, "attribute");
         ((com.ixnah.mc.paperarc.bridge.AttributeMapBridge) this.getHandle().attributes)
-                .registerAttribute(org.bukkit.craftbukkit.v1_20_R1.attribute.CraftAttributeMap.toMinecraft(attribute));
+                .registerAttribute(org.bukkit.craftbukkit.v.attribute.CraftAttributeMap.toMinecraft(attribute));
     }
 }

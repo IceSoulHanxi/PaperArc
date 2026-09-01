@@ -3,7 +3,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 import com.google.common.base.Preconditions;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.projectile.FishingHook;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftFishHook;
+import org.bukkit.craftbukkit.v.entity.CraftFishHook;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;

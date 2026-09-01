@@ -29,15 +29,15 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Statistic;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
-import org.bukkit.craftbukkit.v1_20_R1.CraftEquipmentSlot;
-import org.bukkit.craftbukkit.v1_20_R1.CraftRegionAccessor;
-import org.bukkit.craftbukkit.v1_20_R1.CraftStatistic;
-import org.bukkit.craftbukkit.v1_20_R1.attribute.CraftAttributeMap;
-import org.bukkit.craftbukkit.v1_20_R1.attribute.CraftAttributeInstance;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_20_R1.util.CraftMagicNumbers;
-import org.bukkit.craftbukkit.v1_20_R1.util.CraftNamespacedKey;
+import org.bukkit.craftbukkit.v.CraftEquipmentSlot;
+import org.bukkit.craftbukkit.v.CraftRegionAccessor;
+import org.bukkit.craftbukkit.v.CraftStatistic;
+import org.bukkit.craftbukkit.v.attribute.CraftAttributeMap;
+import org.bukkit.craftbukkit.v.attribute.CraftAttributeInstance;
+import org.bukkit.craftbukkit.v.entity.CraftEntity;
+import org.bukkit.craftbukkit.v.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.v.util.CraftNamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -140,7 +140,7 @@ public abstract class CraftMagicNumbersApiMixin {
         }
         return PaperArcBridge.bukkitEntity(
                 net.minecraft.world.entity.EntityType.create(compound,
-                                ((org.bukkit.craftbukkit.v1_20_R1.CraftWorld) world).getHandle())
+                                ((org.bukkit.craftbukkit.v.CraftWorld) world).getHandle())
                         .orElseThrow(() -> new IllegalArgumentException(
                                 "An ID was not found for the data. Did you downgrade?")));
     }
@@ -305,7 +305,7 @@ public abstract class CraftMagicNumbersApiMixin {
     @Unique
     private static net.minecraft.server.MinecraftServer server() {
         try {
-            return ((org.bukkit.craftbukkit.v1_20_R1.CraftServer) PaperArcBridge.getServer()).getServer();
+            return ((org.bukkit.craftbukkit.v.CraftServer) PaperArcBridge.getServer()).getServer();
         } catch (Throwable ignored) {
             return null;
         }

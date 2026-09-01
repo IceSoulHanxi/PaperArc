@@ -6,9 +6,9 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 
 import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftInventoryFurnace;
-import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v.CraftWorld;
+import org.bukkit.craftbukkit.v.inventory.CraftInventoryFurnace;
+import org.bukkit.craftbukkit.v.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

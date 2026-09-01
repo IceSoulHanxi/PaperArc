@@ -3,7 +3,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 import java.util.UUID;
 import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.LivingEntity;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftAreaEffectCloud;
+import org.bukkit.craftbukkit.v.entity.CraftAreaEffectCloud;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;

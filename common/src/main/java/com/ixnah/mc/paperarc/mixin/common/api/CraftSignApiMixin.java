@@ -12,8 +12,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import org.bukkit.block.sign.Side;
 import org.bukkit.block.sign.SignSide;
-import org.bukkit.craftbukkit.v1_20_R1.block.CraftBlockState;
-import org.bukkit.craftbukkit.v1_20_R1.block.CraftSign;
+import org.bukkit.craftbukkit.v.block.CraftBlockState;
+import org.bukkit.craftbukkit.v.block.CraftSign;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -101,7 +101,7 @@ public abstract class CraftSignApiMixin {
     private SignBlockEntity paperarc$signBlockEntity() {
         try {
             if (paperarc$tileEntityMethod == null) {
-                Method method = Class.forName("org.bukkit.craftbukkit.v1_20_R1.block.CraftBlockEntityState")
+                Method method = Class.forName("org.bukkit.craftbukkit.v.block.CraftBlockEntityState")
                     .getDeclaredMethod("getTileEntity"); // protected in CraftBlockEntityState
                 method.setAccessible(true);
                 paperarc$tileEntityMethod = method;

@@ -3,7 +3,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 import com.google.common.base.Preconditions;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
-import org.bukkit.craftbukkit.v1_20_R1.attribute.CraftAttributeInstance;
+import org.bukkit.craftbukkit.v.attribute.CraftAttributeInstance;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;

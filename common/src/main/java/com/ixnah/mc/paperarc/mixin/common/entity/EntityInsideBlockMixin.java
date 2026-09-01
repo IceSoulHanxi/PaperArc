@@ -29,7 +29,7 @@ import net.minecraft.world.level.block.WaterlilyBlock;
 import net.minecraft.world.level.block.WebBlock;
 import net.minecraft.world.level.block.WitherRoseBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import org.bukkit.craftbukkit.v1_20_R1.block.CraftBlock;
+import org.bukkit.craftbukkit.v.block.CraftBlock;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

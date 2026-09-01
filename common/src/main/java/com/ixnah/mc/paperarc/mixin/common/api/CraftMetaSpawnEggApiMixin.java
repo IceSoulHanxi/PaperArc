@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import net.minecraft.nbt.CompoundTag;
 
-import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftMetaSpawnEgg;
+import org.bukkit.craftbukkit.v.inventory.CraftMetaSpawnEgg;
 import org.bukkit.entity.EntityType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -51,7 +51,7 @@ public abstract class CraftMetaSpawnEggApiMixin {
     @Unique
     private static EntityType paperarc$toBukkit(net.minecraft.world.entity.EntityType<?> nms) {
         return org.bukkit.Registry.ENTITY_TYPE.get(
-                org.bukkit.craftbukkit.v1_20_R1.util.CraftNamespacedKey.fromMinecraft(
+                org.bukkit.craftbukkit.v.util.CraftNamespacedKey.fromMinecraft(
                         net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(nms)));
     }
 }

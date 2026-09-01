@@ -6,7 +6,7 @@ import java.util.Map;
 import io.papermc.paper.potion.PotionMix;
 
 import org.bukkit.NamespacedKey;
-import org.bukkit.craftbukkit.v1_20_R1.potion.CraftPotionBrewer;
+import org.bukkit.craftbukkit.v.potion.CraftPotionBrewer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 

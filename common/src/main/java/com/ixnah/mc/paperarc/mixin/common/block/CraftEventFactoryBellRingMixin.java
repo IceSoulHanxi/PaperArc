@@ -4,7 +4,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import io.papermc.paper.event.block.BellRingEvent;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_20_R1.event.CraftEventFactory;
+import org.bukkit.craftbukkit.v.event.CraftEventFactory;
 import org.bukkit.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.At;
  * owns; firing/cancellation stay handled by the existing CraftBukkit code path.
  *
  * <p>NOTE FOR INTEGRATOR: this targets a CraftBukkit (generated) class. If the
- * runtime mixin pipeline does not transform {@code org.bukkit.craftbukkit.v1_20_R1.*},
+ * runtime mixin pipeline does not transform {@code org.bukkit.craftbukkit.v.*},
  * this mixin silently no-ops and the deprecated event type keeps firing — safe
  * degradation, verify at integration time.
  */

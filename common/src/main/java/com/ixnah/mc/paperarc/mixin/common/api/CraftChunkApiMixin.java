@@ -13,7 +13,7 @@ import org.bukkit.ChunkSnapshot;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
-import org.bukkit.craftbukkit.v1_20_R1.CraftChunk;
+import org.bukkit.craftbukkit.v.CraftChunk;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -66,7 +66,7 @@ public abstract class CraftChunkApiMixin {
         Field cached = "skylight".equals(name) ? PAPERARC$SKYLIGHT_FIELD : PAPERARC$EMITLIGHT_FIELD;
         if (cached == null) {
             synchronized (CraftChunkApiMixin.class) {
-                Field resolved = org.bukkit.craftbukkit.v1_20_R1.CraftChunkSnapshot.class.getDeclaredField(name);
+                Field resolved = org.bukkit.craftbukkit.v.CraftChunkSnapshot.class.getDeclaredField(name);
                 resolved.setAccessible(true);
                 if ("skylight".equals(name)) {
                     PAPERARC$SKYLIGHT_FIELD = resolved;
@@ -82,7 +82,7 @@ public abstract class CraftChunkApiMixin {
     @Unique
     public ChunkSnapshot getChunkSnapshot(boolean includeMaxBlockY, boolean includeBiome, boolean includeBiomeTempRain, boolean includeLightData) {
         ChunkSnapshot snapshot = getChunkSnapshot(includeMaxBlockY, includeBiome, includeBiomeTempRain);
-        if (!includeLightData && snapshot instanceof org.bukkit.craftbukkit.v1_20_R1.CraftChunkSnapshot craftSnapshot) {
+        if (!includeLightData && snapshot instanceof org.bukkit.craftbukkit.v.CraftChunkSnapshot craftSnapshot) {
             try {
                 paperarc$snapshotField("skylight").set(craftSnapshot, null);
                 paperarc$snapshotField("emitlight").set(craftSnapshot, null);

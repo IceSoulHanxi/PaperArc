@@ -15,8 +15,8 @@ import net.minecraft.world.level.BaseSpawner;
 import net.minecraft.world.level.SpawnData;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 
-import org.bukkit.craftbukkit.v1_20_R1.block.CraftCreatureSpawner;
-import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v.block.CraftCreatureSpawner;
+import org.bukkit.craftbukkit.v.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -85,7 +85,7 @@ public abstract class CraftCreatureSpawnerApiMixin {
     @Unique
     private ServerLevel paperarc$world() {
         org.bukkit.World world = ((CraftBlockStateBridge) (Object) this).paperarc$getWorld();
-        return world instanceof org.bukkit.craftbukkit.v1_20_R1.CraftWorld cw ? cw.getHandle() : null;
+        return world instanceof org.bukkit.craftbukkit.v.CraftWorld cw ? cw.getHandle() : null;
     }
 
     @Unique

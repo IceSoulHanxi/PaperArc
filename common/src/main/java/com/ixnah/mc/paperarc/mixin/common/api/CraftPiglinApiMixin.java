@@ -2,7 +2,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.monster.piglin.Piglin;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftPiglin;
+import org.bukkit.craftbukkit.v.entity.CraftPiglin;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;

@@ -2,7 +2,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.ixnah.mc.paperarc.bridge.WitherBossBridge;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftWither;
+import org.bukkit.craftbukkit.v.entity.CraftWither;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;

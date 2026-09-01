@@ -5,7 +5,7 @@ import com.google.common.base.Preconditions;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 
 import org.bukkit.block.data.type.Hopper;
-import org.bukkit.craftbukkit.v1_20_R1.block.CraftHopper;
+import org.bukkit.craftbukkit.v.block.CraftHopper;
 import com.ixnah.mc.paperarc.bridge.craft.CraftBlockStateBridge;
 import com.ixnah.mc.paperarc.bridge.craft.CraftBlockEntityStateBridge;
 import org.spongepowered.asm.mixin.Mixin;

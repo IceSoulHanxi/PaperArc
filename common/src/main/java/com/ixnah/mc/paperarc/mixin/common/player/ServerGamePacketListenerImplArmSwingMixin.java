@@ -4,7 +4,7 @@ import io.papermc.paper.event.player.PlayerArmSwingEvent;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v1_20_R1.CraftEquipmentSlot;
+import org.bukkit.craftbukkit.v.CraftEquipmentSlot;
 import org.bukkit.entity.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

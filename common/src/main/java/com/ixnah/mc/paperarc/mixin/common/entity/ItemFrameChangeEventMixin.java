@@ -49,7 +49,7 @@ public abstract class ItemFrameChangeEventMixin {
             PlayerItemFrameChangeEvent event = new PlayerItemFrameChangeEvent(
                 PaperArcBridge.bukkitPlayer(player),
                 PaperArcBridge.bukkitEntity((ItemFrame) (Object) this),
-                org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack.asBukkitCopy(this.paperarc$getItem()),
+                org.bukkit.craftbukkit.v.inventory.CraftItemStack.asBukkitCopy(this.paperarc$getItem()),
                 PlayerItemFrameChangeEvent.ItemFrameChangeAction.REMOVE
             );
             if (!event.callEvent()) {
@@ -57,7 +57,7 @@ public abstract class ItemFrameChangeEventMixin {
                 cir.setReturnValue(true);
                 return;
             }
-            this.paperarc$setItem(org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack.asNMSCopy(event.getItemStack()), false);
+            this.paperarc$setItem(org.bukkit.craftbukkit.v.inventory.CraftItemStack.asNMSCopy(event.getItemStack()), false);
         }
     }
 
@@ -74,7 +74,7 @@ public abstract class ItemFrameChangeEventMixin {
         PlayerItemFrameChangeEvent event = new PlayerItemFrameChangeEvent(
             PaperArcBridge.bukkitPlayer(player),
             PaperArcBridge.bukkitEntity((ItemFrame) (Object) this),
-            org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack.asBukkitCopy(itemstack),
+            org.bukkit.craftbukkit.v.inventory.CraftItemStack.asBukkitCopy(itemstack),
             PlayerItemFrameChangeEvent.ItemFrameChangeAction.PLACE
         );
         if (!event.callEvent()) {
@@ -83,7 +83,7 @@ public abstract class ItemFrameChangeEventMixin {
         }
         // Replicate the vanilla tail (setItem + gameEvent + consume + return CONSUME)
         // so the event's (possibly modified) ItemStack is what actually gets placed.
-        this.paperarc$setItem(org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack.asNMSCopy(event.getItemStack()), true);
+        this.paperarc$setItem(org.bukkit.craftbukkit.v.inventory.CraftItemStack.asNMSCopy(event.getItemStack()), true);
         ((net.minecraft.world.entity.Entity) (Object) this).gameEvent(net.minecraft.world.level.gameevent.GameEvent.BLOCK_CHANGE, player);
         itemstack.shrink(1);
         cir.setReturnValue(InteractionResult.CONSUME);
@@ -101,14 +101,14 @@ public abstract class ItemFrameChangeEventMixin {
         PlayerItemFrameChangeEvent event = new PlayerItemFrameChangeEvent(
             PaperArcBridge.bukkitPlayer(player),
             PaperArcBridge.bukkitEntity((ItemFrame) (Object) this),
-            org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack.asBukkitCopy(this.paperarc$getItem()),
+            org.bukkit.craftbukkit.v.inventory.CraftItemStack.asBukkitCopy(this.paperarc$getItem()),
             PlayerItemFrameChangeEvent.ItemFrameChangeAction.ROTATE
         );
         if (!event.callEvent()) {
             cir.setReturnValue(InteractionResult.FAIL);
             return;
         }
-        this.paperarc$setItem(org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack.asNMSCopy(event.getItemStack()), false);
+        this.paperarc$setItem(org.bukkit.craftbukkit.v.inventory.CraftItemStack.asNMSCopy(event.getItemStack()), false);
         // vanilla continues: rotate sound, rotation+1, gameEvent, return CONSUME
     }
 }

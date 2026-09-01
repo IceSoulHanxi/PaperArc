@@ -3,7 +3,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 import com.ixnah.mc.paperarc.bridge.craft.CraftBlockEntityStateBridge;
 
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
-import org.bukkit.craftbukkit.v1_20_R1.block.CraftChest;
+import org.bukkit.craftbukkit.v.block.CraftChest;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 

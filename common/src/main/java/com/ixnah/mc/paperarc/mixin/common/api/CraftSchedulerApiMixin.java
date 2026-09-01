@@ -4,7 +4,7 @@ import java.util.concurrent.Executor;
 
 import com.google.common.base.Preconditions;
 
-import org.bukkit.craftbukkit.v1_20_R1.scheduler.CraftScheduler;
+import org.bukkit.craftbukkit.v.scheduler.CraftScheduler;
 import org.bukkit.plugin.Plugin;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

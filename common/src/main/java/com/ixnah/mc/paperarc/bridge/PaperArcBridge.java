@@ -4,7 +4,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
-import org.bukkit.craftbukkit.v1_20_R1.CraftServer;
+import org.bukkit.craftbukkit.v.CraftServer;
 import org.bukkit.event.Event;
 
 import java.lang.invoke.MethodHandles;
@@ -31,11 +31,11 @@ public final class PaperArcBridge {
     /** NMS entity -> Bukkit entity via the static CraftBukkit factory. */
     @SuppressWarnings("unchecked")
     public static <T extends org.bukkit.entity.Entity> T bukkitEntity(net.minecraft.world.entity.Entity nms) {
-        return (T) org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity.getEntity((CraftServer) getServer(), nms);
+        return (T) org.bukkit.craftbukkit.v.entity.CraftEntity.getEntity((CraftServer) getServer(), nms);
     }
 
     public static org.bukkit.entity.Player bukkitPlayer(net.minecraft.world.entity.player.Player player) {
-        return (org.bukkit.entity.Player) org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity.getEntity((CraftServer) getServer(), player);
+        return (org.bukkit.entity.Player) org.bukkit.craftbukkit.v.entity.CraftEntity.getEntity((CraftServer) getServer(), player);
     }
 
     public static org.bukkit.World bukkitWorld(ServerLevel level) {

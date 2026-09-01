@@ -34,9 +34,9 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_20_R1.CraftServer;
-import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v.CraftServer;
+import org.bukkit.craftbukkit.v.CraftWorld;
+import org.bukkit.craftbukkit.v.inventory.CraftItemStack;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.generator.structure.StructureType;
 import org.bukkit.inventory.InventoryHolder;
@@ -52,7 +52,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 /**
- * Paper API 方法补齐（合并原 Part1/Part2）：org.bukkit.craftbukkit.v1_20_R1.entity.CraftServer。
+ * Paper API 方法补齐（合并原 Part1/Part2）：org.bukkit.craftbukkit.v.entity.CraftServer。
  * 因跨方法共享补充字段（permissionMessage/pluginsFolder 等），两 Part 已合并为单一 mixin 类。
  */
 @Mixin(CraftServer.class)
@@ -601,6 +601,6 @@ public abstract class CraftServerApiMixin {
      */
     @Unique
     public org.bukkit.command.CommandMap getCommandMap() {
-        return ((org.bukkit.craftbukkit.v1_20_R1.CraftServer) (Object) this).getCommandMap();
+        return ((org.bukkit.craftbukkit.v.CraftServer) (Object) this).getCommandMap();
     }
 }

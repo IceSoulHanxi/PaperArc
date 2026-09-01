@@ -39,16 +39,16 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_20_R1.CraftGameEvent;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_20_R1.util.CraftMagicNumbers;
-import org.bukkit.craftbukkit.v1_20_R1.util.CraftNamespacedKey;
-import org.bukkit.craftbukkit.v1_20_R1.util.CraftLocation;
-import org.bukkit.craftbukkit.v1_20_R1.CraftParticle;
-import org.bukkit.craftbukkit.v1_20_R1.CraftRaid;
-import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_20_R1.generator.structure.CraftStructure;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v.CraftGameEvent;
+import org.bukkit.craftbukkit.v.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.v.util.CraftNamespacedKey;
+import org.bukkit.craftbukkit.v.util.CraftLocation;
+import org.bukkit.craftbukkit.v.CraftParticle;
+import org.bukkit.craftbukkit.v.CraftRaid;
+import org.bukkit.craftbukkit.v.CraftWorld;
+import org.bukkit.craftbukkit.v.generator.structure.CraftStructure;
+import org.bukkit.craftbukkit.v.entity.CraftEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
@@ -318,7 +318,7 @@ public abstract class CraftWorldApiMixin {
         Preconditions.checkArgument(gameEvent != null, "gameEvent cannot be null");
         Preconditions.checkArgument(position != null, "position cannot be null");
         net.minecraft.world.level.gameevent.GameEvent nmsEvent =
-                org.bukkit.craftbukkit.v1_20_R1.CraftGameEvent.bukkitToMinecraft(gameEvent);
+                org.bukkit.craftbukkit.v.CraftGameEvent.bukkitToMinecraft(gameEvent);
         GameEvent.Context context = GameEvent.Context.of(
                 sourceEntity == null ? null : ((CraftEntity) sourceEntity).getHandle());
         this.getHandle().gameEvent(nmsEvent,
@@ -432,7 +432,7 @@ public abstract class CraftWorldApiMixin {
             this.spawnParticle(particle, x, y, z, count, offsetX, offsetY, offsetZ, extra, data, forceOverride);
             return;
         }
-        ParticleOptions options = org.bukkit.craftbukkit.v1_20_R1.CraftParticle.toNMS(particle, data);
+        ParticleOptions options = org.bukkit.craftbukkit.v.CraftParticle.toNMS(particle, data);
         ClientboundLevelParticlesPacket packet = new ClientboundLevelParticlesPacket(
                 options, forceOverride, x, y, z,
                 (float) offsetX, (float) offsetY, (float) offsetZ, (float) extra, count);

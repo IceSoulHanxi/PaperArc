@@ -5,7 +5,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Map;
 
-import org.bukkit.craftbukkit.v1_20_R1.persistence.CraftPersistentDataContainer;
+import org.bukkit.craftbukkit.v.persistence.CraftPersistentDataContainer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;

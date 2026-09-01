@@ -198,3 +198,22 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
+// 把 deobf 的 v/ 版本无关包重写回当前版本号（v1_20_R1），对齐 Arclight 的
+// wipeVersion/reobfVersion 机制：Arclight 源码用 org.bukkit.craftbukkit.v 编译，
+// 产物阶段由 arclight-gradle-plugin 把 v/ 重写回 v1_20_R1；paperarc 源码同样引用
+// v/（跨 MC 版本可复用），因此产物必须在打包后做相同重写，运行时才能匹配
+// Arclight 提供的 v1_20_R1 Craft* 类。
+import com.ixnah.mc.paperarc.build.VersionCraftBukkitTask
+
+tasks.register('versionCraftBukkit', VersionCraftBukkitTask) {
+    dependsOn tasks.named('jar')
+    jar.set(file("${buildDir}/libs/${project.name}-${project.version}.jar"))
+    revision.set('v1_20_R1')
+    mixinConfigs.set('paperarc-common.mixins.json,paperarc-mojmap.mixins.json,paperarc-forge.mixins.json')
+}
+
+// 产物重写必须在 jar 之后生效于最终产物（assemble/build 产出 jar）
+tasks.named('assemble') {
+    dependsOn 'versionCraftBukkit'
+}
+
