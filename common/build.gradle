@@ -137,13 +137,20 @@ processResources {
 //  与 arclight 的 ResolutionException；由运行时 RuntimeClassInjector defineClass 注入）
 tasks.register('embedRuntimeClasses') {
     def outDir = file("${buildDir}/resources/main/META-INF/paperarc/runtime")
-    def paperApi = configurations.compileClasspath.files.find { it.name.startsWith('paper-api-') }
     def configFile = file('src/main/resources/META-INF/paperarc/runtime/injections.json')
-    inputs.file(paperApi)
+    // 注意：不能用 configurations.compileClasspath 在此解析——它含 ForgeGradle 生成的
+    // forge-...-mapped_official_at_<hash>.jar，在任务图构建期解析会触发 MinecraftUserRepo
+    // 在禁止变更期创建任务（IllegalMutationException），CI 首次构建（无缓存）必失败。
+    // 改用 shade（paper-api transitive=false + adventure，纯 Maven 构件）并在 doLast 惰性解析。
+    inputs.files(configurations.shade)
     inputs.file(configFile)
     outputs.dir(outDir)
     doLast {
         outDir.mkdirs()
+        def paperApi = configurations.shade.files.find { it.name.startsWith('paper-api-') }
+        if (paperApi == null) {
+            throw new GradleException('paper-api jar not found in shade configuration')
+        }
         def config = new groovy.json.JsonSlurper().parseText(configFile.text)
         new java.util.zip.ZipFile(paperApi).withCloseable { zip ->
             config.classes.each { name ->
