@@ -172,9 +172,16 @@ public abstract class CraftScoreApiMixin {
 
     // -------------------------------------------------------------- helpers
 
-    /** MethodHandle accessor for package-private {@code CraftScore.objective}. */
+    /**
+     * MethodHandle accessor for package-private {@code CraftScore.objective}.
+     *
+     * <p>参数类型必须是 {@code Object} 而**不能**写成 mixin 自身的类型：方法合并进
+     * CraftScore 后描述符里仍写着 {@code …mixin.common.api.CraftScoreApiMixin}，
+     * 调用点解析描述符就会直接加载 mixin 类 —— ModLauncher(Forge/NeoForge) 下
+     * 抛 {@code NoClassDefFoundError: … is invalid}（Knot/Fabric 侥幸不报）。</p>
+     */
     @Unique
-    private static Object paperarc$craftObjectiveOf(CraftScoreApiMixin self) {
+    private static Object paperarc$craftObjectiveOf(Object self) {
         if (PAPERARC$OBJ_FIELD == null) {
             throw new IllegalStateException("CraftScore.objective not accessible");
         }
