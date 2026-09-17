@@ -1,5 +1,21 @@
 package com.ixnah.mc.paperarc.mixin.common.bukkit;
 
+import org.bukkit.plugin.Plugin;
+import io.papermc.paper.plugin.configuration.PluginMeta;
+import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
+import io.papermc.paper.plugin.lifecycle.event.LifecycleEventOwner;
+import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.util.logging.Logger;
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
+import org.apache.logging.log4j.LogManager;
+import org.bukkit.Server;
+import org.bukkit.command.TabExecutor;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.generator.BiomeProvider;
+import org.bukkit.generator.ChunkGenerator;
+import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -37,4 +53,10 @@ public interface PluginIfaceMixin extends io.papermc.paper.plugin.lifecycle.even
 
     @Unique
     public abstract io.papermc.paper.plugin.configuration.PluginMeta getPluginMeta();
+
+    @Unique
+    public default Path getDataPath() {
+        Plugin self = (Plugin) this;
+        return self.getDataFolder().toPath();
+    }
 }

@@ -1,5 +1,24 @@
 package com.ixnah.mc.paperarc.mixin.common.bukkit;
 
+import org.bukkit.block.Block;
+import com.destroystokyo.paper.block.BlockSoundGroup;
+import java.util.Collection;
+import org.bukkit.Chunk;
+import org.bukkit.FluidCollisionMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.SoundGroup;
+import org.bukkit.Translatable;
+import org.bukkit.World;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.Metadatable;
+import org.bukkit.util.BoundingBox;
+import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.Vector;
+import org.bukkit.util.VoxelShape;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -62,4 +81,34 @@ public interface BlockIfaceMixin extends net.kyori.adventure.translation.Transla
 
     @Unique
     public abstract String translationKey();
+
+    @Unique
+    public default long getBlockKey() {
+        Block self = (Block) this;
+        return com.ixnah.mc.paperarc.bridge.api.PaperarcBlockKeys.pack(self.getX(), self.getY(), self.getZ());
+    }
+
+    @Unique
+    public default boolean breakNaturally(boolean triggerEffect) {
+        Block self = (Block) this;
+        return self.breakNaturally(triggerEffect, false);
+    }
+
+    @Unique
+    public default boolean breakNaturally(ItemStack tool, boolean triggerEffect) {
+        Block self = (Block) this;
+        return self.breakNaturally(tool, triggerEffect, false);
+    }
+
+    @Unique
+    public default float getDestroySpeed(ItemStack itemStack) {
+        Block self = (Block) this;
+        return self.getBlockData().getDestroySpeed(itemStack);
+    }
+
+    @Unique
+    public default float getDestroySpeed(ItemStack itemStack, boolean considerEnchants) {
+        Block self = (Block) this;
+        return self.getBlockData().getDestroySpeed(itemStack, considerEnchants);
+    }
 }

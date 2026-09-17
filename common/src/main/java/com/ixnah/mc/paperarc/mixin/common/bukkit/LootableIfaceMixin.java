@@ -1,5 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.bukkit;
 
+import org.bukkit.loot.LootTable;
+import org.bukkit.loot.Lootable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -13,4 +15,16 @@ public interface LootableIfaceMixin {
 
     @Unique
     public abstract void setLootTable(org.bukkit.loot.LootTable p0, long p1);
+
+    @Unique
+    public default boolean hasLootTable() {
+        Lootable self = (Lootable) this;
+        return self.getLootTable() != null;
+    }
+
+    @Unique
+    public default void clearLootTable() {
+        Lootable self = (Lootable) this;
+        self.setLootTable((LootTable) null);
+    }
 }

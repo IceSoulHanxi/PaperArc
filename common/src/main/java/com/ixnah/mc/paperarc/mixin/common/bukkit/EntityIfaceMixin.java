@@ -1,5 +1,34 @@
 package com.ixnah.mc.paperarc.mixin.common.bukkit;
 
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Pose;
+import io.papermc.paper.entity.TeleportFlag;
+import io.papermc.paper.threadedregions.scheduler.EntityScheduler;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.UnaryOperator;
+import net.kyori.adventure.sound.Sound.Emitter;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent.ShowEntity;
+import org.bukkit.Chunk;
+import org.bukkit.EntityEffect;
+import org.bukkit.Location;
+import org.bukkit.Nameable;
+import org.bukkit.Server;
+import org.bukkit.World;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.PistonMoveReaction;
+import org.bukkit.command.CommandSender;
+import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.metadata.Metadatable;
+import org.bukkit.persistence.PersistentDataHolder;
+import org.bukkit.util.BoundingBox;
+import org.bukkit.util.Vector;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.event.HoverEventSource;
@@ -167,5 +196,29 @@ public interface EntityIfaceMixin extends HoverEventSource<HoverEvent.ShowEntity
                     return null;
                 });
         return future;
+    }
+
+    @Unique
+    public default boolean teleport(Location location, TeleportFlag... teleportFlags) {
+        Entity self = (Entity) this;
+        return self.teleport(location, PlayerTeleportEvent.TeleportCause.PLUGIN, teleportFlags);
+    }
+
+    @Unique
+    public default void setPose(Pose pose) {
+        Entity self = (Entity) this;
+        self.setPose(pose, false);
+    }
+
+    @Unique
+    public default Chunk getChunk() {
+        Entity self = (Entity) this;
+        return self.getLocation().getChunk();
+    }
+
+    @Unique
+    public default boolean spawnAt(Location location) {
+        Entity self = (Entity) this;
+        return self.spawnAt(location, CreatureSpawnEvent.SpawnReason.DEFAULT);
     }
 }

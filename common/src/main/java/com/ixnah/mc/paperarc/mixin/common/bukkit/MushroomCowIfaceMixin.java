@@ -1,5 +1,9 @@
 package com.ixnah.mc.paperarc.mixin.common.bukkit;
 
+import io.papermc.paper.potion.SuspiciousEffectEntry;
+import java.util.List;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -29,5 +33,25 @@ public interface MushroomCowIfaceMixin extends io.papermc.paper.entity.Shearable
     @Unique
     public default void shear(net.kyori.adventure.sound.Sound.Source source) {
         com.ixnah.mc.paperarc.bridge.api.PaperarcEntityTraits.shear(this, source);
+    }
+
+    @Unique
+    public default int getStewEffectDuration() {
+        throw new UnsupportedOperationException("Mushroom cows can now hold multiple effects. Use #getStewEffects");
+    }
+
+    @Unique
+    public default void setStewEffectDuration(int duration) {
+        throw new UnsupportedOperationException("Mushroom cows can now hold multiple effects. Use #setStewEffects");
+    }
+
+    @Unique
+    public default PotionEffectType getStewEffectType() {
+        throw new UnsupportedOperationException("Mushroom cows can now hold multiple effects. Use #getStewEffects");
+    }
+
+    @Unique
+    public default void setStewEffect(PotionEffectType type) {
+        throw new UnsupportedOperationException("Mushroom cows can now hold multiple effects. Use #setStewEffects");
     }
 }

@@ -28,4 +28,9 @@ public final class PaperarcBlockKeys {
     public static int unpackZ(long packed) {
         return (int) (packed << 10 >> 37);
     }
+
+    /** paper 的 {@code Chunk.getChunkKey(int, int)}，同样是接口 static 方法。 */
+    public static long packChunk(int x, int z) {
+        return (long) x & 4294967295L | ((long) z & 4294967295L) << 32;
+    }
 }

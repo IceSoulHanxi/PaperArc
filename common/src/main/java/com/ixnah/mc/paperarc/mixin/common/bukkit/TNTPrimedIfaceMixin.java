@@ -1,5 +1,8 @@
 package com.ixnah.mc.paperarc.mixin.common.bukkit;
 
+import org.bukkit.entity.TNTPrimed;
+import org.bukkit.Location;
+import org.bukkit.block.data.BlockData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -16,4 +19,10 @@ public interface TNTPrimedIfaceMixin {
 
     @Unique
     public abstract org.bukkit.block.data.BlockData getBlockData();
+
+    @Unique
+    public default Location getSourceLoc() {
+        TNTPrimed self = (TNTPrimed) this;
+        return self.getOrigin();
+    }
 }

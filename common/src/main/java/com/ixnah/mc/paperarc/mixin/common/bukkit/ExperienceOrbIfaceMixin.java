@@ -1,5 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.bukkit;
 
+import org.bukkit.entity.ExperienceOrb;
+import java.util.UUID;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -23,4 +25,9 @@ public interface ExperienceOrbIfaceMixin {
     @Unique
     public abstract java.util.UUID getSourceEntityId();
 
+    @Unique
+    public default boolean isFromBottle() {
+        ExperienceOrb self = (ExperienceOrb) this;
+        return self.getSpawnReason() == ExperienceOrb.SpawnReason.EXP_BOTTLE;
+    }
 }

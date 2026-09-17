@@ -1,5 +1,17 @@
 package com.ixnah.mc.paperarc.mixin.common.bukkit;
 
+import org.bukkit.command.CommandSender;
+import java.util.UUID;
+import net.kyori.adventure.audience.MessageType;
+import net.kyori.adventure.identity.Identity;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Server;
+import org.bukkit.permissions.Permissible;
 import net.kyori.adventure.audience.Audience;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -23,4 +35,40 @@ public interface CommandSenderIfaceMixin extends Audience {
 
     @Unique
     public abstract net.kyori.adventure.text.Component name();
+
+    @Unique
+    public default void sendMessage(Identity identity, Component message, MessageType type) {
+        CommandSender self = (CommandSender) this;
+        self.sendMessage(LegacyComponentSerializer.legacySection().serialize(message));
+    }
+
+    @Unique
+    public default void sendRichMessage(String message) {
+        CommandSender self = (CommandSender) this;
+        self.sendMessage(MiniMessage.miniMessage().deserialize(message));
+    }
+
+    @Unique
+    public default void sendRichMessage(String message, TagResolver... resolvers) {
+        CommandSender self = (CommandSender) this;
+        self.sendMessage(MiniMessage.miniMessage().deserialize(message, resolvers));
+    }
+
+    @Unique
+    public default void sendPlainMessage(String message) {
+        CommandSender self = (CommandSender) this;
+        self.sendMessage((Component) Component.text(message));
+    }
+
+    @Unique
+    public default void sendMessage(BaseComponent component) {
+        CommandSender self = (CommandSender) this;
+        self.sendMessage(component.toLegacyText());
+    }
+
+    @Unique
+    public default void sendMessage(BaseComponent... components) {
+        CommandSender self = (CommandSender) this;
+        self.sendMessage((new TextComponent(components)).toLegacyText());
+    }
 }

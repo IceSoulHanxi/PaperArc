@@ -1,5 +1,6 @@
 package com.ixnah.mc.paperarc.mixin.common.bukkit;
 
+import org.bukkit.util.CachedServerIcon;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -13,4 +14,10 @@ public interface CachedServerIconIfaceMixin {
 
     @Unique
     public abstract java.lang.String getData();
+
+    @Unique
+    public default boolean isEmpty() {
+        CachedServerIcon self = (CachedServerIcon) this;
+        return self.getData() == null;
+    }
 }

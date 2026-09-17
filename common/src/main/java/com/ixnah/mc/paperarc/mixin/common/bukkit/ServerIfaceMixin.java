@@ -1,5 +1,75 @@
 package com.ixnah.mc.paperarc.mixin.common.bukkit;
 
+import org.bukkit.Location;
+import org.bukkit.Server;
+import org.bukkit.StructureType;
+import org.bukkit.World;
+import com.destroystokyo.paper.entity.ai.MobGoals;
+import io.papermc.paper.ban.BanListType;
+import io.papermc.paper.datapack.DatapackManager;
+import io.papermc.paper.math.Position;
+import io.papermc.paper.threadedregions.scheduler.AsyncScheduler;
+import io.papermc.paper.threadedregions.scheduler.GlobalRegionScheduler;
+import io.papermc.paper.threadedregions.scheduler.RegionScheduler;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.net.InetAddress;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.logging.Logger;
+import net.kyori.adventure.audience.ForwardingAudience;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.Component;
+import net.md_5.bungee.api.chat.BaseComponent;
+import org.bukkit.advancement.Advancement;
+import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarFlag;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
+import org.bukkit.boss.KeyedBossBar;
+import org.bukkit.command.CommandException;
+import org.bukkit.command.CommandMap;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityFactory;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.SpawnCategory;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.generator.ChunkGenerator;
+import org.bukkit.help.HelpMap;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemCraftResult;
+import org.bukkit.inventory.ItemFactory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Merchant;
+import org.bukkit.inventory.Recipe;
+import org.bukkit.loot.LootTable;
+import org.bukkit.map.MapCursor;
+import org.bukkit.map.MapView;
+import org.bukkit.packs.DataPackManager;
+import org.bukkit.packs.ResourcePack;
+import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.ServicesManager;
+import org.bukkit.plugin.messaging.Messenger;
+import org.bukkit.plugin.messaging.PluginMessageRecipient;
+import org.bukkit.potion.PotionBrewer;
+import org.bukkit.profile.PlayerProfile;
+import org.bukkit.scheduler.BukkitScheduler;
+import org.bukkit.scoreboard.Criteria;
+import org.bukkit.scoreboard.ScoreboardManager;
+import org.bukkit.structure.StructureManager;
+import org.bukkit.util.CachedServerIcon;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -157,4 +227,10 @@ public interface ServerIfaceMixin extends net.kyori.adventure.audience.Forwardin
 
     @Unique
     public abstract org.bukkit.command.CommandMap getCommandMap();
+
+    @Unique
+    public default ItemStack createExplorerMap(World world, Location location, org.bukkit.generator.structure.StructureType structureType, MapCursor.Type mapIcon) {
+        Server self = (Server) this;
+        return self.createExplorerMap(world, location, structureType, mapIcon, 100, true);
+    }
 }

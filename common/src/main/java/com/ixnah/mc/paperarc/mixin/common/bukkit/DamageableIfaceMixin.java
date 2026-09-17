@@ -1,5 +1,8 @@
 package com.ixnah.mc.paperarc.mixin.common.bukkit;
 
+import org.bukkit.entity.Damageable;
+import org.bukkit.damage.DamageSource;
+import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -16,4 +19,10 @@ public interface DamageableIfaceMixin {
 
     @Unique
     public abstract void heal(double p0, org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason p1);
+
+    @Unique
+    public default void heal(double amount) {
+        Damageable self = (Damageable) this;
+        self.heal(amount, EntityRegainHealthEvent.RegainReason.CUSTOM);
+    }
 }

@@ -1,5 +1,10 @@
 package com.ixnah.mc.paperarc.mixin.common.bukkit;
 
+import org.bukkit.entity.Firework;
+import org.bukkit.entity.LivingEntity;
+import java.util.UUID;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.FireworkMeta;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -31,4 +36,10 @@ public interface FireworkIfaceMixin {
 
     @Unique
     public abstract void setTicksToDetonate(int p0);
+
+    @Unique
+    public default LivingEntity getBoostedEntity() {
+        Firework self = (Firework) this;
+        return self.getAttachedTo();
+    }
 }

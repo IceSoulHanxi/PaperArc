@@ -1,5 +1,31 @@
 package com.ixnah.mc.paperarc.mixin.common.bukkit;
 
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Item;
+import org.bukkit.entity.LivingEntity;
+import com.destroystokyo.paper.block.TargetBlockInfo;
+import com.destroystokyo.paper.entity.TargetEntityInfo;
+import com.google.common.base.Preconditions;
+import io.papermc.paper.entity.Frictional;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import org.bukkit.FluidCollisionMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.attribute.Attributable;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.entity.memory.MemoryKey;
+import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.projectiles.ProjectileSource;
+import org.bukkit.util.RayTraceResult;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -168,5 +194,83 @@ public interface LivingEntityIfaceMixin extends io.papermc.paper.entity.Friction
     @Unique
     public default void setFrictionState(net.kyori.adventure.util.TriState state) {
         com.ixnah.mc.paperarc.bridge.api.PaperarcEntityTraits.setFrictionState(this, state);
+    }
+
+    @Unique
+    public default Block getTargetBlock(int maxDistance) {
+        LivingEntity self = (LivingEntity) this;
+        return self.getTargetBlock(maxDistance, TargetBlockInfo.FluidMode.NEVER);
+    }
+
+    @Unique
+    public default BlockFace getTargetBlockFace(int maxDistance) {
+        LivingEntity self = (LivingEntity) this;
+        return self.getTargetBlockFace(maxDistance, FluidCollisionMode.NEVER);
+    }
+
+    @Unique
+    public default TargetBlockInfo getTargetBlockInfo(int maxDistance) {
+        LivingEntity self = (LivingEntity) this;
+        return self.getTargetBlockInfo(maxDistance, TargetBlockInfo.FluidMode.NEVER);
+    }
+
+    @Unique
+    public default Entity getTargetEntity(int maxDistance) {
+        LivingEntity self = (LivingEntity) this;
+        return self.getTargetEntity(maxDistance, false);
+    }
+
+    @Unique
+    public default TargetEntityInfo getTargetEntityInfo(int maxDistance) {
+        LivingEntity self = (LivingEntity) this;
+        return self.getTargetEntityInfo(maxDistance, false);
+    }
+
+    @Unique
+    public default RayTraceResult rayTraceEntities(int maxDistance) {
+        LivingEntity self = (LivingEntity) this;
+        return self.rayTraceEntities(maxDistance, false);
+    }
+
+    @Unique
+    public default int getItemUseRemainingTime() {
+        LivingEntity self = (LivingEntity) this;
+        return self.getActiveItemRemainingTime();
+    }
+
+    @Unique
+    public default int getHandRaisedTime() {
+        LivingEntity self = (LivingEntity) this;
+        return self.getActiveItemUsedTime();
+    }
+
+    @Unique
+    public default boolean isHandRaised() {
+        LivingEntity self = (LivingEntity) this;
+        return self.hasActiveItem();
+    }
+
+    @Unique
+    public default EquipmentSlot getHandRaised() {
+        LivingEntity self = (LivingEntity) this;
+        return self.getActiveItemHand();
+    }
+
+    @Unique
+    public default void playPickupItemAnimation(Item item) {
+        LivingEntity self = (LivingEntity) this;
+        self.playPickupItemAnimation(item, item.getItemStack().getAmount());
+    }
+
+    @Unique
+    public default void swingHand(EquipmentSlot hand) {
+        LivingEntity self = (LivingEntity) this;
+        Preconditions.checkArgument(hand != null && hand.isHand(), String.format("Expected a valid hand, got \"%s\" instead!", hand));
+        if (hand == EquipmentSlot.HAND) {
+            self.swingMainHand();
+        } else {
+            self.swingOffHand();
+        }
+
     }
 }

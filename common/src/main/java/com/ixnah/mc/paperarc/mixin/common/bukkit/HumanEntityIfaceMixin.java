@@ -1,5 +1,23 @@
 package com.ixnah.mc.paperarc.mixin.common.bukkit;
 
+import org.bukkit.entity.HumanEntity;
+import java.util.Collection;
+import java.util.Set;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.block.Sign;
+import org.bukkit.block.sign.Side;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.InventoryView;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.MainHand;
+import org.bukkit.inventory.Merchant;
+import org.bukkit.inventory.PlayerInventory;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -49,4 +67,10 @@ public interface HumanEntityIfaceMixin {
 
     @Unique
     public abstract void openSign(org.bukkit.block.Sign p0, org.bukkit.block.sign.Side p1);
+
+    @Unique
+    public default void openSign(Sign sign) {
+        HumanEntity self = (HumanEntity) this;
+        self.openSign(sign, Side.FRONT);
+    }
 }

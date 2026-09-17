@@ -1,5 +1,16 @@
 package com.ixnah.mc.paperarc.mixin.common.bukkit;
 
+import org.bukkit.block.Sign;
+import io.papermc.paper.math.Position;
+import java.util.List;
+import java.util.UUID;
+import net.kyori.adventure.text.Component;
+import org.bukkit.DyeColor;
+import org.bukkit.block.sign.Side;
+import org.bukkit.block.sign.SignSide;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.material.Colorable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -28,4 +39,16 @@ public interface SignIfaceMixin {
 
     @Unique
     public abstract void line(int p0, net.kyori.adventure.text.Component p1);
+
+    @Unique
+    public default Side getInteractableSideFor(Entity entity) {
+        Sign self = (Sign) this;
+        return self.getInteractableSideFor((Position) entity.getLocation());
+    }
+
+    @Unique
+    public default Side getInteractableSideFor(Position position) {
+        Sign self = (Sign) this;
+        return self.getInteractableSideFor(position.x(), position.z());
+    }
 }

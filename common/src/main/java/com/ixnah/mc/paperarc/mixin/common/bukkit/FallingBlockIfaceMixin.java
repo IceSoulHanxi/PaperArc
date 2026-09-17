@@ -1,5 +1,10 @@
 package com.ixnah.mc.paperarc.mixin.common.bukkit;
 
+import org.bukkit.entity.FallingBlock;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.data.BlockData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -25,4 +30,10 @@ public interface FallingBlockIfaceMixin {
 
     @Unique
     public abstract void shouldAutoExpire(boolean p0);
+
+    @Unique
+    public default Location getSourceLoc() {
+        FallingBlock self = (FallingBlock) this;
+        return self.getOrigin();
+    }
 }

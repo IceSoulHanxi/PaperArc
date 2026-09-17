@@ -1,5 +1,78 @@
 package com.ixnah.mc.paperarc.mixin.common.bukkit;
 
+import org.bukkit.entity.Firework;
+import org.bukkit.entity.Player;
+import com.destroystokyo.paper.ClientOption;
+import com.destroystokyo.paper.Title;
+import com.destroystokyo.paper.profile.PlayerProfile;
+import com.google.common.base.Preconditions;
+import io.papermc.paper.entity.LookAnchor;
+import io.papermc.paper.math.Position;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.UnaryOperator;
+import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.identity.Identity;
+import net.kyori.adventure.resource.ResourcePackInfo;
+import net.kyori.adventure.resource.ResourcePackInfoLike;
+import net.kyori.adventure.resource.ResourcePackRequest;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.event.HoverEvent.ShowEntity;
+import net.kyori.adventure.util.TriState;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.BaseComponent;
+import org.bukkit.BanEntry;
+import org.bukkit.BanList;
+import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
+import org.bukkit.DyeColor;
+import org.bukkit.Effect;
+import org.bukkit.EntityEffect;
+import org.bukkit.GameMode;
+import org.bukkit.Instrument;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Note;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.Particle;
+import org.bukkit.ServerLinks;
+import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
+import org.bukkit.WeatherType;
+import org.bukkit.WorldBorder;
+import org.bukkit.advancement.Advancement;
+import org.bukkit.advancement.AdvancementProgress;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Sign;
+import org.bukkit.block.TileState;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.sign.Side;
+import org.bukkit.conversations.Conversable;
+import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerResourcePackStatusEvent;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.map.MapView;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.messaging.PluginMessageRecipient;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scoreboard.Scoreboard;
 import com.destroystokyo.paper.network.NetworkClient;
 import net.kyori.adventure.bossbar.BossBarViewer;
 import net.kyori.adventure.identity.Identified;
@@ -249,4 +322,209 @@ public interface PlayerIfaceMixin extends Identified, BossBarViewer, NetworkClie
 
     @Unique
     public abstract com.destroystokyo.paper.profile.PlayerProfile getPlayerProfile();
+
+    @Unique
+    public default Identity identity() {
+        Player self = (Player) this;
+        return Identity.identity(self.getUniqueId());
+    }
+
+    @Unique
+    public default void sendMultiBlockChange(Map<? extends Position, BlockData> blockChanges, boolean suppressLightUpdates) {
+        Player self = (Player) this;
+        self.sendMultiBlockChange(blockChanges);
+    }
+
+    @Unique
+    public default void sendSignChange(Location loc, List<? extends Component> lines) throws IllegalArgumentException {
+        Player self = (Player) this;
+        self.sendSignChange(loc, lines, DyeColor.BLACK);
+    }
+
+    @Unique
+    public default void sendSignChange(Location loc, List<? extends Component> lines, DyeColor dyeColor) throws IllegalArgumentException {
+        Player self = (Player) this;
+        self.sendSignChange(loc, lines, dyeColor, false);
+    }
+
+    @Unique
+    public default void sendSignChange(Location loc, List<? extends Component> lines, boolean hasGlowingText) throws IllegalArgumentException {
+        Player self = (Player) this;
+        self.sendSignChange(loc, lines, DyeColor.BLACK, hasGlowingText);
+    }
+
+    @Unique
+    public default BanEntry banPlayerFull(String reason) {
+        Player self = (Player) this;
+        return self.banPlayerFull(reason, (Date) null, (String) null);
+    }
+
+    @Unique
+    public default BanEntry banPlayerFull(String reason, String source) {
+        Player self = (Player) this;
+        return self.banPlayerFull(reason, (Date) null, source);
+    }
+
+    @Unique
+    public default BanEntry banPlayerFull(String reason, Date expires) {
+        Player self = (Player) this;
+        return self.banPlayerFull(reason, expires, (String) null);
+    }
+
+    @Unique
+    public default BanEntry banPlayerFull(String reason, Date expires, String source) {
+        Player self = (Player) this;
+        self.banPlayer(reason, expires, source);
+        return self.banPlayerIP(reason, expires, source, true);
+    }
+
+    @Unique
+    public default BanEntry banPlayerIP(String reason, boolean kickPlayer) {
+        Player self = (Player) this;
+        return self.banPlayerIP(reason, (Date) null, (String) null, kickPlayer);
+    }
+
+    @Unique
+    public default BanEntry banPlayerIP(String reason, String source, boolean kickPlayer) {
+        Player self = (Player) this;
+        return self.banPlayerIP(reason, (Date) null, source, kickPlayer);
+    }
+
+    @Unique
+    public default BanEntry banPlayerIP(String reason, Date expires, boolean kickPlayer) {
+        Player self = (Player) this;
+        return self.banPlayerIP(reason, expires, (String) null, kickPlayer);
+    }
+
+    @Unique
+    public default BanEntry banPlayerIP(String reason) {
+        Player self = (Player) this;
+        return self.banPlayerIP(reason, (Date) null, (String) null);
+    }
+
+    @Unique
+    public default BanEntry banPlayerIP(String reason, String source) {
+        Player self = (Player) this;
+        return self.banPlayerIP(reason, (Date) null, source);
+    }
+
+    @Unique
+    public default BanEntry banPlayerIP(String reason, Date expires) {
+        Player self = (Player) this;
+        return self.banPlayerIP(reason, expires, (String) null);
+    }
+
+    @Unique
+    public default BanEntry banPlayerIP(String reason, Date expires, String source) {
+        Player self = (Player) this;
+        return self.banPlayerIP(reason, expires, source, true);
+    }
+
+    @Unique
+    public default BanEntry banPlayerIP(String reason, Date expires, String source, boolean kickPlayer) {
+        Player self = (Player) this;
+        BanEntry banEntry = Bukkit.getServer().getBanList(BanList.Type.IP).addBan(self.getAddress().getAddress().getHostAddress(), reason, expires, source);
+
+        if (kickPlayer && self.isOnline()) {
+            self.getPlayer().kickPlayer(reason);
+        }
+
+        return banEntry;
+    }
+
+    @Unique
+    public default void sendMessage(BaseComponent component) {
+        Player self = (Player) this;
+        self.spigot().sendMessage(component);
+    }
+
+    @Unique
+    public default void sendMessage(BaseComponent... components) {
+        Player self = (Player) this;
+        self.spigot().sendMessage(components);
+    }
+
+    @Unique
+    public default void sendMessage(ChatMessageType position, BaseComponent... components) {
+        Player self = (Player) this;
+        self.spigot().sendMessage(position, components);
+    }
+
+    @Unique
+    public default void setResourcePack(String url, byte [] hash, Component prompt) {
+        Player self = (Player) this;
+        self.setResourcePack(url, hash, prompt, false);
+    }
+
+    @Unique
+    public default void setResourcePack(String url, byte [] hash, Component prompt, boolean force) {
+        Player self = (Player) this;
+        self.setResourcePack(UUID.nameUUIDFromBytes(url.getBytes(StandardCharsets.UTF_8)), url, hash, prompt, force);
+    }
+
+    @Unique
+    public default void setResourcePack(String url, String hash) {
+        Player self = (Player) this;
+        self.setResourcePack(url, hash, false);
+    }
+
+    @Unique
+    public default void setResourcePack(String url, String hash, boolean required) {
+        Player self = (Player) this;
+        self.setResourcePack(url, hash, required, (Component) null);
+    }
+
+    @Unique
+    public default void setResourcePack(String url, String hash, boolean required, Component resourcePackPrompt) {
+        Player self = (Player) this;
+        self.setResourcePack(UUID.nameUUIDFromBytes(url.getBytes(StandardCharsets.UTF_8)), url, hash, resourcePackPrompt, required);
+    }
+
+    @Unique
+    public default void setResourcePack(UUID uuid, String url, String hash, Component resourcePackPrompt, boolean required) {
+        Player self = (Player) this;
+        self.sendResourcePacks(ResourcePackRequest.resourcePackRequest().required(required).replace(true).prompt(resourcePackPrompt).packs(ResourcePackInfo.resourcePackInfo(uuid, URI.create(url), hash), new ResourcePackInfoLike[0]));
+    }
+
+    @Unique
+    public default String getResourcePackHash() {
+        return null;
+    }
+
+    @Unique
+    public default boolean hasResourcePack() {
+        Player self = (Player) this;
+        return self.getResourcePackStatus() == PlayerResourcePackStatusEvent.Status.SUCCESSFULLY_LOADED;
+    }
+
+    @Unique
+    public default int getNoTickViewDistance() {
+        Player self = (Player) this;
+        return self.getViewDistance();
+    }
+
+    @Unique
+    public default void setNoTickViewDistance(int viewDistance) {
+        Player self = (Player) this;
+        self.setViewDistance(viewDistance);
+    }
+
+    @Unique
+    public default Firework boostElytra(ItemStack firework) {
+        Player self = (Player) this;
+        Preconditions.checkState(self.isGliding(), "Player must be gliding");
+        return self.fireworkBoost(firework);
+    }
+
+    @Unique
+    public default void lookAt(Position position, LookAnchor playerAnchor) {
+        Player self = (Player) this;
+        self.lookAt(position.x(), position.y(), position.z(), playerAnchor);
+    }
+
+    @Unique
+    public default void showElderGuardian() {
+        Player self = (Player) this;
+        self.showElderGuardian(false);
+    }
 }

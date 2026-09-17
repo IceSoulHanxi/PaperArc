@@ -1,5 +1,6 @@
 package com.ixnah.mc.paperarc.mixin.common.bukkit;
 
+import org.bukkit.entity.Panda;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -28,4 +29,16 @@ public interface PandaIfaceMixin {
 
     @Unique
     public abstract org.bukkit.entity.Panda.Gene getCombinedGene();
+
+    @Unique
+    public default void setIsOnBack(boolean onBack) {
+        Panda self = (Panda) this;
+        self.setOnBack(onBack);
+    }
+
+    @Unique
+    public default void setIsSitting(boolean sitting) {
+        Panda self = (Panda) this;
+        self.setSitting(sitting);
+    }
 }
