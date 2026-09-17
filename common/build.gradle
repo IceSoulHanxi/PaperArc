@@ -7,9 +7,18 @@ loom {
     accessWidenerPath = file('src/main/resources/paperarc.accesswidener')
 }
 
+configurations {
+    // 只为 embedRuntimeClasses 解析 paper-api 的 jar 文件本身。
+    // 不能用 compileClasspath：那里含 loom 生成的 minecraft 工件，在任务图构建期解析
+    // 会触发 loom 在禁止变更期建任务。这个配置只有 paper-api 一个纯 Maven 构件。
+    runtimeClassSource
+}
+
 dependencies {
     // 仅用于 fabric-loader 的 @Environment 注解与 mixin 基础设施，不得使用其他类
     modImplementation libs.fabric.loader
+
+    runtimeClassSource(libs.paper.api) { transitive = false }
 
     // Bukkit / Arclight 层：运行时由 Arclight 提供，仅编译期可见
     compileOnly libs.spigot.api
@@ -30,4 +39,80 @@ dependencies {
     // MixinExtras 注解（common mixin 可用 @WrapOperation 等）
     compileOnly libs.mixinextras.common
     annotationProcessor libs.mixinextras.common
+}
+
+// 从 paper-api jar 提取 injections.json 列出的缺失类字节，嵌入 META-INF/paperarc/runtime/
+//（不放 org/bukkit/**：ModLauncher 的模块系统会认为 paperarc 也导出 org.bukkit.* 包，
+// 与 arclight 冲突；由运行时 RuntimeClassInjector defineClass 注入）
+// 文件后缀是 .classbytes 而不是 .class —— 见任务体里的说明。
+//
+// 抽取时剥掉嵌套类的 InnerClasses 自条目 / EnclosingMethod / NestHost：注入的是 paper-api
+// 编译产物，`PlayerKickEvent$Cause` 里写着"外围类是 PlayerKickEvent"，而运行时的外围类
+// （Arclight/spigot 版）没有对应条目，JVM 在 Class#getDeclaringClass0 双向校验失败 ——
+// 插件一调 getSimpleName()/getDeclaringClass() 就 IncompatibleClassChangeError
+//（1.20.1 的 Debuggery 金丝雀实测，插件 enable 直接失败）。
+tasks.register('embedRuntimeClasses') {
+    def outDir = layout.buildDirectory.dir('generated/runtime-classes/META-INF/paperarc/runtime')
+    def configFile = file('src/main/resources/META-INF/paperarc/runtime/injections.json')
+    def source = configurations.runtimeClassSource
+    inputs.files(source)
+    inputs.file(configFile)
+    outputs.dir(outDir)
+    doLast {
+        def dir = outDir.get().asFile
+        dir.deleteDir()   // 清掉上一次的产物，避免改了命名规则后新旧文件并存
+        dir.mkdirs()
+        def paperApi = source.files.find { it.name.startsWith('paper-api-') }
+        if (paperApi == null) {
+            throw new GradleException('paper-api jar not found in runtimeClassSource configuration')
+        }
+        def config = new groovy.json.JsonSlurper().parseText(configFile.text)
+        new java.util.zip.ZipFile(paperApi).withCloseable { zip ->
+            config.classes.each { name ->
+                def internal = name.replace('.', '/') + '.class'
+                def entry = zip.getEntry(internal)
+                if (entry == null) {
+                    throw new GradleException(internal + ' not found in paper-api jar')
+                }
+                def bytes = zip.getInputStream(entry).withCloseable { it.readAllBytes() }
+                // 后缀不能是 .class：loom 的 remapJar/tiny-remapper 会把所有 .class 条目
+                // 按类的内部名重新落位，嵌在资源路径下的字节会被搬到 org/bukkit/** 去
+                // （1.21.1 的 Architectury 工具链与 1.20.1 的 ForgeGradle 在这点上不同）。
+                def out = new File(dir, internal + 'bytes')
+                out.parentFile.mkdirs()
+                out.bytes = stripNestAttributes(name.replace('.', '/'), bytes)
+            }
+        }
+        logger.lifecycle("embedRuntimeClasses: ${config.classes.size()} classes embedded")
+    }
+}
+processResources {
+    dependsOn 'embedRuntimeClasses'
+    from(layout.buildDirectory.dir('generated/runtime-classes'))
+}
+
+/** 剥掉 internal 这个嵌套类自身的 InnerClasses 条目、EnclosingMethod 与 NestHost。 */
+static byte[] stripNestAttributes(String internal, byte[] bytes) {
+    if (!internal.contains('$')) {
+        return bytes
+    }
+    def reader = new org.objectweb.asm.ClassReader(bytes)
+    def writer = new org.objectweb.asm.ClassWriter(0)
+    reader.accept(new org.objectweb.asm.ClassVisitor(org.objectweb.asm.Opcodes.ASM9, writer) {
+        @Override
+        void visitOuterClass(String owner, String methodName, String descriptor) {
+        }
+
+        @Override
+        void visitNestHost(String nestHost) {
+        }
+
+        @Override
+        void visitInnerClass(String innerName, String outerName, String simpleName, int access) {
+            if (innerName != internal) {
+                super.visitInnerClass(innerName, outerName, simpleName, access)
+            }
+        }
+    }, 0)
+    return writer.toByteArray()
 }

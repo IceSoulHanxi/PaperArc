@@ -1,6 +1,7 @@
 package com.ixnah.mc.paperarc.neoforge;
 
 import com.ixnah.mc.paperarc.PaperArcMod;
+import com.ixnah.mc.paperarc.bridge.RuntimeClassInjector;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -10,6 +11,8 @@ public final class PaperArcNeoForge {
     public static final String MOD_ID = PaperArcMod.MOD_ID;
 
     public PaperArcNeoForge(IEventBus modEventBus) {
+        // RuntimeClassInjector 第二阶段，理由见 PaperArcForge 同处注释。
+        RuntimeClassInjector.defineDeferred();
         // Pre-load bukkit event types referenced by mixin handler descriptors.
         // Under NeoForge's module layer, CraftHumanEntity can be transformed
         // before InventoryCloseEvent$Reason is resolvable, which would fail the

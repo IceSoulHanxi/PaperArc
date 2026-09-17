@@ -49,9 +49,30 @@ processResources {
     }
 }
 
+// Fabric 侧的运行时缺失类型：Knot 没有 ModLauncher 的 ITransformerLoader，
+// RuntimeClassInjector 的 phase1 hook 挂不上（mixin 解析描述符类型时走的是字节码，
+// defineClass 出来的类没有 .class 资源 → ClassMetadataNotFoundException）。
+// Fabric 也没有 JPMS 模块层，不存在"paperarc 与 arclight 同时导出 org.bukkit.*"的
+// ResolutionException（那是 ModLauncher 的问题），所以这里直接把 common 已经抽好并
+// 剥过嵌套类属性的字节按原路径放进 fabric 产物，由 Knot 正常加载。
+// 只放 injections.json 列出的那些（运行时 Arclight 确定没有），不会与 Arclight 的
+// spigot-api 重复 —— 探针 P2 的类唯一性断言覆盖这一点。
+def runtimeClassDir = project(':common').layout.buildDirectory.dir('generated/runtime-classes/META-INF/paperarc/runtime')
+def injectedFabricClasses = tasks.register('injectedFabricClasses', Copy) {
+    dependsOn project(':common').tasks.named('embedRuntimeClasses')
+    from(runtimeClassDir) { include 'org/bukkit/**' }
+    // 还原 .classbytes -> .class（common 那边加后缀是为了躲开 remapJar 的重新落位）
+    rename(/(.+)\.classbytes$/, '$1.class')
+    into layout.buildDirectory.dir('generated/injected-classes')
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+}
+
 shadowJar {
+    dependsOn injectedFabricClasses
+    from injectedFabricClasses
     exclude 'architectury.common.json'
-    exclude 'org/bukkit/**'
+    // org/bukkit/** 由 Arclight 运行时提供；例外是上面那批运行时确实没有的类型
+    exclude { it.path.startsWith('org/bukkit/') && !new File(injectedFabricClasses.get().destinationDir, it.path).isFile() }
     exclude 'module-info.class'
 
     configurations = [project.configurations.shadowCommon]
@@ -85,6 +106,71 @@ tasks.matching { it.name == 'versionCraftBukkit' }.configureEach {
     mustRunAfter remapJar
     outputs.upToDateWhen { false }
 }
+// remapJar（tiny-remapper）会按类名里的 '$' 重新生成 InnerClasses/NestHost，
+// 把 embedRuntimeClasses 剥掉的属性又加回来 —— 于是插件对注入类型调 getSimpleName()
+// 依旧 IncompatibleClassChangeError。只能在最终产物上再剥一次。
+tasks.register('stripInjectedNestAttributes') {
+    dependsOn 'versionCraftBukkit'
+    def jarFile = remapJar.archiveFile
+    def injectedDir = injectedFabricClasses.map { it.destinationDir }
+    outputs.upToDateWhen { false }
+    doLast {
+        def names = [] as Set
+        injectedDir.get().eachFileRecurse(groovy.io.FileType.FILES) { f ->
+            if (f.name.endsWith('.class')) {
+                names << injectedDir.get().toPath().relativize(f.toPath()).toString().replace(File.separator, '/')
+            }
+        }
+        def target = jarFile.get().asFile
+        def tmp = new File(target.parentFile, target.name + '.strip')
+        int stripped = 0
+        new java.util.zip.ZipFile(target).withCloseable { zip ->
+            new java.util.zip.ZipOutputStream(tmp.newOutputStream()).withCloseable { out ->
+                zip.entries().each { entry ->
+                    def bytes = zip.getInputStream(entry).withCloseable { it.readAllBytes() }
+                    if (names.contains(entry.name)) {
+                        bytes = stripNestAttributes(entry.name[0..-7], bytes)
+                        stripped++
+                    }
+                    out.putNextEntry(new java.util.zip.ZipEntry(entry.name))
+                    out.write(bytes)
+                    out.closeEntry()
+                }
+            }
+        }
+        target.delete()
+        tmp.renameTo(target)
+        logger.lifecycle("stripInjectedNestAttributes: ${stripped} entries")
+    }
+}
+
+/** 剥掉 internal 这个嵌套类自身的 InnerClasses 条目、EnclosingMethod 与 NestHost。 */
+static byte[] stripNestAttributes(String internal, byte[] bytes) {
+    if (!internal.contains('$')) {
+        return bytes
+    }
+    def reader = new org.objectweb.asm.ClassReader(bytes)
+    def writer = new org.objectweb.asm.ClassWriter(0)
+    reader.accept(new org.objectweb.asm.ClassVisitor(org.objectweb.asm.Opcodes.ASM9, writer) {
+        @Override
+        void visitOuterClass(String owner, String methodName, String descriptor) {
+        }
+
+        @Override
+        void visitNestHost(String nestHost) {
+        }
+
+        @Override
+        void visitInnerClass(String innerName, String outerName, String simpleName, int access) {
+            if (innerName != internal) {
+                super.visitInnerClass(innerName, outerName, simpleName, access)
+            }
+        }
+    }, 0)
+    return writer.toByteArray()
+}
+
 tasks.named('build') {
     dependsOn 'versionCraftBukkit'
+    dependsOn 'stripInjectedNestAttributes'
 }

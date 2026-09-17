@@ -1,0 +1,25 @@
+{
+  "classes": [
+    "org.bukkit.entity.ExperienceOrb$SpawnReason",
+    "org.bukkit.potion.PotionEffectType$Category",
+    "org.bukkit.inventory.meta.BookMeta$BookMetaBuilder",
+    "org.bukkit.event.inventory.InventoryCloseEvent$Reason",
+    "org.bukkit.event.player.PlayerKickEvent$Cause",
+    "org.bukkit.entity.AbstractArrow$PickupRule",
+    "org.bukkit.event.player.PlayerGameModeChangeEvent$Cause",
+    "org.bukkit.event.player.PlayerQuitEvent$QuitReason",
+    "org.bukkit.event.player.PlayerRespawnEvent$RespawnFlag",
+    "org.bukkit.event.weather.ThunderChangeEvent$Cause",
+    "org.bukkit.event.weather.WeatherChangeEvent$Cause",
+    "org.bukkit.World$ChunkLoadCallback",
+    "org.bukkit.inventory.SaddledHorseInventory",
+    "org.bukkit.inventory.ArmoredHorseInventory",
+    "org.bukkit.inventory.EmptyRecipeChoice",
+    "org.bukkit.event.command.UnknownCommandEvent",
+    "org.bukkit.event.player.PlayerAttemptPickupItemEvent",
+    "org.bukkit.command.BufferedCommandSender",
+    "org.bukkit.command.MessageCommandSender",
+    "org.bukkit.FeatureFlagImpl",
+    "org.bukkit.FeatureFlagImpl$Deprecated"
+  ]
+}
