@@ -879,4 +879,43 @@ public abstract class CraftPlayerApiMixin {
     }
 
     // PAPERARC$APPEND_MARKER
+
+    // ===== kick API（Paper Adventure.patch + Add-PlayerKickEvent-causes.patch）=====
+
+    @Unique
+    private static final Component PAPERARC$DEFAULT_KICK_COMPONENT =
+            Component.translatable("multiplayer.disconnect.kicked");
+
+    @Unique
+    public void kick() {
+        this.kick(PAPERARC$DEFAULT_KICK_COMPONENT);
+    }
+
+    @Unique
+    public void kick(Component message) {
+        this.kick(message, org.bukkit.event.player.PlayerKickEvent.Cause.PLUGIN);
+    }
+
+    /**
+     * Paper's {@code kick(Component, PlayerKickEvent.Cause)}.
+     *
+     * <p>{@code PlayerKickEvent$Cause} does not exist in the Arclight runtime, so it is
+     * supplied by the RuntimeClassInjector (META-INF/paperarc/runtime/injections.json).
+     *
+     * <p>Degradation vs Paper: Paper threads the cause through its own
+     * {@code ServerGamePacketListenerImpl#disconnect(Component, Cause)} overload so the
+     * resulting {@code PlayerKickEvent} carries it. Arclight only has the vanilla
+     * single-argument {@code disconnect(net.minecraft.network.chat.Component)} and fires
+     * its own PlayerKickEvent internally, so the cause cannot be propagated and is
+     * accepted/ignored here; the kick itself behaves exactly as Paper's.
+     */
+    @Unique
+    public void kick(Component message, org.bukkit.event.player.PlayerKickEvent.Cause cause) {
+        org.spigotmc.AsyncCatcher.catchOp("player kick");
+        net.minecraft.server.network.ServerGamePacketListenerImpl connection = this.getHandle().connection;
+        if (connection != null) {
+            Component actual = message == null ? Component.empty() : message;
+            connection.disconnect(Serializer.fromJson(GsonComponentSerializer.gson().serialize(actual)));
+        }
+    }
 }

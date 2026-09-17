@@ -3,6 +3,7 @@
     "org.bukkit.entity.ExperienceOrb$SpawnReason",
     "org.bukkit.potion.PotionEffectType$Category",
     "org.bukkit.inventory.meta.BookMeta$BookMetaBuilder",
-    "org.bukkit.event.inventory.InventoryCloseEvent$Reason"
+    "org.bukkit.event.inventory.InventoryCloseEvent$Reason",
+    "org.bukkit.event.player.PlayerKickEvent$Cause"
   ]
 }
