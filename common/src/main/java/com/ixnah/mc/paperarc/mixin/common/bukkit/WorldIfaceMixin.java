@@ -1,5 +1,59 @@
 package com.ixnah.mc.paperarc.mixin.common.bukkit;
 
+import com.ixnah.mc.paperarc.bridge.api.PaperarcBlockKeys;
+import org.bukkit.Chunk;
+import org.bukkit.Location;
+import org.bukkit.Particle;
+import org.bukkit.World;
+import io.papermc.paper.math.Position;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.logging.Level;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.audience.ForwardingAudience;
+import org.bukkit.block.Biome;
+import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.boss.DragonBattle;
+import org.bukkit.entity.AbstractArrow;
+import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.FallingBlock;
+import org.bukkit.entity.Item;
+import org.bukkit.entity.LightningStrike;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.SpawnCategory;
+import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.generator.BiomeProvider;
+import org.bukkit.generator.BlockPopulator;
+import org.bukkit.generator.ChunkGenerator;
+import org.bukkit.generator.WorldInfo;
+import org.bukkit.generator.structure.GeneratedStructure;
+import org.bukkit.generator.structure.Structure;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.MaterialData;
+import org.bukkit.metadata.Metadatable;
+import org.bukkit.persistence.PersistentDataHolder;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.messaging.PluginMessageRecipient;
+import org.bukkit.util.BiomeSearchResult;
+import org.bukkit.util.BoundingBox;
+import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.StructureSearchResult;
+import org.bukkit.util.Vector;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -167,5 +221,249 @@ public interface WorldIfaceMixin extends net.kyori.adventure.audience.Forwarding
     @Unique
     public default Iterable<? extends net.kyori.adventure.audience.Audience> audiences() {
         return ((org.bukkit.World) this).getPlayers();
+    }
+
+    @Unique
+    public default boolean isPositionLoaded(Position position) {
+        World self = (World) this;
+        return self.isChunkLoaded(position.blockX() >> 4, position.blockZ() >> 4);
+    }
+
+    @Unique
+    public default Block getBlockAtKey(long key) {
+        World self = (World) this;
+        int x = PaperarcBlockKeys.unpackX(key);
+        int y = PaperarcBlockKeys.unpackY(key);
+        int z = PaperarcBlockKeys.unpackZ(key);
+
+        return self.getBlockAt(x, y, z);
+    }
+
+    @Unique
+    public default Location getLocationAtKey(long key) {
+        World self = (World) this;
+        int x = PaperarcBlockKeys.unpackX(key);
+        int y = PaperarcBlockKeys.unpackY(key);
+        int z = PaperarcBlockKeys.unpackZ(key);
+
+        return new Location(self, (double) x, (double) y, (double) z);
+    }
+
+    @Unique
+    public default Chunk getChunkAt(long chunkKey) {
+        World self = (World) this;
+        return self.getChunkAt(chunkKey, true);
+    }
+
+    @Unique
+    public default Chunk getChunkAt(long chunkKey, boolean generate) {
+        World self = (World) this;
+        return self.getChunkAt((int) chunkKey, (int) (chunkKey >> 32), generate);
+    }
+
+    @Unique
+    public default boolean isChunkGenerated(long chunkKey) {
+        World self = (World) this;
+        return self.isChunkGenerated((int) chunkKey, (int) (chunkKey >> 32));
+    }
+
+    @Unique
+    public default Collection<LivingEntity> getNearbyLivingEntities(Location loc, double radius) {
+        World self = (World) this;
+        return self.getNearbyEntitiesByType(LivingEntity.class, loc, radius, radius, radius);
+    }
+
+    @Unique
+    public default Collection<LivingEntity> getNearbyLivingEntities(Location loc, double xzRadius, double yRadius) {
+        World self = (World) this;
+        return self.getNearbyEntitiesByType(LivingEntity.class, loc, xzRadius, yRadius, xzRadius);
+    }
+
+    @Unique
+    public default Collection<LivingEntity> getNearbyLivingEntities(Location loc, double xRadius, double yRadius, double zRadius) {
+        World self = (World) this;
+        return self.getNearbyEntitiesByType(LivingEntity.class, loc, xRadius, yRadius, zRadius);
+    }
+
+    @Unique
+    public default Collection<LivingEntity> getNearbyLivingEntities(Location loc, double radius, Predicate<? super LivingEntity> predicate) {
+        World self = (World) this;
+        return self.getNearbyEntitiesByType(LivingEntity.class, loc, radius, radius, radius, predicate);
+    }
+
+    @Unique
+    public default Collection<LivingEntity> getNearbyLivingEntities(Location loc, double xzRadius, double yRadius, Predicate<? super LivingEntity> predicate) {
+        World self = (World) this;
+        return self.getNearbyEntitiesByType(LivingEntity.class, loc, xzRadius, yRadius, xzRadius, predicate);
+    }
+
+    @Unique
+    public default Collection<LivingEntity> getNearbyLivingEntities(Location loc, double xRadius, double yRadius, double zRadius, Predicate<? super LivingEntity> predicate) {
+        World self = (World) this;
+        return self.getNearbyEntitiesByType(LivingEntity.class, loc, xRadius, yRadius, zRadius, predicate);
+    }
+
+    @Unique
+    public default Collection<Player> getNearbyPlayers(Location loc, double radius) {
+        World self = (World) this;
+        return self.getNearbyEntitiesByType(Player.class, loc, radius, radius, radius);
+    }
+
+    @Unique
+    public default Collection<Player> getNearbyPlayers(Location loc, double xzRadius, double yRadius) {
+        World self = (World) this;
+        return self.getNearbyEntitiesByType(Player.class, loc, xzRadius, yRadius, xzRadius);
+    }
+
+    @Unique
+    public default Collection<Player> getNearbyPlayers(Location loc, double xRadius, double yRadius, double zRadius) {
+        World self = (World) this;
+        return self.getNearbyEntitiesByType(Player.class, loc, xRadius, yRadius, zRadius);
+    }
+
+    @Unique
+    public default Collection<Player> getNearbyPlayers(Location loc, double radius, Predicate<? super Player> predicate) {
+        World self = (World) this;
+        return self.getNearbyEntitiesByType(Player.class, loc, radius, radius, radius, predicate);
+    }
+
+    @Unique
+    public default Collection<Player> getNearbyPlayers(Location loc, double xzRadius, double yRadius, Predicate<? super Player> predicate) {
+        World self = (World) this;
+        return self.getNearbyEntitiesByType(Player.class, loc, xzRadius, yRadius, xzRadius, predicate);
+    }
+
+    @Unique
+    public default Collection<Player> getNearbyPlayers(Location loc, double xRadius, double yRadius, double zRadius, Predicate<? super Player> predicate) {
+        World self = (World) this;
+        return self.getNearbyEntitiesByType(Player.class, loc, xRadius, yRadius, zRadius, predicate);
+    }
+
+    @Unique
+    public default <T extends Entity> Collection<T> getNearbyEntitiesByType(Class<? extends T> clazz, Location loc, double radius) {
+        World self = (World) this;
+        return self.getNearbyEntitiesByType(clazz, loc, radius, radius, radius, (Predicate) null);
+    }
+
+    @Unique
+    public default <T extends Entity> Collection<T> getNearbyEntitiesByType(Class<? extends T> clazz, Location loc, double xzRadius, double yRadius) {
+        World self = (World) this;
+        return self.getNearbyEntitiesByType(clazz, loc, xzRadius, yRadius, xzRadius, (Predicate) null);
+    }
+
+    @Unique
+    public default <T extends Entity> Collection<T> getNearbyEntitiesByType(Class<? extends T> clazz, Location loc, double xRadius, double yRadius, double zRadius) {
+        World self = (World) this;
+        return self.getNearbyEntitiesByType(clazz, loc, xRadius, yRadius, zRadius, (Predicate) null);
+    }
+
+    @Unique
+    public default <T extends Entity> Collection<T> getNearbyEntitiesByType(Class<? extends T> clazz, Location loc, double radius, Predicate<? super T> predicate) {
+        World self = (World) this;
+        return self.getNearbyEntitiesByType(clazz, loc, radius, radius, radius, predicate);
+    }
+
+    @Unique
+    public default <T extends Entity> Collection<T> getNearbyEntitiesByType(Class<? extends T> clazz, Location loc, double xzRadius, double yRadius, Predicate<? super T> predicate) {
+        World self = (World) this;
+        return self.getNearbyEntitiesByType(clazz, loc, xzRadius, yRadius, xzRadius, predicate);
+    }
+
+    @Unique
+    public default <T extends Entity> Collection<T> getNearbyEntitiesByType(Class<? extends Entity> clazz, Location loc, double xRadius, double yRadius, double zRadius, Predicate<? super T> predicate) {
+        World self = (World) this;
+        if (clazz == null) {
+            clazz = Entity.class;
+        }
+
+        List<T> nearby = new ArrayList<>();
+        Iterator iterator = self.getNearbyEntities(loc, xRadius, yRadius, zRadius).iterator();
+
+        while (iterator.hasNext()) {
+            Entity bukkitEntity = (Entity) iterator.next();
+
+            @SuppressWarnings("unchecked")
+            T typed = (T) bukkitEntity;
+            if (clazz.isAssignableFrom(bukkitEntity.getClass())
+                    && (predicate == null || predicate.test(typed))) {
+                nearby.add(typed);
+            }
+        }
+
+        return nearby;
+    }
+
+    @Unique
+    public default boolean createExplosion(Entity source, Location loc, float power, boolean setFire, boolean breakBlocks) {
+        World self = (World) this;
+        return self.createExplosion(source, loc, power, setFire, breakBlocks, true);
+    }
+
+    @Unique
+    public default boolean createExplosion(Entity source, Location loc, float power, boolean setFire) {
+        World self = (World) this;
+        return self.createExplosion(source, loc, power, setFire, true);
+    }
+
+    @Unique
+    public default boolean createExplosion(Entity source, Location loc, float power) {
+        World self = (World) this;
+        return self.createExplosion(source, loc, power, true, true);
+    }
+
+    @Unique
+    public default boolean createExplosion(Entity source, float power, boolean setFire, boolean breakBlocks) {
+        World self = (World) this;
+        return self.createExplosion(source, source.getLocation(), power, setFire, breakBlocks);
+    }
+
+    @Unique
+    public default boolean createExplosion(Entity source, float power, boolean setFire) {
+        World self = (World) this;
+        return self.createExplosion(source, source.getLocation(), power, setFire, true);
+    }
+
+    @Unique
+    public default boolean createExplosion(Entity source, float power) {
+        World self = (World) this;
+        return self.createExplosion(source, source.getLocation(), power, true, true);
+    }
+
+    @Unique
+    public default <T> void spawnParticle(Particle particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ, double extra, T data) {
+        World self = (World) this;
+        self.spawnParticle(particle, (List) null, (Player) null, x, y, z, count, offsetX, offsetY, offsetZ, extra, data, true);
+    }
+
+    @Unique
+    public default <T> void spawnParticle(Particle particle, List<Player> receivers, Player source, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ, double extra, T data) {
+        World self = (World) this;
+        self.spawnParticle(particle, receivers, source, x, y, z, count, offsetX, offsetY, offsetZ, extra, data, true);
+    }
+
+    @Unique
+    public default Location locateNearestBiome(Location origin, Biome biome, int radius) {
+        World self = (World) this;
+        return Optional.ofNullable(self.locateNearestBiome(origin, radius, 8, 8, biome))
+                .map(BiomeSearchResult::getLocation).orElse(null);
+    }
+
+    @Unique
+    public default Location locateNearestBiome(Location origin, Biome biome, int radius, int step) {
+        World self = (World) this;
+        return Optional.ofNullable(self.locateNearestBiome(origin, radius, step, step, biome))
+                .map(BiomeSearchResult::getLocation).orElse(null);
+    }
+
+    @Unique
+    public default int getNoTickViewDistance() {
+        World self = (World) this;
+        return self.getViewDistance();
+    }
+
+    @Unique
+    public default void setNoTickViewDistance(int viewDistance) {
+        World self = (World) this;
+        self.setViewDistance(viewDistance);
     }
 }
