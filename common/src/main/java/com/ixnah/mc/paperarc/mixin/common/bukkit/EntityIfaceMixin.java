@@ -18,6 +18,28 @@ public interface EntityIfaceMixin extends
         net.kyori.adventure.text.event.HoverEventSource<net.kyori.adventure.text.event.HoverEvent.ShowEntity>,
         net.kyori.adventure.sound.Sound.Emitter {
 
+    // paper-api 的 Entity.teleportAsync 只有两个 default 方法（1.20.1 没有抽象形态），
+    // 运行时接口里没有 —— 插件调 entity.teleportAsync(loc) 直接 NoSuchMethodError。
+    // 方法体照抄 paper-api 的 default 实现：先异步取目标区块，再在回调（主线程）里同步传送。
+
+    @Unique
+    public default java.util.concurrent.CompletableFuture<java.lang.Boolean> teleportAsync(org.bukkit.Location loc) {
+        return teleportAsync(loc, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.PLUGIN);
+    }
+
+    @Unique
+    public default java.util.concurrent.CompletableFuture<java.lang.Boolean> teleportAsync(
+            org.bukkit.Location loc, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause cause) {
+        java.util.concurrent.CompletableFuture<java.lang.Boolean> future = new java.util.concurrent.CompletableFuture<>();
+        loc.getWorld().getChunkAtAsync(loc)
+                .thenAccept(chunk -> future.complete(((org.bukkit.entity.Entity) this).teleport(loc, cause)))
+                .exceptionally(ex -> {
+                    future.completeExceptionally(ex);
+                    return null;
+                });
+        return future;
+    }
+
     @Unique
     public abstract boolean isFreezeTickingLocked();
 

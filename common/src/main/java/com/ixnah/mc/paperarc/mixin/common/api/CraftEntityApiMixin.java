@@ -477,11 +477,32 @@ public abstract class CraftEntityApiMixin {
         return teleport(location, cause);
     }
 
+    /**
+     * Paper 的 {@code Entity#teleportAsync}。原实现直接
+     * {@code completedFuture(teleport(...))} —— 插件从异步线程调用就会**在异步线程上传送实体**。
+     * 现在非主线程投递到主线程执行，主线程调用保持同步完成（与 Paper 一致：
+     * Paper 在主线程上也是能立即完成就立即完成）。
+     *
+     * <p>与 Paper 的差异：Arclight 没有 Folia 的"先异步加载目标区块再传送"管线，
+     * 目标区块的加载仍然发生在主线程的 {@code teleport} 里。
+     */
     @Unique
     public CompletableFuture<Boolean> teleportAsync(Location location, PlayerTeleportEvent.TeleportCause cause,
                                                     TeleportFlag... flags) {
-        // sync-fallback: Arclight has no Folia chunk-load-on-move pipeline
-        return CompletableFuture.completedFuture(teleport(location, cause, flags));
+        Preconditions.checkArgument(location != null, "location cannot be null");
+        net.minecraft.server.MinecraftServer server = this.getHandle().getServer();
+        if (server == null || server.isSameThread()) {
+            return CompletableFuture.completedFuture(teleport(location, cause, flags));
+        }
+        CompletableFuture<Boolean> result = new CompletableFuture<>();
+        server.execute(() -> {
+            try {
+                result.complete(teleport(location, cause, flags));
+            } catch (Throwable t) {
+                result.completeExceptionally(t);
+            }
+        });
+        return result;
     }
 
     // ===== batch blocked-1 addition: EntityScheduler sync-fallback =====
