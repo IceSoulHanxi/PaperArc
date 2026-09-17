@@ -36,9 +36,6 @@ public abstract class CraftThrownPotionApiMixin {
     public abstract ThrownPotion getHandle();
 
     @Unique
-    private static volatile Method[] PAPERARC$SPLASH_HELPERS;
-
-    @Unique
     public PotionMeta getPotionMeta() {
         // Paper: CraftItemStack.getItemMeta(item, ItemType.SPLASH_POTION);
         // single-arg overload picks the meta class from the item type itself
@@ -61,49 +58,17 @@ public abstract class CraftThrownPotionApiMixin {
             ItemStack itemstack = handle.getItem();
             PotionContents potioncontents =
                 itemstack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
-            try {
-                Method[] helpers = paperarc$splashHelpers();
-                if (potioncontents.is(net.minecraft.world.item.alchemy.Potions.WATER)) {
-                    helpers[0].invoke(handle); // applyWater()
-                } else if (potioncontents.getAllEffects().iterator().hasNext()) {
-                    if ((Boolean) helpers[1].invoke(handle)) { // isLingering()
-                        helpers[2].invoke(handle, potioncontents); // makeAreaOfEffectCloud(PotionContents)
-                    } else {
-                        helpers[3].invoke(handle, potioncontents.getAllEffects(), null); // applySplash(effects, null)
-                    }
+            // 四个 vanilla 私有 helper 由 paperarc.accesswidener 放开
+            if (potioncontents.is(net.minecraft.world.item.alchemy.Potions.WATER)) {
+                handle.applyWater();
+            } else if (potioncontents.getAllEffects().iterator().hasNext()) {
+                if (handle.isLingering()) {
+                    handle.makeAreaOfEffectCloud(potioncontents);
+                } else {
+                    handle.applySplash(potioncontents.getAllEffects(), null);
                 }
-            } catch (ReflectiveOperationException e) {
-                throw new IllegalStateException("Failed to replay ThrownPotion splash logic", e);
             }
         }
     }
 
-    /**
-     * Resolves the private vanilla splash helpers once:
-     * [0] applyWater(), [1] isLingering(), [2] makeAreaOfEffectCloud(PotionContents),
-     * [3] applySplash(Iterable&lt;MobEffectInstance&gt;, Entity).
-     */
-    @Unique
-    private static Method[] paperarc$splashHelpers() throws NoSuchMethodException {
-        Method[] helpers = PAPERARC$SPLASH_HELPERS;
-        if (helpers == null) {
-            synchronized (CraftThrownPotionApiMixin.class) {
-                if (PAPERARC$SPLASH_HELPERS == null) {
-                    Method applyWater = ThrownPotion.class.getDeclaredMethod("applyWater");
-                    applyWater.setAccessible(true);
-                    Method isLingering = ThrownPotion.class.getDeclaredMethod("isLingering");
-                    isLingering.setAccessible(true);
-                    Method cloud = ThrownPotion.class.getDeclaredMethod("makeAreaOfEffectCloud",
-                        PotionContents.class);
-                    cloud.setAccessible(true);
-                    Method applySplash = ThrownPotion.class.getDeclaredMethod("applySplash",
-                        Iterable.class, net.minecraft.world.entity.Entity.class);
-                    applySplash.setAccessible(true);
-                    PAPERARC$SPLASH_HELPERS = new Method[]{applyWater, isLingering, cloud, applySplash};
-                }
-                helpers = PAPERARC$SPLASH_HELPERS;
-            }
-        }
-        return helpers;
-    }
 }

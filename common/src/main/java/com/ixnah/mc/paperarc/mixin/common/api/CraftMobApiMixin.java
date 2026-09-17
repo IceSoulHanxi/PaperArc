@@ -40,21 +40,9 @@ public abstract class CraftMobApiMixin {
     }
 
     @Unique
-    private static java.lang.reflect.Method paperarc$sunBurnTickMethod;
-
-    @Unique
     public boolean isInDaylight() {
-        try {
-            if (paperarc$sunBurnTickMethod == null) {
-                // Mob#isSunBurnTick 在 NMS 中为 protected，跨包无法直接调用，反射读取（mojmap 运行时名一致）
-                java.lang.reflect.Method m = Mob.class.getDeclaredMethod("isSunBurnTick");
-                m.setAccessible(true);
-                paperarc$sunBurnTickMethod = m;
-            }
-            return (Boolean) paperarc$sunBurnTickMethod.invoke(this.getHandle());
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("PaperArc: reflect Mob#isSunBurnTick failed", e);
-        }
+        // Mob#isSunBurnTick 在 NMS 中为 protected，由 paperarc.accesswidener 放开
+        return this.getHandle().isSunBurnTick();
     }
 
     @Unique

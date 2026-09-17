@@ -61,23 +61,6 @@ public abstract class CraftLivingEntityApiMixin {
     public abstract LivingEntity getHandle();
 
     @Unique
-    private static volatile Method PAPERARC$COMPLETE_USING_ITEM_METHOD;
-
-    @Unique
-    private static volatile Method PAPERARC$CRAFT_STACK_GET_HANDLE_METHOD;
-
-    @Unique
-    private static Method paperarc$method(Class<?> owner, String name, Class<?>... params) {
-        try {
-            Method resolved = owner.getDeclaredMethod(name, params);
-            resolved.setAccessible(true);
-            return resolved;
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("PaperArc: NMS method not found: " + owner.getName() + "." + name, e);
-        }
-    }
-
-    @Unique
     public void broadcastSlotBreak(EquipmentSlot slot) {
         net.minecraft.world.entity.EquipmentSlot nmsSlot = CraftEquipmentSlot.getNMS(slot);
         LivingEntity handle = this.getHandle();
@@ -110,18 +93,8 @@ public abstract class CraftLivingEntityApiMixin {
 
     @Unique
     public void completeUsingActiveItem() {
-        try {
-            if (PAPERARC$COMPLETE_USING_ITEM_METHOD == null) {
-                synchronized (CraftLivingEntityApiMixin.class) {
-                    if (PAPERARC$COMPLETE_USING_ITEM_METHOD == null) {
-                        PAPERARC$COMPLETE_USING_ITEM_METHOD = paperarc$method(LivingEntity.class, "completeUsingItem");
-                    }
-                }
-            }
-            PAPERARC$COMPLETE_USING_ITEM_METHOD.invoke(this.getHandle());
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("PaperArc: failed to complete using active item", e);
-        }
+        // vanilla 的 completeUsingItem() 是 protected，由 paperarc.accesswidener 放开
+        this.getHandle().completeUsingItem();
     }
 
     @Unique
@@ -135,21 +108,9 @@ public abstract class CraftLivingEntityApiMixin {
         if (!(stack instanceof CraftItemStack craftStack)) {
             return stack;
         }
-        try {
-            if (PAPERARC$CRAFT_STACK_GET_HANDLE_METHOD == null) {
-                synchronized (CraftLivingEntityApiMixin.class) {
-                    if (PAPERARC$CRAFT_STACK_GET_HANDLE_METHOD == null) {
-                        PAPERARC$CRAFT_STACK_GET_HANDLE_METHOD = paperarc$method(CraftItemStack.class, "getHandle");
-                    }
-                }
-            }
-            net.minecraft.world.item.ItemStack nmsStack =
-                (net.minecraft.world.item.ItemStack) PAPERARC$CRAFT_STACK_GET_HANDLE_METHOD.invoke(craftStack);
-            nmsStack.hurtAndBreak(amount, this.getHandle(), net.minecraft.world.entity.EquipmentSlot.MAINHAND);
-            return craftStack;
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("PaperArc: failed to damage item stack", e);
-        }
+        net.minecraft.world.item.ItemStack nmsStack = CraftItemStack.asNMSCopy(craftStack);
+        nmsStack.hurtAndBreak(amount, this.getHandle(), net.minecraft.world.entity.EquipmentSlot.MAINHAND);
+        return craftStack;
     }
 
     @Unique
@@ -264,65 +225,6 @@ public abstract class CraftLivingEntityApiMixin {
 
     // region helpers
 
-    @Unique
-    private static final Object PAPERARC_FIELD_LOCK = new Object();
-
-    @Unique
-    private static volatile Field PAPERARC_JUMPING_FIELD;
-
-    @Unique
-    private static volatile Field PAPERARC_USE_ITEM_REMAINING_FIELD;
-
-    @Unique
-    private static volatile Field PAPERARC_LAST_HURT_BY_PLAYER_FIELD;
-
-    /** Resolves a declared field on NMS LivingEntity (mojmap name) once. */
-    @Unique
-    private static Field paperarc$nmsField(String name) {
-        Field cached;
-        switch (name) {
-            case "jumping":
-                cached = PAPERARC_JUMPING_FIELD;
-                break;
-            case "useItemRemaining":
-                cached = PAPERARC_USE_ITEM_REMAINING_FIELD;
-                break;
-            case "lastHurtByPlayer":
-                cached = PAPERARC_LAST_HURT_BY_PLAYER_FIELD;
-                break;
-            default:
-                throw new IllegalArgumentException("unknown field " + name);
-        }
-        if (cached == null) {
-            synchronized (PAPERARC_FIELD_LOCK) {
-                switch (name) {
-                    case "jumping":
-                        cached = PAPERARC_JUMPING_FIELD;
-                        break;
-                    case "useItemRemaining":
-                        cached = PAPERARC_USE_ITEM_REMAINING_FIELD;
-                        break;
-                    default:
-                        cached = PAPERARC_LAST_HURT_BY_PLAYER_FIELD;
-                        break;
-                }
-                if (cached == null) {
-                    try {
-                        cached = LivingEntity.class.getDeclaredField(name);
-                        cached.setAccessible(true);
-                    } catch (ReflectiveOperationException e) {
-                        throw new IllegalStateException("NMS LivingEntity." + name + " missing", e);
-                    }
-                    switch (name) {
-                        case "jumping" -> PAPERARC_JUMPING_FIELD = cached;
-                        case "useItemRemaining" -> PAPERARC_USE_ITEM_REMAINING_FIELD = cached;
-                        default -> PAPERARC_LAST_HURT_BY_PLAYER_FIELD = cached;
-                    }
-                }
-            }
-        }
-        return cached;
-    }
     // endregion
 
     /**
@@ -436,11 +338,7 @@ public abstract class CraftLivingEntityApiMixin {
      */
     @Unique
     public boolean isJumping() {
-        try {
-            return paperarc$nmsField("jumping").getBoolean(this.getHandle());
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        }
+        return this.getHandle().jumping;
     }
 
     /**
@@ -475,11 +373,7 @@ public abstract class CraftLivingEntityApiMixin {
      */
     @Unique
     public void setActiveItemRemainingTime(int ticks) {
-        try {
-            paperarc$nmsField("useItemRemaining").setInt(this.getHandle(), ticks);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        }
+        this.getHandle().useItemRemaining = ticks;
     }
 
     /**
@@ -540,11 +434,7 @@ public abstract class CraftLivingEntityApiMixin {
      */
     @Unique
     public void setJumping(boolean jumping) {
-        try {
-            paperarc$nmsField("jumping").setBoolean(this.getHandle(), jumping);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        }
+        this.getHandle().jumping = jumping;
     }
 
     /**
@@ -553,21 +443,9 @@ public abstract class CraftLivingEntityApiMixin {
     @Unique
     public void setKiller(Player killer) {
         LivingEntity handle = this.getHandle();
-        if (killer == null) {
-            try {
-                paperarc$nmsField("lastHurtByPlayer").set(handle, null);
-            } catch (IllegalAccessException e) {
-                throw new IllegalStateException(e);
-            }
-            return;
-        }
-        net.minecraft.world.entity.player.Player nms =
-                ((org.bukkit.craftbukkit.v.entity.CraftPlayer) killer).getHandle();
-        try {
-            paperarc$nmsField("lastHurtByPlayer").set(handle, nms);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        }
+        handle.lastHurtByPlayer = killer == null
+                ? null
+                : ((org.bukkit.craftbukkit.v.entity.CraftPlayer) killer).getHandle();
     }
 
     /**

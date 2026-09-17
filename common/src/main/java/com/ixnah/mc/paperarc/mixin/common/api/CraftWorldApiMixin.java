@@ -109,12 +109,6 @@ public abstract class CraftWorldApiMixin {
             double offsetX, double offsetY, double offsetZ, double extra, T data, boolean forceShow);
 
     @Unique
-    private static volatile Field PAPERARC$BLOCK_ENTITY_TICKERS_FIELD;
-
-    @Unique
-    private static volatile Method PAPERARC$FIND_LIGHTNING_TARGET_METHOD;
-
-    @Unique
     public double getCoordinateScale() {
         return this.getHandle().dimensionType().coordinateScale();
     }
@@ -269,41 +263,21 @@ public abstract class CraftWorldApiMixin {
 
     @Unique
     public int getTileEntityCount() {
-        try {
-            Method getChunks = ChunkMap.class.getDeclaredMethod("getChunks");
-            getChunks.setAccessible(true);
-            int count = 0;
-            for (Object holderObj : (Iterable<?>) getChunks.invoke(this.getHandle().getChunkSource().chunkMap)) {
-                ChunkHolder holder = (ChunkHolder) holderObj;
-                net.minecraft.world.level.chunk.LevelChunk chunk = holder.getTickingChunk();
-                if (chunk != null) {
-                    count += chunk.getBlockEntitiesPos().size();
-                }
+        // ChunkMap#getChunks() 是 protected，由 paperarc.accesswidener 放开
+        int count = 0;
+        for (ChunkHolder holder : this.getHandle().getChunkSource().chunkMap.getChunks()) {
+            net.minecraft.world.level.chunk.LevelChunk chunk = holder.getTickingChunk();
+            if (chunk != null) {
+                count += chunk.getBlockEntitiesPos().size();
             }
-            return count;
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Cannot enumerate loaded chunks", e);
         }
+        return count;
     }
 
     @Unique
     public int getTickableTileEntityCount() {
-        try {
-            Field field = PAPERARC$BLOCK_ENTITY_TICKERS_FIELD;
-            if (field == null) {
-                synchronized (CraftWorldApiMixin.class) {
-                    if (PAPERARC$BLOCK_ENTITY_TICKERS_FIELD == null) {
-                        field = Level.class.getDeclaredField("blockEntityTickers");
-                        field.setAccessible(true);
-                        PAPERARC$BLOCK_ENTITY_TICKERS_FIELD = field;
-                    }
-                }
-            }
-            List<?> tickers = (List<?>) field.get(this.getHandle());
-            return tickers.size();
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Cannot read blockEntityTickers", e);
-        }
+        // Level#blockEntityTickers 是 protected final，由 paperarc.accesswidener 放开
+        return this.getHandle().blockEntityTickers.size();
     }
 
     @Unique
@@ -344,31 +318,21 @@ public abstract class CraftWorldApiMixin {
     @Unique
     public Location findLightningTarget(Location origin) {
         Preconditions.checkArgument(origin != null, "location cannot be null");
-        try {
-            Method method = PAPERARC$FIND_LIGHTNING_TARGET_METHOD;
-            if (method == null) {
-                synchronized (CraftWorldApiMixin.class) {
-                    if (PAPERARC$FIND_LIGHTNING_TARGET_METHOD == null) {
-                        method = ServerLevel.class.getDeclaredMethod("findLightningTargetAround", BlockPos.class);
-                        method.setAccessible(true);
-                        PAPERARC$FIND_LIGHTNING_TARGET_METHOD = method;
-                    }
-                }
-            }
-            BlockPos struck = (BlockPos) method.invoke(this.getHandle(),
-                    BlockPos.containing(origin.x(), origin.y(), origin.z()));
-            return new Location((World) (Object) this, struck.getX() + 0.5D, struck.getY(), struck.getZ() + 0.5D);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Cannot invoke findLightningTargetAround", e);
-        }
+        // ServerLevel#findLightningTargetAround 是 protected，由 paperarc.accesswidener 放开。
+        // 注意用 getX/getY/getZ：paper 让 Location 实现了 FinePosition（有 x()/y()/z()），
+        // 但 Arclight 1.21.1 的 Location 没有，调 x() 即 NoSuchMethodError（真机实测）。
+        BlockPos struck = this.getHandle().findLightningTargetAround(
+                BlockPos.containing(origin.getX(), origin.getY(), origin.getZ()));
+        return new Location((World) (Object) this, struck.getX() + 0.5D, struck.getY(), struck.getZ() + 0.5D);
     }
 
     @Unique
     public Location findLightningRod(Location origin) {
         Preconditions.checkArgument(origin != null, "location cannot be null");
         ServerLevel level = this.getHandle();
-        int topX = BlockPos.containing(origin.x(), origin.y(), origin.z()).getX();
-        int topZ = BlockPos.containing(origin.x(), origin.y(), origin.z()).getZ();
+        // 同 findLightningTarget：Location 上没有 paper 的 x()/y()/z()
+        int topX = BlockPos.containing(origin.getX(), origin.getY(), origin.getZ()).getX();
+        int topZ = BlockPos.containing(origin.getX(), origin.getY(), origin.getZ()).getZ();
         int topY = level.getHeight(Heightmap.Types.MOTION_BLOCKING, topX, topZ);
         // 与 vanilla 引雷一致：在雨面以下向下搜索最多 128 格的避雷针
         BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();

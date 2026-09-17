@@ -96,6 +96,8 @@ public abstract class StonecutterMenuRecipeSelectMixin {
         cir.setReturnValue(true);
     }
 
+    // B2-1：getBukkitView / toBukkitRecipe 都是 CraftBukkit 加在 NMS 上的方法，
+    // 不是 vanilla 成员、不参与 Fabric intermediary 重映射，保留反射。
     @Unique
     private static InventoryView paperarc$getBukkitView(AbstractContainerMenu menu) {
         try {

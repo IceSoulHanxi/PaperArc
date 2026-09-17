@@ -112,6 +112,8 @@ public abstract class CraftScoreboardApiMixin {
     }
 
     // ---- helpers ----
+    // B2-1：下面两处反射的目标是 CraftBukkit 类 CraftScoreboard 的私有重载，
+    // 类名/成员名三端一致且不参与重映射，保留反射。
 
     @Unique
     private static Method paperarc$registerString() throws ReflectiveOperationException {

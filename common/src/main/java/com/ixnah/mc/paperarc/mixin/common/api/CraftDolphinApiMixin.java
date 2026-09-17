@@ -1,8 +1,6 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.animal.Dolphin;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v.entity.CraftDolphin;
@@ -17,38 +15,14 @@ import org.spongepowered.asm.mixin.Unique;
  *
  * Moistness lives only in the entity data layer behind the private static
  * accessor {@code Dolphin.MOISTNESS_LEVEL} (vanilla 1.21.1 has no public
- * setter), so {@link #setMoistness(int)} writes through it reflectively;
- * everything else maps to public NMS methods.
+ * setter), which {@code paperarc.accesswidener} opens; everything else maps to
+ * public NMS methods.
  */
 @Mixin(CraftDolphin.class)
 public abstract class CraftDolphinApiMixin {
 
     @Shadow
     public abstract Dolphin getHandle();
-
-    @Unique
-    private static volatile EntityDataAccessor<Integer> PAPERARC$MOISTNESS_ACCESSOR;
-
-    @SuppressWarnings("unchecked")
-    @Unique
-    private static EntityDataAccessor<Integer> paperarc$moistnessAccessor() {
-        EntityDataAccessor<Integer> acc = PAPERARC$MOISTNESS_ACCESSOR;
-        if (acc == null) {
-            synchronized (CraftDolphinApiMixin.class) {
-                if (PAPERARC$MOISTNESS_ACCESSOR == null) {
-                    try {
-                        java.lang.reflect.Field f = Dolphin.class.getDeclaredField("MOISTNESS_LEVEL");
-                        f.setAccessible(true);
-                        PAPERARC$MOISTNESS_ACCESSOR = (EntityDataAccessor<Integer>) f.get(null);
-                    } catch (ReflectiveOperationException e) {
-                        throw new IllegalStateException("NMS Dolphin.MOISTNESS_LEVEL accessor not found", e);
-                    }
-                }
-                acc = PAPERARC$MOISTNESS_ACCESSOR;
-            }
-        }
-        return acc;
-    }
 
     // Paper start - Missing Dolphin API
     @Unique
@@ -58,7 +32,7 @@ public abstract class CraftDolphinApiMixin {
 
     @Unique
     public void setMoistness(int moistness) {
-        this.getHandle().getEntityData().set(paperarc$moistnessAccessor(), moistness);
+        this.getHandle().getEntityData().set(Dolphin.MOISTNESS_LEVEL, moistness);
     }
 
     @Unique

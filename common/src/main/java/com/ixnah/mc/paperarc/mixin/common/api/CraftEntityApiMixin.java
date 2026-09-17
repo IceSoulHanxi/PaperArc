@@ -60,60 +60,10 @@ public abstract class CraftEntityApiMixin {
     @Shadow
     public abstract boolean teleport(Location location, PlayerTeleportEvent.TeleportCause cause);
 
-    // ===== shared reflection helpers =====
-
-    @Unique
-    private static Field paperarc$field(Class<?> owner, String name) {
-        try {
-            Field f = owner.getDeclaredField(name);
-            f.setAccessible(true);
-            return f;
-        } catch (ReflectiveOperationException e) {
-            return null;
-        }
-    }
-
-    @Unique
-    private static boolean paperarc$getBoolField(Entity handle, String name, boolean def) {
-        Field f = paperarc$field(Entity.class, name);
-        if (f == null) {
-            return def;
-        }
-        try {
-            return f.getBoolean(handle);
-        } catch (IllegalAccessException e) {
-            return def;
-        }
-    }
-
-    @Unique
-    private static boolean paperarc$setBoolField(Entity handle, String name, boolean value) {
-        Field f = paperarc$field(Entity.class, name);
-        if (f == null) {
-            return false;
-        }
-        try {
-            f.setBoolean(handle, value);
-            return true;
-        } catch (IllegalAccessException e) {
-            return false;
-        }
-    }
-
-    @Unique
-    private static Object paperarc$invoke(Entity handle, String name, Object... args) {
-        Class<?>[] types = new Class<?>[args.length];
-        for (int i = 0; i < args.length; i++) {
-            types[i] = args[i] == null ? Object.class : args[i].getClass();
-        }
-        try {
-            Method m = Entity.class.getDeclaredMethod(name, types);
-            m.setAccessible(true);
-            return m.invoke(handle, args);
-        } catch (ReflectiveOperationException e) {
-            return null;
-        }
-    }
+    // ===== Arclight-only members =====
+    // 本文件剩下的唯一一处反射（persistentInvisibility）目标是 Arclight 自己注入到 NMS 上的
+    // 字段，不参与 Fabric intermediary 重映射，按 B2-1 的分类保留；其余对 NMS 成员的反射
+    // 已全部改成 paperarc.accesswidener 放开后直访。
 
     // ===== position / rotation getters =====
 
@@ -159,15 +109,13 @@ public abstract class CraftEntityApiMixin {
 
     @Unique
     public boolean isInRain() {
-        // vanilla method is private -> reflection, false when unavailable
-        Object r = paperarc$invoke(this.getHandle(), "isInRain");
-        return r instanceof Boolean b && b;
+        // vanilla 方法是 private，由 paperarc.accesswidener 放开
+        return this.getHandle().isInRain();
     }
 
     @Unique
     public boolean isInBubbleColumn() {
-        Object r = paperarc$invoke(this.getHandle(), "isInBubbleColumn");
-        return r instanceof Boolean b && b;
+        return this.getHandle().isInBubbleColumn();
     }
 
     @Unique
@@ -212,9 +160,15 @@ public abstract class CraftEntityApiMixin {
     @Unique
     public void setInvisible(boolean invisible) {
         Entity handle = this.getHandle();
-        // Paper also persists the flag in NMS persistentInvisibility so the
-        // vanilla tick does not clear it; field exists at runtime -> reflection
-        paperarc$setBoolField(handle, "persistentInvisibility", invisible);
+        // Paper 还要把这个标志写进 NMS 的 persistentInvisibility，免得 vanilla tick 把它清掉。
+        // 该字段由 Arclight 的 EntityMixin 注入（不是 vanilla 成员，不参与重映射），
+        // 编译期不可见 -> 保留反射，缺失时静默退化为 vanilla 行为。
+        try {
+            Field f = Entity.class.getDeclaredField("persistentInvisibility");
+            f.setAccessible(true);
+            f.setBoolean(handle, invisible);
+        } catch (ReflectiveOperationException ignored) {
+        }
         handle.setInvisible(invisible);
     }
 
@@ -270,24 +224,15 @@ public abstract class CraftEntityApiMixin {
 
     @Unique
     public boolean fromMobSpawner() {
-        // Spigot-added NMS field `spawnedViaMobSpawner`; absent from the vanilla
-        // compile jar -> reflection, default false
-        return paperarc$getBoolField(this.getHandle(), "spawnedViaMobSpawner", false);
+        // Spigot 的 NMS 字段 spawnedViaMobSpawner 在 Arclight 1.21.1 上**不存在**
+        // （vanilla 没有、Arclight 也没注入，已逐个核对），原先的反射恒取不到值。
+        // 语义不变地返回默认值，登记在 docs/gaps.md。
+        return false;
     }
 
     @Unique
     public CreatureSpawnEvent.SpawnReason getEntitySpawnReason() {
-        // Spigot-added NMS field `spawnReason`
-        Field f = paperarc$field(Entity.class, "spawnReason");
-        if (f != null) {
-            try {
-                Object v = f.get(this.getHandle());
-                if (v instanceof CreatureSpawnEvent.SpawnReason reason) {
-                    return reason;
-                }
-            } catch (IllegalAccessException ignored) {
-            }
-        }
+        // 同 fromMobSpawner()：Spigot 的 NMS 字段 spawnReason 在 Arclight 1.21.1 上不存在。
         return CreatureSpawnEvent.SpawnReason.DEFAULT;
     }
 
@@ -306,8 +251,11 @@ public abstract class CraftEntityApiMixin {
 
     @Unique
     public boolean isTicking() {
-        Object r = paperarc$invoke(this.getHandle(), "isTicking");
-        return r instanceof Boolean b && b;
+        // Paper 的 NMS Entity#isTicking() 不存在于 vanilla，其实现就是
+        // ServerLevel#isPositionEntityTicking(blockPosition())，这里直接内联。
+        Entity handle = this.getHandle();
+        return handle.level() instanceof ServerLevel level
+                && level.isPositionEntityTicking(handle.blockPosition());
     }
 
     @Unique
@@ -316,33 +264,20 @@ public abstract class CraftEntityApiMixin {
         if (!(handle.level() instanceof ServerLevel level)) {
             return Collections.emptySet();
         }
-        Field entityMapField = paperarc$field(ChunkMap.class, "entityMap");
-        if (entityMapField == null) {
+        // ChunkMap.entityMap / TrackedEntity.seenBy 都是 vanilla 私有成员，
+        // 连同 package-private 的 TrackedEntity 一起由 paperarc.accesswidener 放开
+        ChunkMap.TrackedEntity tracker = level.getChunkSource().chunkMap.entityMap.get(handle.getId());
+        if (tracker == null) {
             return Collections.emptySet();
         }
-        try {
-            Int2ObjectMap<?> trackers = (Int2ObjectMap<?>) entityMapField.get(level.getChunkSource().chunkMap);
-            Object tracker = trackers == null ? null : trackers.get(handle.getId());
-            if (tracker == null) {
-                return Collections.emptySet();
+        Set<Player> players = new HashSet<>();
+        for (ServerPlayerConnection conn : tracker.seenBy) {
+            Player bukkit = Bukkit.getPlayer(conn.getPlayer().getUUID());
+            if (bukkit != null) {
+                players.add(bukkit);
             }
-            // ChunkMap.TrackedEntity is package-private -> locate seenBy reflectively
-            Field seenByField = paperarc$field(tracker.getClass(), "seenBy");
-            if (seenByField == null) {
-                return Collections.emptySet();
-            }
-            Set<Player> players = new HashSet<>();
-            for (Object conn : (Collection<?>) seenByField.get(tracker)) {
-                ServerPlayer tracked = ((ServerPlayerConnection) conn).getPlayer();
-                Player bukkit = Bukkit.getPlayer(tracked.getUUID());
-                if (bukkit != null) {
-                    players.add(bukkit);
-                }
-            }
-            return players;
-        } catch (IllegalAccessException | ClassCastException e) {
-            return Collections.emptySet();
         }
+        return players;
     }
 
     @Unique
@@ -398,19 +333,12 @@ public abstract class CraftEntityApiMixin {
         }
         Entity handle = this.getHandle();
         handle.moveTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
-        // keep the spawn-reason API consistent for the added entity
-        Field reasonField = paperarc$field(Entity.class, "spawnReason");
-        if (reasonField != null) {
-            try {
-                reasonField.set(handle, reason);
-            } catch (IllegalAccessException ignored) {
-            }
-        }
         net.minecraft.world.level.Level level = handle.level();
+        // Spigot 的 Level#addFreshEntity(Entity, SpawnReason) 在 Arclight 上叫
+        // IWorldWriterBridge#bridge$addEntity —— Arclight 自有成员，名字不参与重映射，
+        // 按 B2-1 分类保留反射；拿不到就退回 vanilla 的单参重载（丢失 spawn reason）。
         try {
-            // Spigot patches addFreshEntity(Entity, SpawnReason) onto Level;
-            // absent from the vanilla compile jar -> reflection with plain fallback
-            Method add = level.getClass().getMethod("addFreshEntity", Entity.class, CreatureSpawnEvent.SpawnReason.class);
+            Method add = level.getClass().getMethod("bridge$addEntity", Entity.class, CreatureSpawnEvent.SpawnReason.class);
             return (Boolean) add.invoke(level, handle, reason);
         } catch (ReflectiveOperationException e) {
             return level.addFreshEntity(handle);

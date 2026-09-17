@@ -22,6 +22,14 @@ public abstract class CraftBlockEntityStateBridgeProviderMixin implements CraftB
     }
 
     @Shadow
+    protected abstract BlockEntity getTileEntity();
+
+    @Override
+    public BlockEntity paperarc$getTileEntity() {
+        return this.getTileEntity();
+    }
+
+    @Shadow
     protected abstract BlockEntity getTileEntityFromWorld();
 
     @Override

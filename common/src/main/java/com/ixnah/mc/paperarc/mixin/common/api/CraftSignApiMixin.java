@@ -99,21 +99,13 @@ public abstract class CraftSignApiMixin {
 
     @Unique
     private SignBlockEntity paperarc$signBlockEntity() {
-        try {
-            if (paperarc$tileEntityMethod == null) {
-                Method method = Class.forName("org.bukkit.craftbukkit.v.block.CraftBlockEntityState")
-                    .getDeclaredMethod("getTileEntity"); // protected in CraftBlockEntityState
-                method.setAccessible(true);
-                paperarc$tileEntityMethod = method;
-            }
-            BlockEntity blockEntity = (BlockEntity) paperarc$tileEntityMethod.invoke(this);
-            if (!(blockEntity instanceof SignBlockEntity sign)) {
-                throw new IllegalStateException("PaperArc: tile entity is not a SignBlockEntity: " + blockEntity);
-            }
-            return sign;
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("PaperArc: cannot access CraftBlockEntityState#getTileEntity()", e);
+        // CraftBlockEntityState#getTileEntity() 是 protected，走 provider bridge
+        BlockEntity blockEntity =
+            ((com.ixnah.mc.paperarc.bridge.craft.CraftBlockEntityStateBridge) (Object) this).paperarc$getTileEntity();
+        if (!(blockEntity instanceof SignBlockEntity sign)) {
+            throw new IllegalStateException("PaperArc: tile entity is not a SignBlockEntity: " + blockEntity);
         }
+        return sign;
     }
 
     @Unique

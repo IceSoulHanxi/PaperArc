@@ -101,6 +101,7 @@ public abstract class AnvilMenuAnvilDamagedMixin {
         try {
             Method m = PAPERARC$GET_VIEW;
             if (m == null) {
+                // B2-1：getBukkitView 是 CraftBukkit 加在 NMS 上的方法，不参与重映射，保留反射。
                 m = menu.getClass().getMethod("getBukkitView");
                 m.setAccessible(true);
                 PAPERARC$GET_VIEW = m;

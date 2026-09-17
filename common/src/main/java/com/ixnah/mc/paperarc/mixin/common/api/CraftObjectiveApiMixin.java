@@ -38,12 +38,6 @@ public abstract class CraftObjectiveApiMixin {
     private net.minecraft.world.scores.Objective objective;
 
     @Unique
-    private static volatile java.lang.reflect.Field PAPERARC$FIXED_VALUE_FIELD;
-
-    @Unique
-    private static volatile java.lang.reflect.Field PAPERARC$STYLED_STYLE_FIELD;
-
-    @Unique
     private static volatile java.lang.reflect.Constructor<?> PAPERARC$CRAFT_SCORE_CTOR;
 
     // ------------------------------------------------------------------ API
@@ -179,57 +173,12 @@ public abstract class CraftObjectiveApiMixin {
     @Unique
     private static NumberFormat paperarc$asPaperNumberFormat(net.minecraft.network.chat.numbers.NumberFormat vanilla) {
         if (vanilla instanceof net.minecraft.network.chat.numbers.FixedFormat fixed) {
-            return NumberFormat.fixed(paperarc$asAdventure(paperarc$fixedValue(fixed)));
+            return NumberFormat.fixed(paperarc$asAdventure(fixed.value));
         }
         if (vanilla instanceof net.minecraft.network.chat.numbers.StyledFormat styled) {
-            return NumberFormat.styled(paperarc$styleAsAdventure(paperarc$styledStyle(styled)));
+            return NumberFormat.styled(paperarc$styleAsAdventure(styled.style));
         }
         return NumberFormat.blank();
     }
 
-    /** Reads package-private {@code FixedFormat.value}. */
-    @Unique
-    private static net.minecraft.network.chat.Component paperarc$fixedValue(
-            net.minecraft.network.chat.numbers.FixedFormat format) {
-        try {
-            java.lang.reflect.Field f = PAPERARC$FIXED_VALUE_FIELD;
-            if (f == null) {
-                synchronized (CraftObjectiveApiMixin.class) {
-                    if ((f = PAPERARC$FIXED_VALUE_FIELD) == null) {
-                        java.lang.reflect.Field resolved =
-                                net.minecraft.network.chat.numbers.FixedFormat.class.getDeclaredField("value");
-                        resolved.setAccessible(true);
-                        PAPERARC$FIXED_VALUE_FIELD = resolved;
-                    }
-                }
-                f = PAPERARC$FIXED_VALUE_FIELD;
-            }
-            return (net.minecraft.network.chat.Component) f.get(format);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("FixedFormat.value not readable", e);
-        }
-    }
-
-    /** Reads package-private {@code StyledFormat.style}. */
-    @Unique
-    private static net.minecraft.network.chat.Style paperarc$styledStyle(
-            net.minecraft.network.chat.numbers.StyledFormat format) {
-        try {
-            java.lang.reflect.Field f = PAPERARC$STYLED_STYLE_FIELD;
-            if (f == null) {
-                synchronized (CraftObjectiveApiMixin.class) {
-                    if ((f = PAPERARC$STYLED_STYLE_FIELD) == null) {
-                        java.lang.reflect.Field resolved =
-                                net.minecraft.network.chat.numbers.StyledFormat.class.getDeclaredField("style");
-                        resolved.setAccessible(true);
-                        PAPERARC$STYLED_STYLE_FIELD = resolved;
-                    }
-                }
-                f = PAPERARC$STYLED_STYLE_FIELD;
-            }
-            return (net.minecraft.network.chat.Style) f.get(format);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("StyledFormat.style not readable", e);
-        }
-    }
 }

@@ -72,23 +72,11 @@ public abstract class CraftHumanEntityApiMixin {
     @Shadow
     public abstract Player getHandle();
 
-    @Unique
-    private static final MethodHandle PAPERARC$CLOSE_CONTAINER = paperarc$buildCloseHandle();
-
-    @Unique
-    private static MethodHandle paperarc$buildCloseHandle() {
-        try {
-            return MethodHandles.privateLookupIn(net.minecraft.world.entity.player.Player.class, MethodHandles.lookup())
-                    .findVirtual(net.minecraft.world.entity.player.Player.class, "closeContainer",
-                            MethodType.methodType(void.class));
-        } catch (ReflectiveOperationException e) {
-            throw new ExceptionInInitializerError(e);
-        }
-    }
-
     /**
      * Spigot-patched {@code AbstractContainerMenu.checkReachable} (runtime-only,
      * absent from the vanilla compile jar); null -> degraded path below.
+     * 这两个是 CraftBukkit/Arclight 加在 NMS 上的成员，不参与 Fabric intermediary 重映射，
+     * 按 B2-1 的分类保留反射。
      */
     @Unique
     private static final MethodHandle PAPERARC$CHECK_REACHABLE_FIELD = paperarc$buildCheckReachableHandle();
@@ -96,14 +84,6 @@ public abstract class CraftHumanEntityApiMixin {
     /** Spigot-patched {@code AbstractContainerMenu#getBukkitView} (runtime-only). */
     @Unique
     private static final MethodHandle PAPERARC$GET_BUKKIT_VIEW_METHOD = paperarc$buildGetBukkitViewHandle();
-
-    /** Protected vanilla/spigot {@code Player#setShoulderEntityLeft(CompoundTag)}. */
-    @Unique
-    private static final MethodHandle PAPERARC$SET_SHOULDER_LEFT_METHOD = paperarc$buildShoulderHandle(false);
-
-    /** Protected vanilla/spigot {@code Player#setShoulderEntityRight(CompoundTag)}. */
-    @Unique
-    private static final MethodHandle PAPERARC$SET_SHOULDER_RIGHT_METHOD = paperarc$buildShoulderHandle(true);
 
     @Unique
     private static MethodHandle paperarc$buildCheckReachableHandle() {
@@ -121,17 +101,6 @@ public abstract class CraftHumanEntityApiMixin {
             return MethodHandles.privateLookupIn(AbstractContainerMenu.class, MethodHandles.lookup())
                     .findVirtual(AbstractContainerMenu.class, "getBukkitView",
                             MethodType.methodType(InventoryView.class));
-        } catch (ReflectiveOperationException e) {
-            return null; // caller degrades with IllegalStateException
-        }
-    }
-
-    @Unique
-    private static MethodHandle paperarc$buildShoulderHandle(boolean right) {
-        try {
-            return MethodHandles.privateLookupIn(Player.class, MethodHandles.lookup())
-                    .findVirtual(Player.class, right ? "setShoulderEntityRight" : "setShoulderEntityLeft",
-                            MethodType.methodType(void.class, CompoundTag.class));
         } catch (ReflectiveOperationException e) {
             return null; // caller degrades with IllegalStateException
         }
@@ -326,14 +295,11 @@ public abstract class CraftHumanEntityApiMixin {
 
     @Unique
     private static void paperarc$setShoulder(Player player, boolean right, CompoundTag value) {
-        MethodHandle handle = right ? PAPERARC$SET_SHOULDER_RIGHT_METHOD : PAPERARC$SET_SHOULDER_LEFT_METHOD;
-        if (handle == null) {
-            throw new IllegalStateException("PaperArc: Player shoulder setter not found");
-        }
-        try {
-            handle.invokeExact(player, value);
-        } catch (Throwable t) {
-            throw new IllegalStateException("PaperArc: Player shoulder setter not found", t);
+        // 两个 setter 在 vanilla 里是 protected，由 paperarc.accesswidener 放开
+        if (right) {
+            player.setShoulderEntityRight(value);
+        } else {
+            player.setShoulderEntityLeft(value);
         }
     }
 }

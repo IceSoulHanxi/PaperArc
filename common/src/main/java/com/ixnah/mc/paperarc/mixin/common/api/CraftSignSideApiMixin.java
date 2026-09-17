@@ -90,6 +90,7 @@ public abstract class CraftSignSideApiMixin {
 
     @Unique
     private static Field paperarc$signTextField() throws NoSuchFieldException {
+        // B2-1：目标是 CraftBukkit 类的成员，类名/成员名三端一致且不参与重映射，保留反射。
         Field field = PAPERARC$SIGN_TEXT_FIELD;
         if (field == null) {
             synchronized (CraftSignSideApiMixin.class) {

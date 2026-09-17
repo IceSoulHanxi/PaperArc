@@ -201,29 +201,14 @@ public abstract class CraftServerApiMixin {
         return new CraftProfileBanList(this.getServer().getPlayerList().getBans());
     }
 
-    @Unique
-    private static Field paperarc$tickCountField() throws ReflectiveOperationException {
-        Field field = PAPERARC_TICK_COUNT_FIELD;
-        if (field == null) {
-            field = net.minecraft.server.MinecraftServer.class.getDeclaredField("tickCount");
-            field.setAccessible(true);
-            PAPERARC_TICK_COUNT_FIELD = field;
-        }
-        return field;
-    }
-
     /**
      * Paper maintains its own per-server tick counter; vanilla NMS keeps the
      * equivalent total in the private {@code MinecraftServer.tickCount} field,
-     * read here reflectively (no public accessor exists).
+     * opened by {@code paperarc.accesswidener}.
      */
     @Unique
     public int getCurrentTick() {
-        try {
-            return paperarc$tickCountField().getInt(this.getServer());
-        } catch (ReflectiveOperationException e) {
-            return -1;
-        }
+        return this.getServer().tickCount;
     }
 
     @Unique
@@ -460,19 +445,12 @@ public abstract class CraftServerApiMixin {
     private static final String PAPERARC_IS_STOPPING_KEY = "paperarc:isStopping";
 
     /**
-     * Spigot-patched {@code MinecraftServer.recentTps} (1m/5m/15m averages);
-     * absent from the vanilla compile jar, so resolved through privateLookupIn.
+     * {@code MinecraftServer.recentTps}（1m/5m/15m 平均值）由 Arclight 的
+     * MinecraftServerMixin 注入，不是 vanilla 成员、不参与 Fabric intermediary 重映射，
+     * 按 B2-1 的分类保留反射（编译期不可见，用 privateLookupIn 取）。
      */
     @Unique
     private static final MethodHandle PAPERARC$RECENT_TPS = paperarc$buildRecentTpsHandle();
-
-    /**
-     * Spigot-patched {@code MinecraftServer.tickTimes} ring buffer. Not present
-     * in current Arclight builds -> null, degrading getTickTimes() to an empty
-     * array.
-     */
-    @Unique
-    private static final MethodHandle PAPERARC$TICK_TIMES = paperarc$buildTickTimesHandle();
 
     @Unique
     private static MethodHandle paperarc$buildRecentTpsHandle() {
@@ -485,20 +463,8 @@ public abstract class CraftServerApiMixin {
     }
 
     @Unique
-    private static MethodHandle paperarc$buildTickTimesHandle() {
-        try {
-            return MethodHandles.privateLookupIn(net.minecraft.server.MinecraftServer.class, MethodHandles.lookup())
-                    .findGetter(net.minecraft.server.MinecraftServer.class, "tickTimes", long[].class);
-        } catch (ReflectiveOperationException e) {
-            return null; // getTickTimes() degrades to an empty array
-        }
-    }
-
-    @Unique
     public double[] getTPS() {
-        // Spigot-added MinecraftServer.recentTps keeps 1m/5m/15m averages; the
-        // field is spigot-patched and absent from the vanilla mojmap jar, so it
-        // is read through a MethodHandle.
+        // recentTps 由 Arclight 注入（见上），编译期不可见 -> MethodHandle 读取。
         if (PAPERARC$RECENT_TPS == null) {
             return new double[]{20.0D, 20.0D, 20.0D};
         }
@@ -511,20 +477,10 @@ public abstract class CraftServerApiMixin {
 
     @Unique
     public long[] getTickTimes() {
-        // Spigot MinecraftServer.tickTimes ring buffer of the last tick
-        // durations in nanoseconds; read through a MethodHandle like getTPS.
-        if (PAPERARC$TICK_TIMES == null) {
-            return new long[0];
-        }
-        try {
-            Object value = PAPERARC$TICK_TIMES.invoke(this.getServer());
-            if (value instanceof long[] ticks) {
-                return ticks;
-            }
-            return new long[0];
-        } catch (Throwable t) {
-            return new long[0];
-        }
+        // Spigot 的 MinecraftServer.tickTimes 在 1.21.1 上不存在（Arclight 也没注入），
+        // 原先的 MethodHandle 恒为 null、这个 API 一直返回空数组。1.21.1 vanilla 自带
+        // 等价的 tickTimesNanos 环形缓冲并有公开访问器，直接用它。
+        return this.getServer().getTickTimesNanos();
     }
 
     @Unique
@@ -566,13 +522,7 @@ public abstract class CraftServerApiMixin {
     public boolean isTickingWorlds() {
         // Approximation of Paper's flag via MinecraftServer#isStopped(): worlds
         // stay loaded/ticking until the server has fully stopped.
-        try {
-            Object stopped = net.minecraft.server.MinecraftServer.class.getMethod("isStopped")
-                    .invoke(this.getServer());
-            return !((Boolean) stopped);
-        } catch (ReflectiveOperationException e) {
-            return true;
-        }
+        return !this.getServer().isStopped();
     }
 
     @Unique
@@ -649,6 +599,8 @@ public abstract class CraftServerApiMixin {
         // Paper reloads its PermissionsConfig then forces recalcs; here we
         // re-run CraftBukkit's private loadCustomPermissions() reflectively
         // and recalculate every online player's effective permissions.
+        // 目标是 CraftBukkit 类的成员（三端类名/成员名一致、不参与重映射），
+        // 按 B2-1 的分类保留反射。
         try {
             Method loadCustomPermissions = CraftServer.class.getDeclaredMethod("loadCustomPermissions");
             loadCustomPermissions.setAccessible(true);

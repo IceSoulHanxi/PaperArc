@@ -11,7 +11,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -22,13 +21,11 @@ import java.util.List;
  * boolean)}, {@code getStewEffects()} and {@code setStewEffects(List)}.
  *
  * The NMS backing field {@code MushroomCow#stewEffects} is private (Paper
- * accesses it directly from within the class), so it is reached reflectively.
+ * accesses it directly from within the class) and opened by
+ * {@code paperarc.accesswidener}.
  */
 @Mixin(CraftMushroomCow.class)
 public abstract class CraftMushroomCowApiMixin {
-
-    @Unique
-    private static volatile Field PAPERARC$STEW_EFFECTS_FIELD;
 
     @Shadow
     public abstract net.minecraft.world.entity.animal.MushroomCow getHandle();
@@ -49,20 +46,20 @@ public abstract class CraftMushroomCowApiMixin {
             return false;
         }
         net.minecraft.world.entity.animal.MushroomCow handle = this.getHandle();
-        SuspiciousStewEffects stewEffects = paperarc$stewEffects(handle);
+        SuspiciousStewEffects stewEffects = handle.stewEffects;
         if (stewEffects == null) {
             stewEffects = SuspiciousStewEffects.EMPTY;
         }
         SuspiciousStewEffects.Entry recordSuspiciousEffect =
             new SuspiciousStewEffects.Entry(minecraftPotionEffect, suspiciousEffectEntry.duration());
         this.removeEffectFromNextStew(suspiciousEffectEntry.effect()); // Avoid duplicates of effects
-        paperarc$setStewEffects(handle, stewEffects.withEffectAdded(recordSuspiciousEffect));
+        handle.stewEffects = stewEffects.withEffectAdded(recordSuspiciousEffect);
         return true;
     }
 
     @Unique
     public List<io.papermc.paper.potion.SuspiciousEffectEntry> getStewEffects() {
-        SuspiciousStewEffects stewEffects = paperarc$stewEffects(this.getHandle());
+        SuspiciousStewEffects stewEffects = this.getHandle().stewEffects;
         if (stewEffects == null) {
             return List.of();
         }
@@ -81,7 +78,7 @@ public abstract class CraftMushroomCowApiMixin {
         Preconditions.checkArgument(effects != null, "effects cannot be null");
         net.minecraft.world.entity.animal.MushroomCow handle = this.getHandle();
         if (effects.isEmpty()) {
-            paperarc$setStewEffects(handle, null);
+            handle.stewEffects = null;
             return;
         }
         List<SuspiciousStewEffects.Entry> nmsPairs = new ArrayList<>(effects.size());
@@ -90,45 +87,7 @@ public abstract class CraftMushroomCowApiMixin {
                 CraftPotionEffectType.bukkitToMinecraftHolder(effect.effect()),
                 effect.duration()));
         }
-        paperarc$setStewEffects(handle, new SuspiciousStewEffects(nmsPairs));
+        handle.stewEffects = new SuspiciousStewEffects(nmsPairs);
     }
 
-    @Unique
-    private static SuspiciousStewEffects paperarc$stewEffects(net.minecraft.world.entity.animal.MushroomCow handle) {
-        try {
-            return (SuspiciousStewEffects) paperarc$stewEffectsField().get(handle);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Failed to read NMS MushroomCow.stewEffects", e);
-        }
-    }
-
-    @Unique
-    private static void paperarc$setStewEffects(net.minecraft.world.entity.animal.MushroomCow handle,
-                                                SuspiciousStewEffects effects) {
-        try {
-            paperarc$stewEffectsField().set(handle, effects);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Failed to write NMS MushroomCow.stewEffects", e);
-        }
-    }
-
-    @Unique
-    private static Field paperarc$stewEffectsField() {
-        Field field = PAPERARC$STEW_EFFECTS_FIELD;
-        if (field == null) {
-            synchronized (CraftMushroomCowApiMixin.class) {
-                if (PAPERARC$STEW_EFFECTS_FIELD == null) {
-                    try {
-                        Field resolved = net.minecraft.world.entity.animal.MushroomCow.class.getDeclaredField("stewEffects");
-                        resolved.setAccessible(true);
-                        PAPERARC$STEW_EFFECTS_FIELD = resolved;
-                    } catch (ReflectiveOperationException e) {
-                        throw new IllegalStateException("NMS MushroomCow.stewEffects field not found", e);
-                    }
-                }
-                field = PAPERARC$STEW_EFFECTS_FIELD;
-            }
-        }
-        return field;
-    }
 }

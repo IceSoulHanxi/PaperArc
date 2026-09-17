@@ -15,6 +15,7 @@
     "item.WindChargeItemMixin",
     "item.FireworkRocketItemMixin",
     "block.AbstractFurnaceBlockEntityFieldsMixin",
+    "block.BrewingStandBlockEntityFieldsMixin",
     "block.BaseContainerBlockEntityMixin",
     "block.BeaconBlockEntityMixin",
     "block.BeehiveBlockEntityFieldsMixin",

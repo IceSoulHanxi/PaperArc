@@ -25,25 +25,8 @@ import java.lang.invoke.MethodType;
 public abstract class CraftHumanEntityCloseInventoryMixin {
 
     @Unique
-    private static volatile MethodHandle PAPERARC$CLOSE_CONTAINER;
-
-    @Unique
     public void closeInventory(InventoryCloseEvent.Reason reason) {
-        try {
-            MethodHandle handle = PAPERARC$CLOSE_CONTAINER;
-            if (handle == null) {
-                synchronized (CraftHumanEntityCloseInventoryMixin.class) {
-                    if (PAPERARC$CLOSE_CONTAINER == null) {
-                        PAPERARC$CLOSE_CONTAINER = MethodHandles.privateLookupIn(Player.class, MethodHandles.lookup())
-                                .findVirtual(Player.class, "closeContainer",
-                                        MethodType.methodType(void.class));
-                    }
-                    handle = PAPERARC$CLOSE_CONTAINER;
-                }
-            }
-            handle.invokeExact(((org.bukkit.craftbukkit.v.entity.CraftPlayer) (Object) this).getHandle());
-        } catch (Throwable t) {
-            throw new IllegalStateException("Cannot invoke Player.closeContainer", t);
-        }
+        // vanilla Player#closeContainer() 本来就是 public，之前那层 MethodHandle 是多余的
+        ((org.bukkit.craftbukkit.v.entity.CraftPlayer) (Object) this).getHandle().closeContainer();
     }
 }

@@ -13,8 +13,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
-import java.lang.reflect.Method;
-
 /**
  * Port of Paper's SculkCatalyst-bloom-API additions on
  * {@link CraftSculkCatalyst}: {@code bloom(Position, int)} plus the
@@ -31,9 +29,6 @@ public abstract class CraftSculkCatalystApiMixin {
 
     @Unique
     private static final String PAPERARC_BLOOM_KEY = "paperarc:bloom";
-
-    @Unique
-    private static volatile Method paperarc$catalystBloom;
 
     @Unique
     private boolean isPlaced() {
@@ -57,14 +52,10 @@ public abstract class CraftSculkCatalystApiMixin {
         Preconditions.checkState(this.isPlaced(), "Cannot bloom an unplaced state");
         ServerLevel level = ((org.bukkit.craftbukkit.v.CraftWorld) this.getWorld()).getHandle();
         SculkCatalystBlockEntity catalyst = (SculkCatalystBlockEntity) this.getTileEntityFromWorld();
-        try {
-            Method bloom = paperarc$catalystBloomMethod();
-            bloom.invoke(catalyst.getListener(), level, catalyst.getBlockPos(), catalyst.getBlockState(), level.getRandom());
-            catalyst.getListener().getSculkSpreader().addCursors(
-                BlockPos.containing(position.x(), position.y(), position.z()), charge);
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException("Failed to invoke CatalystListener#bloom", e);
-        }
+        // 原版 CatalystListener#bloom 是 private，由 paperarc.accesswidener 放开
+        catalyst.getListener().bloom(level, catalyst.getBlockPos(), catalyst.getBlockState(), level.getRandom());
+        catalyst.getListener().getSculkSpreader().addCursors(
+            BlockPos.containing(position.x(), position.y(), position.z()), charge);
     }
 
     @Unique
@@ -77,26 +68,4 @@ public abstract class CraftSculkCatalystApiMixin {
         this.paperarc$bloom = bloom;
     }
 
-    /**
-     * Vanilla {@code CatalystListener#bloom(ServerLevel, BlockPos, BlockState,
-     * RandomSource)} is private; Paper widens it via AT, we resolve it once
-     * reflectively (Arclight runs mojmap at runtime so the name is stable).
-     */
-    @Unique
-    private static Method paperarc$catalystBloomMethod() throws NoSuchMethodException {
-        Method method = paperarc$catalystBloom;
-        if (method == null) {
-            synchronized (CraftSculkCatalystApiMixin.class) {
-                if (paperarc$catalystBloom == null) {
-                    Method declared = SculkCatalystBlockEntity.CatalystListener.class.getDeclaredMethod("bloom",
-                        ServerLevel.class, BlockPos.class,
-                        net.minecraft.world.level.block.state.BlockState.class, RandomSource.class);
-                    declared.setAccessible(true);
-                    paperarc$catalystBloom = declared;
-                }
-                method = paperarc$catalystBloom;
-            }
-        }
-        return method;
-    }
 }

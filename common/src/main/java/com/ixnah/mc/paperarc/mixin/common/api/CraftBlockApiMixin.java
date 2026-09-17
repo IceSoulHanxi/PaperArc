@@ -114,41 +114,21 @@ public abstract class CraftBlockApiMixin {
 
     /**
      * vanilla 无公开 getExpDrop（Paper 用 AT 加宽），等价语义：
-     * 反射调 protected BlockBehaviour#spawnAfterBreak(state, level, pos, tool, true) 落经验。
+     * 调 protected BlockBehaviour#spawnAfterBreak(state, level, pos, tool, true) 落经验
+     * （该方法由 paperarc.accesswidener 放开）。
      */
     @Unique
     private void paperarc$spawnAfterBreak(Block block, ServerLevel serverLevel,
                                           net.minecraft.world.level.block.state.BlockState state,
                                           net.minecraft.world.item.ItemStack tool) {
-        try {
-            Method cached = paperarc$spawnAfterBreakMethod;
-            if (cached == null) {
-                cached = net.minecraft.world.level.block.state.BlockBehaviour.class.getDeclaredMethod("spawnAfterBreak",
-                    net.minecraft.world.level.block.state.BlockState.class, ServerLevel.class, BlockPos.class,
-                    net.minecraft.world.item.ItemStack.class, boolean.class);
-                cached.setAccessible(true);
-                paperarc$spawnAfterBreakMethod = cached;
-            }
-            cached.invoke(block, state, serverLevel, this.position, tool, true);
-        } catch (ReflectiveOperationException ignored) {
-            // 反射失败时跳过经验掉落，不影响方块破坏主流程
-        }
+        block.spawnAfterBreak(state, serverLevel, this.position, tool, true);
     }
 
-    @Unique
-    private static volatile Method paperarc$spawnAfterBreakMethod;
-
-    /** TurtleEggBlock#decreaseEggs 为 private，反射调用；失败时静默降级。 */
+    /** TurtleEggBlock#decreaseEggs 为 private，由 paperarc.accesswidener 放开。 */
     @Unique
     private void paperarc$turtleDecreaseEggs(TurtleEggBlock eggBlock, Level level,
                                              net.minecraft.world.level.block.state.BlockState state) {
-        try {
-            Method method = TurtleEggBlock.class.getDeclaredMethod("decreaseEggs",
-                Level.class, BlockPos.class, net.minecraft.world.level.block.state.BlockState.class);
-            method.setAccessible(true);
-            method.invoke(eggBlock, level, this.position, state);
-        } catch (ReflectiveOperationException ignored) {
-        }
+        eggBlock.decreaseEggs(level, this.position, state);
     }
 
     @Unique
@@ -222,21 +202,9 @@ public abstract class CraftBlockApiMixin {
 
     @Unique
     public boolean isCollidable() {
-        try {
-            Field field = paperarc$hasCollisionField;
-            if (field == null) {
-                field = net.minecraft.world.level.block.state.BlockBehaviour.class.getDeclaredField("hasCollision");
-                field.setAccessible(true);
-                paperarc$hasCollisionField = field;
-            }
-            return field.getBoolean(this.getNMS().getBlock());
-        } catch (ReflectiveOperationException e) {
-            return false; // 反射失败降级为无碰撞
-        }
+        // BlockBehaviour#hasCollision 是 protected final，由 paperarc.accesswidener 放开
+        return this.getNMS().getBlock().hasCollision;
     }
-
-    @Unique
-    private static volatile Field paperarc$hasCollisionField;
 
     @Unique
     public boolean isReplaceable() {

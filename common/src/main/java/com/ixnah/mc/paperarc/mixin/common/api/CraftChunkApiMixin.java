@@ -63,6 +63,7 @@ public abstract class CraftChunkApiMixin {
 
     @Unique
     private static Field paperarc$snapshotField(String name) throws NoSuchFieldException {
+        // B2-1：目标是 CraftBukkit 类的成员，类名/成员名三端一致且不参与重映射，保留反射。
         Field cached = "skylight".equals(name) ? PAPERARC$SKYLIGHT_FIELD : PAPERARC$EMITLIGHT_FIELD;
         if (cached == null) {
             synchronized (CraftChunkApiMixin.class) {

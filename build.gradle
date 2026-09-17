@@ -128,6 +128,14 @@ subprojects {
             outputs.dir(atDir)
             doLast {
                 def out = ['# 由 generateAccessTransformer 从 common/src/main/resources/paperarc.accesswidener 生成，勿手改。']
+                // 同一个成员可能同时有 accessible 与 mutable 两条 AW（前者给 public、后者去 final），
+                // 合并成一条 AT：public-f 覆盖 public，避免 ModLauncher 拿到重复条目。
+                def seen = [:]
+                def emit = { String verb, String target ->
+                    if (seen[target] != 'public-f') {
+                        seen[target] = verb
+                    }
+                }
                 awFile.eachLine { raw ->
                     def line = raw.replaceAll('#.*$', '').trim()
                     if (!line || line.startsWith('accessWidener')) {
@@ -143,12 +151,13 @@ subprojects {
                     // accessible -> public；mutable -> 去掉 final
                     def at = access == 'mutable' ? 'public-f' : 'public'
                     switch (kind) {
-                        case 'class':  out << "${at} ${owner}"; break
-                        case 'field':  out << "${at} ${owner} ${p[3]}"; break
-                        case 'method': out << "${at} ${owner} ${p[3]}${p[4]}"; break
+                        case 'class':  emit(at, owner); break
+                        case 'field':  emit(at, "${owner} ${p[3]}"); break
+                        case 'method': emit(at, "${owner} ${p[3]}${p[4]}"); break
                         default: throw new GradleException("unsupported access widener target '${kind}': ${line}")
                     }
                 }
+                seen.each { target, verb -> out << "${verb} ${target}" }
                 def f = atDir.get().file('META-INF/accesstransformer.cfg').asFile
                 f.parentFile.mkdirs()
                 f.text = out.join('\n') + '\n'

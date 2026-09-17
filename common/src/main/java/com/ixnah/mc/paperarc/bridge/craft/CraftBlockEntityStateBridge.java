@@ -11,5 +11,7 @@ public interface CraftBlockEntityStateBridge extends CraftBlockStateBridge {
 
     BlockEntity paperarc$getSnapshot();
 
+    BlockEntity paperarc$getTileEntity();
+
     BlockEntity paperarc$getTileEntityFromWorld();
 }

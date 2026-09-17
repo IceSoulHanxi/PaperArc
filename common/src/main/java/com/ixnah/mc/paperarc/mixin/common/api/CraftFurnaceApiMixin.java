@@ -13,7 +13,9 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
+import com.ixnah.mc.paperarc.bridge.AbstractFurnaceBlockEntityBridge;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
+import com.ixnah.mc.paperarc.bridge.craft.CraftBlockEntityStateBridge;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.v.CraftServer;
 import org.bukkit.craftbukkit.v.block.CraftBlockState;
@@ -28,39 +30,18 @@ import org.spongepowered.asm.mixin.Unique;
  * Furnace-RecipesUsed-API.patch additions on {@link CraftFurnace}.
  *
  * <p>Paper stores the cook speed multiplier in a public double field
- * {@code cookSpeedMultiplier} added to {@link AbstractFurnaceBlockEntity} and
- * exposes the used-recipe counts through a Paper-added
- * {@code getRecipesUsed()} accessor; neither exists in the vanilla mojmap
- * compile jar, so they are accessed via reflection.
- * {@code CraftBlockEntityState#getSnapshot()} is protected (subclass-target
- * mixins cannot shadow it), hence reflection there too.
+ * {@code cookSpeedMultiplier} added to {@link AbstractFurnaceBlockEntity}; that
+ * field is injected by {@code AbstractFurnaceBlockEntityFieldsMixin} and read
+ * through {@link AbstractFurnaceBlockEntityBridge}. The used-recipe counts come
+ * from the vanilla private {@code recipesUsed} map, opened (together with
+ * {@code cookingTotalTime} and {@code getTotalCookTime}) by
+ * {@code paperarc.accesswidener}. {@code CraftBlockEntityState#getSnapshot()}
+ * is protected and reached through {@link CraftBlockEntityStateBridge}.
  */
 @Mixin(CraftFurnace.class)
 public abstract class CraftFurnaceApiMixin {
 
-    @Unique
-    private static final String PAPERARC$SNAPSHOT_OWNER = "org.bukkit.craftbukkit.v.block.CraftBlockEntityState";
-
-    @Unique
-    private static Method paperarc$snapshotMethod;
-
-    @Unique
-    private static Field paperarc$cookSpeedMultiplierField;
-
-    @Unique
-    private static Field paperarc$recipeTypeField;
-
-    @Unique
-    private static Field paperarc$cookingTotalTimeField;
-
-    @Unique
-    private static Method paperarc$getTotalCookTimeMethod; // Paper's 4-arg (Level, RecipeType, AFBE, double) overload
-
-    @Unique
-    private static Method paperarc$recipesUsedMethod;
-
-    @Unique
-    private static Field paperarc$recipesUsedField;
+// Paper's 4-arg (Level, RecipeType, AFBE, double) overload
 
     // Paper start - cook speed multiplier API
 
@@ -70,11 +51,7 @@ public abstract class CraftFurnaceApiMixin {
         if (snapshot == null) {
             return 1.0D;
         }
-        try {
-            return paperarc$cookSpeedMultiplierField().getDouble(snapshot);
-        } catch (ReflectiveOperationException e) {
-            return 1.0D; // Paper/vanilla default multiplier
-        }
+        return ((AbstractFurnaceBlockEntityBridge) snapshot).paper$getCookSpeedMultiplier();
     }
 
     @Unique
@@ -85,17 +62,16 @@ public abstract class CraftFurnaceApiMixin {
         if (snapshot == null) {
             return;
         }
-        try {
-            paperarc$cookSpeedMultiplierField().setDouble(snapshot, multiplier);
-            // Paper: rescale the snapshot's current total cook time to the new multiplier
-            Method totalCookTime = paperarc$getTotalCookTimeMethod();
-            if (totalCookTime != null) {
-                Level level = this.paperarc$isPlaced() ? (Level) ((CraftBlockState) (Object) this).getWorldHandle() : null;
-                paperarc$cookingTotalTimeField().setInt(snapshot,
-                    (Integer) totalCookTime.invoke(null, level, paperarc$recipeTypeField().get(snapshot), snapshot, multiplier));
-            }
-        } catch (ReflectiveOperationException e) {
-            // unpatched runtime: vanilla keeps multiplier 1.0
+        ((AbstractFurnaceBlockEntityBridge) snapshot).paper$setCookSpeedMultiplier(multiplier);
+        // Paper: rescale the snapshot's current total cook time to the new multiplier.
+        // Paper 的 4 参 getTotalCookTime(Level, RecipeType, AFBE, double) 是它自己加的，
+        // vanilla 只有 2 参版本，这里按同样的语义除以倍率。
+        Level level = this.paperarc$isPlaced() ? (Level) ((CraftBlockState) (Object) this).getWorldHandle() : null;
+        if (level != null) {
+            int vanillaTotal = AbstractFurnaceBlockEntity.getTotalCookTime(level, snapshot);
+            snapshot.cookingTotalTime = multiplier <= 0.0D
+                    ? vanillaTotal
+                    : (int) Math.ceil(vanillaTotal / multiplier);
         }
     }
 
@@ -140,41 +116,14 @@ public abstract class CraftFurnaceApiMixin {
         });
     }
 
-    @SuppressWarnings("unchecked")
     @Unique
     private Map<ResourceLocation, Integer> paperarc$recipesUsed() {
-        AbstractFurnaceBlockEntity snapshot = this.paperarc$snapshot();
-        try {
-            if (paperarc$recipesUsedMethod == null && paperarc$recipesUsedField == null) {
-                try {
-                    paperarc$recipesUsedMethod = AbstractFurnaceBlockEntity.class.getDeclaredMethod("getRecipesUsed"); // Paper-added accessor
-                    paperarc$recipesUsedMethod.setAccessible(true);
-                } catch (NoSuchMethodException e) {
-                    paperarc$recipesUsedField = AbstractFurnaceBlockEntity.class.getDeclaredField("recipesUsed"); // vanilla map field
-                    paperarc$recipesUsedField.setAccessible(true);
-                }
-            }
-            Object map = paperarc$recipesUsedMethod != null
-                ? paperarc$recipesUsedMethod.invoke(snapshot)
-                : paperarc$recipesUsedField.get(snapshot);
-            return (Map<ResourceLocation, Integer>) map;
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("PaperArc: cannot access AbstractFurnaceBlockEntity used-recipes map", e);
-        }
+        return this.paperarc$snapshot().recipesUsed;
     }
 
     @Unique
     private AbstractFurnaceBlockEntity paperarc$snapshot() {
-        try {
-            if (paperarc$snapshotMethod == null) {
-                Method method = Class.forName(PAPERARC$SNAPSHOT_OWNER).getDeclaredMethod("getSnapshot");
-                method.setAccessible(true);
-                paperarc$snapshotMethod = method;
-            }
-            return (AbstractFurnaceBlockEntity) paperarc$snapshotMethod.invoke(this);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("PaperArc: cannot access CraftBlockEntityState#getSnapshot()", e);
-        }
+        return (AbstractFurnaceBlockEntity) ((CraftBlockEntityStateBridge) (Object) this).paperarc$getSnapshot();
     }
 
     @Unique
@@ -182,49 +131,4 @@ public abstract class CraftFurnaceApiMixin {
         return ((CraftBlockState) (Object) this).isPlaced();
     }
 
-    @Unique
-    private static Field paperarc$cookSpeedMultiplierField() throws NoSuchFieldException {
-        if (paperarc$cookSpeedMultiplierField == null) {
-            Field field = AbstractFurnaceBlockEntity.class.getField("cookSpeedMultiplier"); // public in Paper's runtime patch
-            field.setAccessible(true);
-            paperarc$cookSpeedMultiplierField = field;
-        }
-        return paperarc$cookSpeedMultiplierField;
-    }
-
-    @Unique
-    private static Field paperarc$recipeTypeField() throws NoSuchFieldException {
-        if (paperarc$recipeTypeField == null) {
-            Field field = AbstractFurnaceBlockEntity.class.getDeclaredField("recipeType");
-            field.setAccessible(true);
-            paperarc$recipeTypeField = field;
-        }
-        return paperarc$recipeTypeField;
-    }
-
-    @Unique
-    private static Field paperarc$cookingTotalTimeField() throws NoSuchFieldException {
-        if (paperarc$cookingTotalTimeField == null) {
-            Field field = AbstractFurnaceBlockEntity.class.getDeclaredField("cookingTotalTime");
-            field.setAccessible(true);
-            paperarc$cookingTotalTimeField = field;
-        }
-        return paperarc$cookingTotalTimeField;
-    }
-
-    @Unique
-    private static Method paperarc$getTotalCookTimeMethod() {
-        if (paperarc$getTotalCookTimeMethod == null) {
-            for (Method method : AbstractFurnaceBlockEntity.class.getDeclaredMethods()) {
-                Class<?>[] params = method.getParameterTypes();
-                // Paper's overload: (Level, RecipeType, AbstractFurnaceBlockEntity, double)
-                if (method.getName().equals("getTotalCookTime") && params.length == 4 && params[3] == double.class) {
-                    method.setAccessible(true);
-                    paperarc$getTotalCookTimeMethod = method;
-                    break;
-                }
-            }
-        }
-        return paperarc$getTotalCookTimeMethod;
-    }
 }

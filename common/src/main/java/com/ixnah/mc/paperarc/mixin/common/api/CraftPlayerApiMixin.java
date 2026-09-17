@@ -395,14 +395,6 @@ public abstract class CraftPlayerApiMixin {
     }
 
     @Unique
-    private static void paperarc$setIntField(Class<?> clazz, Object target, String name, int value)
-            throws ReflectiveOperationException {
-        Field f = clazz.getDeclaredField(name);
-        f.setAccessible(true);
-        f.setInt(target, value);
-    }
-
-    @Unique
     private static String paperarc$sha1Hex(byte[] hash) {
         if (hash == null || hash.length == 0) {
             return "";
@@ -432,10 +424,12 @@ public abstract class CraftPlayerApiMixin {
     @Unique
     public void playerListName(net.kyori.adventure.text.Component playerListName) {
         this.paperarc$playerListName = playerListName;
-        // Best-effort: mirror into vanilla Player.listName (private) so future
-        // tab-list packets carry the new name.
+        // Best-effort: 镜像进 listName，让后续 tab-list 包带上新名字。
+        // 该字段是 Arclight 的 ServerPlayerMixin 注入在 **ServerPlayer** 上的
+        // （不是 vanilla 成员、不参与重映射），按 B2-1 的分类保留反射。
+        // 注意：原实现反射的是 Player.class，字段根本不在那里，所以一直静默失败。
         try {
-            java.lang.reflect.Field f = net.minecraft.world.entity.player.Player.class.getDeclaredField("listName");
+            java.lang.reflect.Field f = ServerPlayer.class.getDeclaredField("listName");
             f.setAccessible(true);
             f.set(getHandle(), paperarc$vanilla(playerListName));
         } catch (ReflectiveOperationException ignored) {
@@ -620,11 +614,7 @@ public abstract class CraftPlayerApiMixin {
         // asAuthlibCopy accepts ANY paper-api PlayerProfile implementation
         // (Paper parity): deep-copies id/name/properties into a GameProfile.
         GameProfile gameProfile = com.ixnah.mc.paperarc.bridge.CraftPlayerProfile.asAuthlibCopy(profile);
-        try {
-            paperarc$gameProfileField().set(self, gameProfile);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Failed to swap ServerPlayer GameProfile", e);
-        }
+        self.gameProfile = gameProfile;
         if (self.connection == null) {
             return;
         }
@@ -636,10 +626,10 @@ public abstract class CraftPlayerApiMixin {
             other.connection.send(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(java.util.List.of(self)));
             // ChunkMap.TrackedEntity is a private nested type in vanilla 1.21.1
             // (javap-verified) — hold it as Object and invoke reflectively.
-            Object entry = paperarc$trackedEntity(other, self.getId());
+            net.minecraft.server.level.ChunkMap.TrackedEntity entry = paperarc$trackedEntity(other, self.getId());
             if (entry != null) {
-                paperarc$invokeTracker(entry, "removePlayer", other);
-                paperarc$invokeTracker(entry, "updatePlayer", other);
+                entry.removePlayer(other);
+                entry.updatePlayer(other);
             }
         }
         // Refresh the target client: Paper's refreshPlayer() respawn pipeline.
@@ -662,62 +652,18 @@ public abstract class CraftPlayerApiMixin {
         }
     }
 
-    /** Cached reflection handle on the private-final {@code Player.gameProfile} field. */
-    private static volatile Field PAPERARC$GAME_PROFILE_FIELD;
-
-    @Unique
-    private static Field paperarc$gameProfileField() throws ReflectiveOperationException {
-        Field field = PAPERARC$GAME_PROFILE_FIELD;
-        if (field == null) {
-            field = net.minecraft.world.entity.player.Player.class.getDeclaredField("gameProfile");
-            field.setAccessible(true);
-            PAPERARC$GAME_PROFILE_FIELD = field;
-        }
-        return field;
-    }
-
-    private static volatile Field PAPERARC$ENTITY_MAP_FIELD;
-
-    @Unique
-    private static Field paperarc$entityMapField() throws ReflectiveOperationException {
-        Field field = PAPERARC$ENTITY_MAP_FIELD;
-        if (field == null) {
-            field = net.minecraft.server.level.ChunkMap.class.getDeclaredField("entityMap");
-            field.setAccessible(true);
-            PAPERARC$ENTITY_MAP_FIELD = field;
-        }
-        return field;
-    }
-
     /**
-     * The tracker entry of {@code target} inside {@code viewer}'s level chunk
-     * map (private fastutil map, reflectively read once cached); null when
-     * the target is not tracked by that viewer.
+     * The tracker entry of {@code target} inside {@code viewer}'s level chunk map;
+     * {@code ChunkMap.entityMap} 与 package-private 的 {@code ChunkMap$TrackedEntity}
+     * 都由 {@code paperarc.accesswidener} 放开。null = 该 viewer 没在追踪目标。
      */
     @Unique
-    private static Object paperarc$trackedEntity(
+    private static net.minecraft.server.level.ChunkMap.TrackedEntity paperarc$trackedEntity(
             ServerPlayer viewer, int targetId) {
-        try {
-            Object map = paperarc$entityMapField().get(
-                    ((net.minecraft.server.level.ServerLevel) viewer.level()).getChunkSource().chunkMap);
-            Object entry = ((it.unimi.dsi.fastutil.ints.Int2ObjectMap<?>) map).get(targetId);
-            return entry;
-        } catch (ReflectiveOperationException | ClassCastException e) {
+        if (!(viewer.level() instanceof net.minecraft.server.level.ServerLevel level)) {
             return null;
         }
-    }
-
-    /** Reflective {@code ChunkMap.TrackedEntity#removePlayer/updatePlayer} (private nested class). */
-    @Unique
-    private static void paperarc$invokeTracker(Object entry, String name, ServerPlayer viewer) {
-        try {
-            java.lang.reflect.Method method = entry.getClass()
-                    .getMethod(name, net.minecraft.server.level.ServerPlayer.class);
-            method.setAccessible(true);
-            method.invoke(entry, viewer);
-        } catch (ReflectiveOperationException ignored) {
-            // viewer no longer tracks the target — nothing to refresh
-        }
+        return level.getChunkSource().chunkMap.entityMap.get(targetId);
     }
 
     @Unique
@@ -739,10 +685,7 @@ public abstract class CraftPlayerApiMixin {
 
     @Unique
     public void setViewDistance(int viewDistance) {
-        try {
-            paperarc$setIntField(ServerPlayer.class, getHandle(), "requestedViewDistance", viewDistance);
-        } catch (ReflectiveOperationException ignored) {
-        }
+        getHandle().requestedViewDistance = viewDistance;
     }
 
     @Unique
@@ -772,10 +715,7 @@ public abstract class CraftPlayerApiMixin {
         if (tracker == null) {
             return;
         }
-        try {
-            paperarc$setIntField(tracker.getClass(), tracker, "ticksSinceLastWarning", time);
-        } catch (ReflectiveOperationException ignored) {
-        }
+        tracker.ticksSinceLastWarning = time;
     }
 
     @Unique
@@ -784,10 +724,7 @@ public abstract class CraftPlayerApiMixin {
         if (tracker == null) {
             return;
         }
-        try {
-            paperarc$setIntField(tracker.getClass(), tracker, "cooldownTicks", cooldown);
-        } catch (ReflectiveOperationException ignored) {
-        }
+        tracker.cooldownTicks = cooldown;
     }
 
     @Unique
@@ -796,10 +733,7 @@ public abstract class CraftPlayerApiMixin {
         if (tracker == null) {
             return;
         }
-        try {
-            paperarc$setIntField(tracker.getClass(), tracker, "warningLevel", warningLevel);
-        } catch (ReflectiveOperationException ignored) {
-        }
+        tracker.warningLevel = warningLevel;
     }
 
     @Unique
@@ -876,9 +810,8 @@ public abstract class CraftPlayerApiMixin {
             ClientboundPlayerInfoUpdatePacket.Entry old = entries.get(0);
             entries.set(0, new ClientboundPlayerInfoUpdatePacket.Entry(old.profileId(), old.profile(),
                     false, old.latency(), old.gameMode(), old.displayName(), old.chatSession()));
-            java.lang.reflect.Field f = ClientboundPlayerInfoUpdatePacket.class.getDeclaredField("entries");
-            f.setAccessible(true);
-            f.set(packet, entries);
+            // entries 是 private final，由 paperarc.accesswidener 的 accessible + mutable 放开
+            packet.entries = entries;
             paperarc$send(packet);
             return true;
         } catch (Exception e) {

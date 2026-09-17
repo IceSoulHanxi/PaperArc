@@ -34,67 +34,18 @@ public abstract class CraftDragonBattleApiMixin {
     @Shadow
     private EndDragonFight handle;
 
-    @Unique
-    private static int paperarc$gatewayCount() {
-        try {
-            Field f = EndDragonFight.class.getDeclaredField("GATEWAY_COUNT");
-            f.setAccessible(true);
-            return f.getInt(null);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("NMS EndDragonFight.GATEWAY_COUNT not found", e);
-        }
-    }
-
-    @Unique
-    @SuppressWarnings("unchecked")
-    private List<Integer> paperarc$gateways() {
-        try {
-            Field f = EndDragonFight.class.getDeclaredField("gateways");
-            f.setAccessible(true);
-            return (List<Integer>) f.get(this.handle);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("NMS EndDragonFight.gateways not found", e);
-        }
-    }
-
-    @Unique
-    @SuppressWarnings("unchecked")
-    private List<EndCrystal> paperarc$respawnCrystals() {
-        try {
-            Field f = EndDragonFight.class.getDeclaredField("respawnCrystals");
-            f.setAccessible(true);
-            return (List<EndCrystal>) f.get(this.handle);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("NMS EndDragonFight.respawnCrystals not found", e);
-        }
-    }
-
-    @Unique
-    private void paperarc$spawnNewGateway(BlockPos pos) {
-        try {
-            Method m = EndDragonFight.class.getDeclaredMethod("spawnNewGateway", BlockPos.class);
-            m.setAccessible(true);
-            m.invoke(this.handle, pos);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("NMS EndDragonFight.spawnNewGateway(BlockPos) not found", e);
-        }
-    }
+    // EndDragonFight 的 GATEWAY_COUNT/gateways/respawnCrystals/level 与两个
+    // spawnNewGateway 重载都是 vanilla 私有成员，统一由 paperarc.accesswidener 放开。
 
     @Unique
     public int getGatewayCount() {
-        return paperarc$gatewayCount() - this.paperarc$gateways().size();
+        return EndDragonFight.GATEWAY_COUNT - this.handle.gateways.size();
     }
 
     @Unique
     public boolean spawnNewGateway() {
-        if (!this.paperarc$gateways().isEmpty()) {
-            try {
-                Method m = EndDragonFight.class.getDeclaredMethod("spawnNewGateway");
-                m.setAccessible(true);
-                m.invoke(this.handle);
-            } catch (ReflectiveOperationException e) {
-                throw new IllegalStateException("NMS EndDragonFight.spawnNewGateway() not found", e);
-            }
+        if (!this.handle.gateways.isEmpty()) {
+            this.handle.spawnNewGateway();
             return true;
         }
         return false;
@@ -102,12 +53,12 @@ public abstract class CraftDragonBattleApiMixin {
 
     @Unique
     public void spawnNewGateway(io.papermc.paper.math.Position position) {
-        this.paperarc$spawnNewGateway(BlockPos.containing(position.x(), position.y(), position.z()));
+        this.handle.spawnNewGateway(BlockPos.containing(position.x(), position.y(), position.z()));
     }
 
     @Unique
     public List<EnderCrystal> getRespawnCrystals() {
-        List<EndCrystal> crystals = this.paperarc$respawnCrystals();
+        List<EndCrystal> crystals = this.handle.respawnCrystals;
         if (crystals == null) {
             return Collections.emptyList();
         }
@@ -122,14 +73,7 @@ public abstract class CraftDragonBattleApiMixin {
 
     @Unique
     public List<EnderCrystal> getHealingCrystals() {
-        ServerLevel level;
-        try {
-            Field f = EndDragonFight.class.getDeclaredField("level");
-            f.setAccessible(true);
-            level = (ServerLevel) f.get(this.handle);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("NMS EndDragonFight.level not found", e);
-        }
+        ServerLevel level = this.handle.level;
         List<EnderCrystal> enderCrystals = new ArrayList<>();
         // Mirror of Paper's NMS getSpikeCrystals().
         for (net.minecraft.world.level.levelgen.feature.SpikeFeature.EndSpike spike :

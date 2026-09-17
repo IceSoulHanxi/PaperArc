@@ -33,6 +33,7 @@ public abstract class CraftProfileBanListApiMixin {
 
     @Unique
     private static MethodHandle paperarc$buildGameProfileHandle() {
+        // B2-1：目标是 CraftBukkit 类的成员，类名/成员名三端一致且不参与重映射，保留反射。
         try {
             Class<?> cbProfile = Class.forName("org.bukkit.craftbukkit.v.profile.CraftPlayerProfile");
             return MethodHandles.privateLookupIn(cbProfile, MethodHandles.lookup())

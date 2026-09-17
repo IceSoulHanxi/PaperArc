@@ -64,27 +64,12 @@ public abstract class CraftBlockStateApiMixin {
     }
 
     /**
-     * Paper reads {@code Block#hasCollision} through an access transformer.
-     * The field is protected in NeoForge mappings and we cannot widen it from
-     * a single-target mixin, so read it reflectively (Arclight runs
-     * Mojang-mapped at runtime).
+     * Paper reads {@code Block#hasCollision} through an access transformer;
+     * {@code paperarc.accesswidener} opens the same protected field.
      */
     @Unique
-    private volatile static Field paperarc$hasCollisionField;
-
-    @Unique
     private boolean paperarc$hasCollision(net.minecraft.world.level.block.Block block) {
-        try {
-            Field field = paperarc$hasCollisionField;
-            if (field == null) {
-                field = BlockBehaviour.class.getDeclaredField("hasCollision");
-                field.setAccessible(true);
-                paperarc$hasCollisionField = field;
-            }
-            return (Boolean) field.get(block);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Failed to access BlockBehaviour#hasCollision", e);
-        }
+        return block.hasCollision;
     }
 
     /**
