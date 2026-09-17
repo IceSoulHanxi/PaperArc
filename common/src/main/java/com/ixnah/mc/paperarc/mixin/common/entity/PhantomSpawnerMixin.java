@@ -34,6 +34,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * Note: Paper also stores {@code spawningEntity} on the NMS Phantom for
  * {@code CraftPhantom#getSpawningEntity}; that getter lives in CraftBukkit
  * (generated build), not mixinable here, so we do not track it.
+ * <p>
+ * {@code @Local(ordinal = 1) BlockPos} is mandatory: two BlockPos locals are in scope
+ * at the injection point (the player's blockPosition and the offset spawn position),
+ * so an implicit {@code @Local} matches nothing and MixinExtras silently yields
+ * <em>zero</em> injections — which used to hide behind {@code require = 0}.
+ * Ordinal 1 is the offset spawn position.
  */
 @Mixin(PhantomSpawner.class)
 public abstract class PhantomSpawnerMixin {
@@ -46,7 +52,7 @@ public abstract class PhantomSpawnerMixin {
         this.paperarc$abortSpawn = false;
     }
 
-    @WrapOperation(require = 0,
+    @WrapOperation(
             method = "tick",
             at = @At(
                     value = "INVOKE",
@@ -54,7 +60,7 @@ public abstract class PhantomSpawnerMixin {
             )
     )
     private Entity paperarc$phantomPreSpawn(EntityType<?> phantomType, Level level, Operation<Entity> original,
-                                            @Local ServerPlayer player, @Local BlockPos spawnPos) {
+                                            @Local ServerPlayer player, @Local(ordinal = 1) BlockPos spawnPos) {
         if (this.paperarc$abortSpawn) {
             return null;
         }

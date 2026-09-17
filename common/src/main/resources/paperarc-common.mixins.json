@@ -309,7 +309,6 @@
     "entity.RavagerMixin",
     "entity.ServerLevelHasEntityMoveEventMixin",
     "entity.TamableAnimalDeathMessageMixin",
-    "entity.ThrownEggHatchMixin",
     "entity.VillagerZapMixin",
     "entity.WolfDyeMixin",
     "inventory.CartographyTableMenuSlotsChangedMixin",
