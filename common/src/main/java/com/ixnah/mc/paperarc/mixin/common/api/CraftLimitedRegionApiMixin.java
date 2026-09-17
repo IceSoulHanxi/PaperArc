@@ -76,4 +76,13 @@ public abstract class CraftLimitedRegionApiMixin {
         this.getHandle().getBlockEntity(pos)
             .load(((CraftBlockEntityState<?>) state).getSnapshotNBT());
     }
+    /**
+     * {@code RegionAccessor extends Keyed}（A4-3 父接口差集）的终端方法。
+     * CraftWorld 运行时已有 getKey()，LimitedRegion 没有，取它所属世界的 key。
+     */
+    @Unique
+    public org.bukkit.NamespacedKey getKey() {
+        return ((org.bukkit.generator.LimitedRegion) (Object) this).getWorld().getKey();
+    }
+
 }

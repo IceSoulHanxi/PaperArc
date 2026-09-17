@@ -486,4 +486,11 @@ public abstract class CraftWorldApiMixin {
                 + "CraftWorldInfo holds neither");
     }
 
+    /** {@code ForwardingAudience#audiences()}（A4-3 父接口差集）：本世界的在线玩家。 */
+    @Unique
+    public Iterable<? extends net.kyori.adventure.audience.Audience> audiences() {
+        return new java.util.ArrayList<net.kyori.adventure.audience.Audience>(
+                ((org.bukkit.World) (Object) this).getPlayers());
+    }
+
 }

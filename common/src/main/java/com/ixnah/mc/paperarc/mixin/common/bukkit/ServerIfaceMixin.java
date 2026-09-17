@@ -7,9 +7,11 @@ import org.spongepowered.asm.mixin.Unique;
  * Interface augmentation for {@link org.bukkit.Server} (generated, trimmed for 1.20.1).
  * Adds 44 paper-api method declaration(s); implementations live in
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
+ *
+ * <p>A4-3 父接口差集：补上 paper 声明的父接口 {@code net.kyori.adventure.audience.ForwardingAudience}。终端方法 audiences() 在 CraftServerApiMixin 上。</p>
  */
 @Mixin(targets = "org.bukkit.Server", remap = false)
-public interface ServerIfaceMixin {
+public interface ServerIfaceMixin extends net.kyori.adventure.audience.ForwardingAudience {
 
     @Unique
     public abstract java.io.File getPluginsFolder();

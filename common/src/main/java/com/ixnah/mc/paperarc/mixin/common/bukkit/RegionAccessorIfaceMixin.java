@@ -7,9 +7,11 @@ import org.spongepowered.asm.mixin.Unique;
  * Interface augmentation for {@link org.bukkit.RegionAccessor} (generated, trimmed for 1.20.1).
  * Adds 5 paper-api method declaration(s); implementations live in
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
+ *
+ * <p>A4-3 父接口差集：补上 paper 声明的父接口 {@code org.bukkit.Keyed}。终端方法 getKey() 在 CraftWorld 上运行时已有，CraftLimitedRegion 由 CraftLimitedRegionApiMixin 补。</p>
  */
 @Mixin(targets = "org.bukkit.RegionAccessor", remap = false)
-public interface RegionAccessorIfaceMixin {
+public interface RegionAccessorIfaceMixin extends org.bukkit.Keyed {
 
     @Unique
     public abstract org.bukkit.block.Biome getComputedBiome(int p0, int p1, int p2);

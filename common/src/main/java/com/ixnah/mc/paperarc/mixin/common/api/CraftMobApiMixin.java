@@ -120,4 +120,26 @@ public abstract class CraftMobApiMixin {
         }
         return this.pathfinder;
     }
+    // ===== com.destroystokyo.paper.entity.RangedEntity（A4-3 父接口差集）=====
+    // AbstractSkeleton/Drowned/Illusioner/Llama/Piglin/Pillager/Snowman/Witch/Wither
+    // 共 9 个接口都 extends RangedEntity，对应的 NMS 实体都实现 RangedAttackMob，
+    // 所以实现体只需挂在公共宿主 CraftMob 上一次。
+
+    @Unique
+    public void rangedAttack(org.bukkit.entity.LivingEntity target, float charge) {
+        com.google.common.base.Preconditions.checkArgument(target != null, "target cannot be null");
+        net.minecraft.world.entity.Mob handle = this.getHandle();
+        com.google.common.base.Preconditions.checkState(
+                handle instanceof net.minecraft.world.entity.monster.RangedAttackMob,
+                "entity is not a ranged attacker");
+        ((net.minecraft.world.entity.monster.RangedAttackMob) handle).performRangedAttack(
+                ((org.bukkit.craftbukkit.v.entity.CraftLivingEntity) target).getHandle(), charge);
+    }
+
+    @Unique
+    public void setChargingAttack(boolean raiseHands) {
+        // 与 Paper 一致：抬手动作就是 vanilla 的 aggressive 标志
+        this.getHandle().setAggressive(raiseHands);
+    }
+
 }

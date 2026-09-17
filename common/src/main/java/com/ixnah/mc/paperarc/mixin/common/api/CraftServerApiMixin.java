@@ -547,4 +547,17 @@ public abstract class CraftServerApiMixin {
     public org.bukkit.command.CommandMap getCommandMap() {
         return ((org.bukkit.craftbukkit.v.CraftServer) (Object) this).getCommandMap();
     }
+    /**
+     * {@code ForwardingAudience#audiences()}（A4-3 父接口差集）：与 Paper 一致，
+     * 在线玩家 + 控制台。
+     */
+    @Unique
+    public Iterable<? extends net.kyori.adventure.audience.Audience> audiences() {
+        org.bukkit.Server server = (org.bukkit.Server) (Object) this;
+        java.util.List<net.kyori.adventure.audience.Audience> out =
+                new java.util.ArrayList<>(server.getOnlinePlayers());
+        out.add(server.getConsoleSender());
+        return out;
+    }
+
 }

@@ -222,4 +222,13 @@ public abstract class CraftBlockApiMixin {
         // Paper 同款：能掉落物即视为有效工具（getDrops(ItemStack) 为宿主已有方法）
         return !this.getDrops(itemStack).isEmpty();
     }
+    /**
+     * {@code net.kyori.adventure.translation.Translatable#translationKey()}（A4-3 父接口差集）。
+     * 运行时 CraftBlock 已有同语义的 {@code getTranslationKey()}，直接转调。
+     */
+    @Unique
+    public String translationKey() {
+        return ((org.bukkit.block.Block) (Object) this).getTranslationKey();
+    }
+
 }
