@@ -8,5 +8,5 @@ import org.spongepowered.asm.mixin.Unique;
  * getInventory/getSnapshotInventory 运行时已有，只补继承关系。注意与 DecoratedPotIfaceMixin（块数据接口）不是一回事。
  */
 @Mixin(targets = "org.bukkit.block.DecoratedPot", remap = false)
-public interface BlockDecoratedPotIfaceMixin extends io.papermc.paper.block.TileStateInventoryHolder {
+public interface BlockDecoratedPotIfaceMixin extends io.papermc.paper.block.TileStateInventoryHolder, org.bukkit.loot.Lootable {
 }

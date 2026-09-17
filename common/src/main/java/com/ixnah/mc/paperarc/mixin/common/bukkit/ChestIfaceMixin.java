@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Unique;
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
  */
 @Mixin(targets = "org.bukkit.block.Chest", remap = false)
-public interface ChestIfaceMixin {
+public interface ChestIfaceMixin extends com.destroystokyo.paper.loottable.LootableBlockInventory {
 
     @Unique
     public abstract boolean isBlocked();

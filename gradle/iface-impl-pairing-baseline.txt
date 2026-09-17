@@ -4,11 +4,6 @@
 # 2026-09-17 B2-4：建立时的 29 条 NO_IMPL 与 PARTIAL_IMPL 抓出来的 36 条已全部实现，
 # 只剩下面三条脚本口径造成的误报。
 
-# 实现体故意挂在公共基类 CraftBlockEntityState 上（它本身不实现 Nameable，
-# 但所有实现 Nameable 的方块状态都继承它），脚本要求宿主自己实现该接口，属误报。
-NO_DECL org/bukkit/craftbukkit/v/block/CraftBlockEntityState#customName/0
-NO_DECL org/bukkit/craftbukkit/v/block/CraftBlockEntityState#customName/1
-
 # Plugin 的具体实现类是**插件自己的主类**，不在 org.bukkit 里；脚本只扫运行时 jar，
 # 找不到具体实现类。实际实现体在 api/JavaPluginApiMixin 上（探针 P12 已验证 pluginMeta）。
 NO_RUNTIME_IMPLCLASS org/bukkit/plugin/Plugin#getPluginMeta/0

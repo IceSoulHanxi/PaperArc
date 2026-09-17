@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Unique;
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
  */
 @Mixin(targets = "org.bukkit.block.Hopper", remap = false)
-public interface HopperIfaceMixin {
+public interface HopperIfaceMixin extends com.destroystokyo.paper.loottable.LootableBlockInventory {
 
     @Unique
     public abstract void setTransferCooldown(int p0);

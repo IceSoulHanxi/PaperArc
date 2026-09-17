@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Unique;
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).
  */
 @Mixin(targets = "org.bukkit.entity.minecart.HopperMinecart", remap = false)
-public interface HopperMinecartIfaceMixin {
+public interface HopperMinecartIfaceMixin extends com.destroystokyo.paper.loottable.LootableEntityInventory {
 
     @Unique
     public abstract int getPickupCooldown();
