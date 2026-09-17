@@ -41,10 +41,10 @@ public abstract class CraftWitherApiMixin {
 
     @Unique
     public boolean canTravelThroughPortals() {
-        // 1.21.1：无参的 canChangeDimensions() 已换成 canUsePortal(boolean)
-        //（无参版在 1.20.1 存在；1.21.1 只剩 canChangeDimensions(Level, Level)）。
-        // allowPassengers=false 对应 Paper 这里的语义：只问实体自身能不能走传送门。
-        return this.getHandle().canUsePortal(false);
+        // Paper 读的是它自己加在 WitherBoss 上的 canPortal 字段（由 WitherBossFieldsMixin 注入），
+        // 不是 vanilla 的 canUsePortal —— 否则 setCanTravelThroughPortals 写进去的值读不回来
+        // （探针 P14 实测 set(true) 后 get 仍是 false）。
+        return ((WitherBossBridge) this.getHandle()).paper$canPortal();
     }
 
     @Unique
