@@ -31,6 +31,9 @@ public abstract class EntityFieldsMixin implements EntityBridge {
     @Unique
     public UUID originWorld; // Paper
 
+    @Unique
+    public net.kyori.adventure.util.TriState frictionState = net.kyori.adventure.util.TriState.NOT_SET; // Paper
+
     @Override
     public boolean paper$fixedPose() {
         return this.fixedPose;
@@ -65,5 +68,15 @@ public abstract class EntityFieldsMixin implements EntityBridge {
     @Override
     public UUID getOriginWorld() {
         return this.originWorld;
+    }
+
+    @Override
+    public net.kyori.adventure.util.TriState paper$frictionState() {
+        return this.frictionState;
+    }
+
+    @Override
+    public void paper$setFrictionState(net.kyori.adventure.util.TriState state) {
+        this.frictionState = state == null ? net.kyori.adventure.util.TriState.NOT_SET : state;
     }
 }

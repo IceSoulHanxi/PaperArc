@@ -24,4 +24,8 @@ public interface EntityBridge {
     org.bukkit.util.Vector getOriginVector();
 
     java.util.UUID getOriginWorld();
+
+    net.kyori.adventure.util.TriState paper$frictionState();
+
+    void paper$setFrictionState(net.kyori.adventure.util.TriState state);
 }

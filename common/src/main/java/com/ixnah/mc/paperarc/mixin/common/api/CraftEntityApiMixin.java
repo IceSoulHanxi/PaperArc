@@ -507,4 +507,20 @@ public abstract class CraftEntityApiMixin {
                 : net.minecraft.network.chat.Component.Serializer.fromJson(
                         net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson().serialize(customName)));
     }
+    // ===== io.papermc.paper.entity.Frictional（A4-3 父接口差集）=====
+    // Item 与 LivingEntity 两个接口都 extends Frictional，公共宿主是 CraftEntity。
+    // 偏差：这里只保存/回读状态，没有接进 NMS 的移动摩擦计算（Paper 是在
+    // LivingEntity#travel / Entity#move 里按该状态改 friction）；已记 docs/gaps.md。
+
+    @Unique
+    public net.kyori.adventure.util.TriState getFrictionState() {
+        return ((com.ixnah.mc.paperarc.bridge.EntityBridge) this.getHandle()).paper$frictionState();
+    }
+
+    @Unique
+    public void setFrictionState(net.kyori.adventure.util.TriState state) {
+        com.google.common.base.Preconditions.checkArgument(state != null, "state cannot be null");
+        ((com.ixnah.mc.paperarc.bridge.EntityBridge) this.getHandle()).paper$setFrictionState(state);
+    }
+
 }

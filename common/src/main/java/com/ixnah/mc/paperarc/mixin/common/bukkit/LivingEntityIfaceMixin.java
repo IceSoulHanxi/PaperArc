@@ -7,9 +7,11 @@ import org.spongepowered.asm.mixin.Unique;
  * Interface augmentation for {@link org.bukkit.entity.LivingEntity} (generated, trimmed for 1.20.1).
  * Adds 31 paper-api method declaration(s); implementations live in
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
+ *
+ * <p>A4-3 父接口差集：补上 paper 声明的父接口 {@code io.papermc.paper.entity.Frictional}。终端方法在 CraftEntityApiMixin 上（只存状态，不接物理计算，见 docs/gaps.md）。</p>
  */
 @Mixin(targets = "org.bukkit.entity.LivingEntity", remap = false)
-public interface LivingEntityIfaceMixin {
+public interface LivingEntityIfaceMixin extends io.papermc.paper.entity.Frictional {
 
     @Unique
     public abstract org.bukkit.block.Block getTargetBlock(int p0, com.destroystokyo.paper.block.TargetBlockInfo.FluidMode p1);
