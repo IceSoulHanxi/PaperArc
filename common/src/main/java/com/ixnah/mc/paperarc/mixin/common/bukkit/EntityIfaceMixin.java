@@ -128,5 +128,26 @@ public interface EntityIfaceMixin extends HoverEventSource<HoverEvent.ShowEntity
     public abstract boolean teleport(org.bukkit.Location p0, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause p1, io.papermc.paper.entity.TeleportFlag[] p2);
 
     @Unique
-    public abstract java.util.concurrent.CompletableFuture teleportAsync(org.bukkit.Location p0, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause p1, io.papermc.paper.entity.TeleportFlag[] p2);
+    public abstract java.util.concurrent.CompletableFuture<java.lang.Boolean> teleportAsync(org.bukkit.Location p0, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause p1, io.papermc.paper.entity.TeleportFlag[] p2);
+
+    // paper-api 的 teleportAsync 另外两个重载是 default 方法，运行时接口里没有 ——
+    // 插件调 entity.teleportAsync(loc) 直接 NoSuchMethodError。方法体照抄 paper-api：
+    // 先异步取目标区块，再在回调（主线程）里同步传送。
+    @Unique
+    public default java.util.concurrent.CompletableFuture<java.lang.Boolean> teleportAsync(org.bukkit.Location loc) {
+        return teleportAsync(loc, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.PLUGIN);
+    }
+
+    @Unique
+    public default java.util.concurrent.CompletableFuture<java.lang.Boolean> teleportAsync(
+            org.bukkit.Location loc, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause cause) {
+        java.util.concurrent.CompletableFuture<java.lang.Boolean> future = new java.util.concurrent.CompletableFuture<>();
+        loc.getWorld().getChunkAtAsync(loc)
+                .thenAccept(chunk -> future.complete(((org.bukkit.entity.Entity) this).teleport(loc, cause)))
+                .exceptionally(ex -> {
+                    future.completeExceptionally(ex);
+                    return null;
+                });
+        return future;
+    }
 }
