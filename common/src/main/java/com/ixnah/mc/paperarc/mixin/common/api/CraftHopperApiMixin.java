@@ -47,16 +47,5 @@ public abstract class CraftHopperApiMixin {
         ((HopperBlockEntityInvokerMixin) (Object) this.getSnapshot()).paperarc$invokeSetCooldown(cooldown);
     }
 
-    @Unique
-    public boolean isEnabled() {
-        return ((Hopper) this.getBlockData()).isEnabled();
-    }
-
-    @Unique
-    public void setEnabled(final boolean enabled) {
-        Hopper blockData = (Hopper) this.getBlockData();
-        blockData.setEnabled(enabled);
-        this.setBlockData(blockData);
-    }
     // Paper end - Expanded Hopper API
 }

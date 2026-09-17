@@ -1,0 +1,36 @@
+# check-iface-impl-pairing.py 的基线（B2-1c 建立，2026-09-17）。
+# 每行一条已知问题；门禁只对**新增**条目失败。修掉一条就从这里删一行。
+#
+# 下面全部是 NO_IMPL：IfaceMixin 上声明了 @Unique public abstract，但该接口在运行时的
+# 任何实现类上都没有实现体 —— 插件调用即 AbstractMethodError。它们同时也是
+# audit.py 的盲区（审计只看"运行时接口缺不缺这个抽象方法"，补了声明就算覆盖，
+# 不检查有没有实现体）。实现工作并入 B2-4「B7/B10 剩余缺口」，随那一项逐条清零。
+NO_IMPL org/bukkit/Server#getRegionScheduler/0
+NO_IMPL org/bukkit/Server#reloadCommandAliases/0
+NO_IMPL org/bukkit/Server#removeRecipe/2
+NO_IMPL org/bukkit/Server#updateRecipes/0
+NO_IMPL org/bukkit/Server#updateResources/0
+NO_IMPL org/bukkit/block/Beacon#getEffectRange/0
+NO_IMPL org/bukkit/block/Beacon#resetEffectRange/0
+NO_IMPL org/bukkit/block/Beacon#setEffectRange/1
+NO_IMPL org/bukkit/block/Campfire#startCooking/0
+NO_IMPL org/bukkit/block/Campfire#stopCooking/0
+NO_IMPL org/bukkit/entity/Player#getViewDistance/0
+NO_IMPL org/bukkit/entity/Player#getWardenTimeSinceLastWarning/0
+NO_IMPL org/bukkit/entity/Player#getWardenWarningCooldown/0
+NO_IMPL org/bukkit/entity/Player#getWardenWarningLevel/0
+NO_IMPL org/bukkit/entity/Player#giveExp/2
+NO_IMPL org/bukkit/entity/Player#hasFlyingFallDamage/0
+NO_IMPL org/bukkit/entity/Player#hasSeenWinScreen/0
+NO_IMPL org/bukkit/entity/Player#hideTitle/0
+NO_IMPL org/bukkit/entity/Player#increaseWardenWarningLevel/0
+NO_IMPL org/bukkit/entity/Player#isChunkSent/1
+NO_IMPL org/bukkit/entity/Player#isListed/1
+NO_IMPL org/bukkit/entity/Player#kick/0
+NO_IMPL org/bukkit/entity/Player#kick/1
+NO_IMPL org/bukkit/entity/Player#kick/2
+NO_IMPL org/bukkit/entity/Player#listPlayer/1
+NO_IMPL org/bukkit/entity/Player#locale/0
+NO_IMPL org/bukkit/entity/Player#lookAt/3
+NO_IMPL org/bukkit/entity/Player#lookAt/4
+NO_IMPL org/bukkit/entity/Player#playerListFooter/0

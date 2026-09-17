@@ -62,15 +62,4 @@ public abstract class CraftSculkSensorApiMixin {
     }
     // Paper end - Configurable sculk sensor listener range
 
-    @Unique
-    public SculkSensor.Phase getPhase() {
-        return ((SculkSensor) this.getBlockData()).getPhase();
-    }
-
-    @Unique
-    public void setPhase(SculkSensor.Phase phase) {
-        SculkSensor blockData = (SculkSensor) this.getBlockData();
-        blockData.setPhase(phase);
-        this.setBlockData(blockData);
-    }
 }

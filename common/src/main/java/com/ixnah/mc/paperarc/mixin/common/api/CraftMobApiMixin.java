@@ -24,6 +24,8 @@ public abstract class CraftMobApiMixin {
     public int getHeadRotationSpeed() {
         return this.getHandle().getHeadRotSpeed();
     }
+
+    @Unique
     public int getMaxHeadPitch() {
         return this.getHandle().getMaxHeadXRot();
     }

@@ -58,14 +58,4 @@ public abstract class CraftSculkCatalystApiMixin {
             BlockPos.containing(position.x(), position.y(), position.z()), charge);
     }
 
-    @Unique
-    public boolean isBloom() {
-        return (this.paperarc$bloom != null ? this.paperarc$bloom : (Boolean.FALSE));
-    }
-
-    @Unique
-    public void setBloom(boolean bloom) {
-        this.paperarc$bloom = bloom;
-    }
-
 }

@@ -110,8 +110,47 @@ subprojects {
         }
     }
 
+    // IfaceMixin 声明 <-> ApiMixin 实现 两侧配套核对（B2-1c）。
+    // 规则见 tools/scripts/check-iface-impl-pairing.py：
+    //   NO_DECL —— 有实现体但接口上没声明，插件经接口调用即 NoSuchMethodError；
+    //   NO_IMPL —— 有声明但任何运行时实现类都没有实现体，调用即 AbstractMethodError。
+    // 判定需要运行时 jar（Arclight / spigot-deobf / paper-api），这些都在仓库之外，
+    // 所以脚本或 jar 不可用时只警告不失败（CI 里退化为 no-op）。
+    if (project.name == 'common') {
+        tasks.register('checkIfaceImplPairing') {
+            def script = rootProject.file('../tools/scripts/check-iface-impl-pairing.py')
+            def repoRoot = rootProject.projectDir
+            inputs.dir(file('src/main/java')).optional()
+            outputs.upToDateWhen { false }
+            doLast {
+                if (!script.isFile()) {
+                    logger.warn("checkIfaceImplPairing: 找不到 ${script}，跳过")
+                    return
+                }
+                def out = new ByteArrayOutputStream()
+                def result = project.exec {
+                    commandLine 'python3', script.absolutePath, repoRoot.absolutePath
+                    ignoreExitValue = true
+                    standardOutput = out
+                    errorOutput = out
+                }
+                def text = out.toString()
+                if (result.exitValue == 2) {
+                    logger.warn("checkIfaceImplPairing: 运行时 jar 不可用，跳过\n${text}")
+                } else if (result.exitValue != 0) {
+                    throw new GradleException("IfaceMixin 声明与实现不配套:\n${text}")
+                } else {
+                    logger.lifecycle("checkIfaceImplPairing: ${text.trim()}")
+                }
+            }
+        }
+    }
+
     tasks.named('check') {
         dependsOn 'checkMixinRegistry'
+        if (project.name == 'common') {
+            dependsOn 'checkIfaceImplPairing'
+        }
     }
 
     // AccessWidener -> Forge/NeoForge AccessTransformer。

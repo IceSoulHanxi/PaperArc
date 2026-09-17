@@ -58,13 +58,4 @@ public abstract class CraftWitherApiMixin {
         this.getHandle().makeInvulnerable();
     }
 
-    /** Paper 在 WitherBoss 上覆写 canChangeDimensions 以尊重 API 开关；1.21.1 改成两参签名。 */
-    @Unique
-    public boolean canChangeDimensions(net.minecraft.world.level.Level from,
-                                       net.minecraft.world.level.Level to) {
-        if (!((WitherBossBridge) this.getHandle()).paper$canPortal()) {
-            return false;
-        }
-        return this.getHandle().canChangeDimensions(from, to);
-    }
 }

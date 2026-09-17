@@ -55,15 +55,4 @@ public abstract class CraftCommandBlockApiMixin {
         this.getSnapshot().getCommandBlock().setCustomName(vanilla);
     }
 
-    @Unique
-    public boolean isConditional() {
-        return ((CommandBlock) this.getBlockData()).isConditional();
-    }
-
-    @Unique
-    public void setConditional(boolean conditional) {
-        CommandBlock data = (CommandBlock) this.getBlockData();
-        data.setConditional(conditional);
-        this.setBlockData(data);
-    }
 }
