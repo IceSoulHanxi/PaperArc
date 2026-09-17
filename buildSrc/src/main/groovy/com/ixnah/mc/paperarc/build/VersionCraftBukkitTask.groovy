@@ -67,6 +67,12 @@ abstract class VersionCraftBukkitTask extends DefaultTask {
                         def rw = rewriteClass(data, rev)
                         if (rw != null) { data = rw; classes++ }
                     } else if (e.name == 'META-INF/MANIFEST.MF') {
+                        // 必须置位：否则下面会再追加一个 MANIFEST.MF。
+                        // JarInputStream 只在清单是**第一个**条目时自己吞掉它；本任务把清单
+                        // 追加到末尾，于是第二次跑同一个 jar 时清单会被循环读到，
+                        // 不置位就 ZipException: duplicate entry: META-INF/MANIFEST.MF
+                        //（凡是 jar 没重新生成就重跑本任务都会踩，例如只改了 common 的代码）。
+                        sawManifest = true
                         def text = new String(data, java.nio.charset.StandardCharsets.UTF_8)
                         def cfg = mixinConfigs.getOrNull()
                         if (cfg && !text.contains('MixinConfigs:')) {
