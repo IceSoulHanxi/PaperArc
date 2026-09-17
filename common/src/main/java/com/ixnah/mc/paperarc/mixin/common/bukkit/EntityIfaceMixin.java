@@ -13,11 +13,29 @@ import org.spongepowered.asm.mixin.Unique;
  *
  * <p>paper-api 的 {@code Entity extends HoverEventSource<HoverEvent.ShowEntity>, Sound.Emitter}；
  * Mixin 会把 mixin 自身的父接口合并到接口目标上（B4b，Phase A2-1 已实测）。
- * {@code Sound.Emitter} 无抽象方法，纯标记；{@code asHoverEvent} 的实现体在
- * {@code CraftEntityApiMixin}。
+ * {@code Sound.Emitter} 无抽象方法，纯标记；{@code asHoverEvent} 是 paper 在
+ * {@code Entity} 上给的 default 实现，照抄在下面。
  */
 @Mixin(targets = "org.bukkit.entity.Entity", remap = false)
 public interface EntityIfaceMixin extends HoverEventSource<HoverEvent.ShowEntity>, Sound.Emitter {
+
+    /**
+     * paper-api {@code Entity#asHoverEvent} 的 default 方法体。
+     *
+     * <p>与 paper 的唯一差别：paper 的 {@code NamespacedKey} 自己实现了 adventure 的
+     * {@code Key}，可以直接塞进 {@code ShowEntity.of}；Arclight 运行时的
+     * {@code NamespacedKey} 没有这层继承（是 final class，补不了），所以就地转成
+     * {@code Key.key(namespace, key)}。
+     */
+    @Unique
+    public default HoverEvent<HoverEvent.ShowEntity> asHoverEvent(
+            java.util.function.UnaryOperator<HoverEvent.ShowEntity> op) {
+        org.bukkit.entity.Entity self = (org.bukkit.entity.Entity) this;
+        org.bukkit.NamespacedKey type = self.getType().getKey();
+        return HoverEvent.showEntity(op.apply(HoverEvent.ShowEntity.of(
+                net.kyori.adventure.key.Key.key(type.getNamespace(), type.getKey()),
+                self.getUniqueId(), self.customName())));
+    }
 
     @Unique
     public abstract void setInvisible(boolean p0);
