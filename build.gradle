@@ -146,8 +146,43 @@ subprojects {
         }
     }
 
+    // B2-3：require = 0 会把"注入一个都没命中"变成静默降级，1.20.1 与 main 加起来
+    // 已经藏了 5 个从未生效的注入。全仓清零后立门禁：新写的注入不许再用 require = 0，
+    // 确实锚不住的要像 ThrownEggHatch / EntityTeleportEndGateway 那样删掉并记 docs/gaps.md。
+    tasks.register('checkNoSilentInjections') {
+        def javaDir = file('src/main/java')
+        inputs.dir(javaDir).optional()
+        outputs.upToDateWhen { false }
+        doLast {
+            if (!javaDir.isDirectory()) {
+                return
+            }
+            def hits = []
+            javaDir.eachFileRecurse(groovy.io.FileType.FILES) { f ->
+                if (!f.name.endsWith('.java')) {
+                    return
+                }
+                f.eachLine { line, n ->
+                    // 只看代码行，注释里提到 require = 0 是允许的
+                    def code = line.replaceAll('//.*$', '')
+                    if (code.trim().startsWith('*')) {
+                        return
+                    }
+                    if (code =~ /require\s*=\s*0\b/) {
+                        hits << "${f.name}:${n}: ${line.trim()}"
+                    }
+                }
+            }
+            if (hits) {
+                throw new GradleException("注入不许用 require = 0（静默降级）:\n  " + hits.join('\n  '))
+            }
+            logger.lifecycle("checkNoSilentInjections(${project.name}): OK")
+        }
+    }
+
     tasks.named('check') {
         dependsOn 'checkMixinRegistry'
+        dependsOn 'checkNoSilentInjections'
         if (project.name == 'common') {
             dependsOn 'checkIfaceImplPairing'
             dependsOn rootProject.tasks.named('checkLoaderMixinParity')

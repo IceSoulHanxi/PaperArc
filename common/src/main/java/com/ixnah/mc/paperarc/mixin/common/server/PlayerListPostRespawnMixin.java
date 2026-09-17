@@ -34,7 +34,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  *   <li>Inject AFTER its sendAllPlayerInfo INVOKE fires the event once all
  *       teleport/bed-spawn state is final — matching Paper's placement.</li>
  * </ul>
- * require = 0 keeps boot safe if Arclight refactors the handler.
+ * <p>两个 {@code @At} 的 target 锚的都是 **vanilla** 成员
+ * （{@code ServerPlayer#findRespawnPositionAndUseSpawnBlock}、
+ * {@code PlayerList#sendAllPlayerInfo}），必须走 refmap（默认 {@code remap = true}）。
+ * 此前写了 {@code remap = false} + mojmap 字面名，Fabric 的 intermediary 运行时恒不命中，
+ * 而 {@code require = 0} 把它盖住了（B2-3 实测）。{@code method} 选择器里的
+ * 5 参 respawn 重载虽然是 Arclight 加的，但形参类型全是注解处理器能解析的类型，
+ * refmap 条目正常生成，所以那里保留全描述符。
  */
 @Mixin(PlayerList.class)
 public abstract class PlayerListPostRespawnMixin {
@@ -42,6 +48,7 @@ public abstract class PlayerListPostRespawnMixin {
     @Unique
     private static final ThreadLocal<RespawnCapture> paperarc$state = new ThreadLocal<>();
 
+    @Unique
     private static final String PAPERARC$RESPAWN =
             "respawn(Lnet/minecraft/server/level/ServerPlayer;ZLnet/minecraft/world/entity/Entity$RemovalReason;"
             + "Lorg/bukkit/event/player/PlayerRespawnEvent$RespawnReason;Lorg/bukkit/Location;)"
@@ -51,10 +58,8 @@ public abstract class PlayerListPostRespawnMixin {
         method = PAPERARC$RESPAWN,
         at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/server/level/ServerPlayer;findRespawnPositionAndUseSpawnBlock(ZLnet/minecraft/world/level/portal/DimensionTransition$PostDimensionTransition;)Lnet/minecraft/world/level/portal/DimensionTransition;",
-            remap = false
-        ),
-        require = 0
+            target = "Lnet/minecraft/server/level/ServerPlayer;findRespawnPositionAndUseSpawnBlock(ZLnet/minecraft/world/level/portal/DimensionTransition$PostDimensionTransition;)Lnet/minecraft/world/level/portal/DimensionTransition;"
+        )
     )
     private DimensionTransition paperarc$recordRespawn(ServerPlayer player, boolean flag,
                                                        DimensionTransition.PostDimensionTransition postTransition,
@@ -82,10 +87,8 @@ public abstract class PlayerListPostRespawnMixin {
         at = @At(
             value = "INVOKE",
             shift = At.Shift.AFTER,
-            target = "Lnet/minecraft/server/players/PlayerList;sendAllPlayerInfo(Lnet/minecraft/server/level/ServerPlayer;)V",
-            remap = false
-        ),
-        require = 0
+            target = "Lnet/minecraft/server/players/PlayerList;sendAllPlayerInfo(Lnet/minecraft/server/level/ServerPlayer;)V"
+        )
     )
     private void paperarc$onPostRespawn(ServerPlayer player, boolean flag, Entity.RemovalReason reason,
                                         org.bukkit.event.player.PlayerRespawnEvent.RespawnReason respawnReason,

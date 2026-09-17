@@ -22,19 +22,26 @@ import org.spongepowered.asm.mixin.injection.At;
  * 签名 (DamageSource;F)EntityDamageEvent），resetAttackStrengthTicker 调用
  * 位于其冷却拒绝分支内。本 wrap 锚定该合并后的处理方法；取消 = 不调用
  * original（跳过 reset），与 Paper 的 if (...callEvent()) { reset } 分支等价。
- * require = 0 保证 Arclight 上游重构时静默降级而非启动崩。
+ * <p>两条 1.21.1 特有的写法约束（B2-3 实测）：
+ * ① {@code method} 只能写 Arclight 方法**名**、并且整条注解 {@code remap = false} ——
+ *    写全描述符的话，描述符里的 {@code DamageSource} 在 Fabric 运行时是 {@code class_1282}，
+ *    而 {@code arclight$fireEntityDamageEvent} 本身不在 mapping 里、注解处理器生成不出 refmap 条目，
+ *    于是整条按字面 mojmap 匹配，Fabric 上恒不命中（checklist §1.6 k）。
+ * ② 但 {@code @At} 的 target 锚的是 **vanilla** 的
+ *    {@code Player#resetAttackStrengthTicker}，必须显式 {@code remap = true} 走 refmap，
+ *    否则会继承外层的 {@code remap = false}。
  */
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityAttackCooldownResetMixin {
 
     @WrapOperation(
-        method = "arclight$fireEntityDamageEvent(Lnet/minecraft/world/damagesource/DamageSource;F)Lorg/bukkit/event/entity/EntityDamageEvent;",
+        method = "arclight$fireEntityDamageEvent",
+        remap = false,
         at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/world/entity/player/Player;resetAttackStrengthTicker()V",
-            remap = false
-        ),
-        require = 0
+            remap = true
+        )
     )
     private void paperarc$onCooldownReset(Player attacker, Operation<Void> original) {
         if (!(attacker instanceof ServerPlayer serverPlayer)) {

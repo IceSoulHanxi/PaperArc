@@ -46,7 +46,12 @@ public abstract class PhantomSpawnerMixin {
         this.paperarc$abortSpawn = false;
     }
 
-    @WrapOperation(require = 0,
+    /**
+     * {@code @Local(ordinal = 1) BlockPos} 是必须的：注入点处有两个 BlockPos 局部
+     *（玩家所在方块与偏移后的生成坐标），隐式 @Local 无法消歧，MixinExtras 会静默产出
+     * **零**注入 —— 此前一直藏在 require = 0 后面（与 1.20.1 A7 同一个坑）。ordinal 1 是生成坐标。
+     */
+    @WrapOperation(
             method = "tick",
             at = @At(
                     value = "INVOKE",
@@ -54,7 +59,7 @@ public abstract class PhantomSpawnerMixin {
             )
     )
     private Entity paperarc$phantomPreSpawn(EntityType<?> phantomType, Level level, Operation<Entity> original,
-                                            @Local ServerPlayer player, @Local BlockPos spawnPos) {
+                                            @Local ServerPlayer player, @Local(ordinal = 1) BlockPos spawnPos) {
         if (this.paperarc$abortSpawn) {
             return null;
         }
