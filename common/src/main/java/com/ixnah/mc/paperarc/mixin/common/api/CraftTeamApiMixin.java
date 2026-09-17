@@ -57,7 +57,7 @@ public abstract class CraftTeamApiMixin {
     public void addEntity(Entity entity) {
         Preconditions.checkArgument(entity != null, "Entity cannot be null");
         this.checkState();
-        this.addEntry(entity.getUniqueId().toString());
+        this.addEntry(paperarc$scoreboardName(entity));
     }
 
     @Unique
@@ -142,13 +142,13 @@ public abstract class CraftTeamApiMixin {
     @Unique
     public boolean hasEntity(Entity entity) {
         Preconditions.checkArgument(entity != null, "Entity cannot be null");
-        return this.hasEntry(entity.getUniqueId().toString());
+        return this.hasEntry(paperarc$scoreboardName(entity));
     }
 
     @Unique
     public boolean removeEntity(Entity entity) {
         Preconditions.checkArgument(entity != null, "Entity cannot be null");
-        return this.removeEntry(entity.getUniqueId().toString());
+        return this.removeEntry(paperarc$scoreboardName(entity));
     }
 
     @Unique
@@ -193,4 +193,16 @@ public abstract class CraftTeamApiMixin {
     private static net.minecraft.server.MinecraftServer paperarc$nmsServer() {
         return ((org.bukkit.craftbukkit.v.CraftServer) PaperArcBridge.getServer()).getServer();
     }
+    /**
+     * 记分板条目名必须用 NMS {@code Entity#getScoreboardName()}（Paper
+     * Improve-scoreboard-entries.patch 六个方法统一用它）：玩家是用户名，其余实体是 UUID 串。
+     * 原先 CraftTeam 侧写死 UUID 串、CraftScoreboard 侧写 Bukkit {@code Entity#getName()}
+     * （非玩家返回 "entity.minecraft.xxx" 翻译键），两边键不一致 ——
+     * addEntity() 之后 getEntityTeam() 恒返回 null（A4-5 探针 P11b 实测）。
+     */
+    @Unique
+    private static String paperarc$scoreboardName(org.bukkit.entity.Entity entity) {
+        return ((org.bukkit.craftbukkit.v.entity.CraftEntity) entity).getHandle().getScoreboardName();
+    }
+
 }

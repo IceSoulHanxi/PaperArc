@@ -71,7 +71,8 @@ public interface BlockIfaceMixin extends net.kyori.adventure.translation.Transla
     @Unique
     public default long getBlockKey() {
         org.bukkit.block.Block self = (org.bukkit.block.Block) this;
-        return self.getX() & 0x3FFFFFFL | (self.getZ() & 0x3FFFFFFL) << 26 | (long) self.getY() << 52;
+        // 位宽与 paper 的 World#getBlockAtKey 解码一致：x/z 各 27 位、y 放高 10 位
+        return (self.getX() & 0x7FFFFFFL) | ((self.getZ() & 0x7FFFFFFL) << 27) | ((long) self.getY() << 54);
     }
 
     @Unique
