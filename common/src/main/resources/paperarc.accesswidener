@@ -34,3 +34,7 @@ accessible method net/minecraft/world/entity/projectile/Projectile onHit (Lnet/m
 
 # FallingBlockEntity: private block state mirror (CraftFallingBlockApiMixin)
 accessible field net/minecraft/world/entity/item/FallingBlockEntity blockState Lnet/minecraft/world/level/block/state/BlockState;
+
+# NetworkClient（Player.getProtocolVersion/getVirtualHost）：连接对象在 1.21.1 上移到了
+# ServerCommonPacketListenerImpl，且是 protected（ServerHandshakeNetworkClientMixin / CraftPlayerApiMixin）
+accessible field net/minecraft/server/network/ServerCommonPacketListenerImpl connection Lnet/minecraft/network/Connection;

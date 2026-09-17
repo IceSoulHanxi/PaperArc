@@ -1,5 +1,8 @@
 package com.ixnah.mc.paperarc.mixin.common.bukkit;
 
+import net.kyori.adventure.sound.Sound;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.event.HoverEventSource;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -7,9 +10,14 @@ import org.spongepowered.asm.mixin.Unique;
  * Interface augmentation for {@link org.bukkit.entity.Entity} (generated).
  * Adds 35 paper-api method declaration(s); implementations live in
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
+ *
+ * <p>paper-api 的 {@code Entity extends HoverEventSource<HoverEvent.ShowEntity>, Sound.Emitter}；
+ * Mixin 会把 mixin 自身的父接口合并到接口目标上（B4b，Phase A2-1 已实测）。
+ * {@code Sound.Emitter} 无抽象方法，纯标记；{@code asHoverEvent} 的实现体在
+ * {@code CraftEntityApiMixin}。
  */
 @Mixin(targets = "org.bukkit.entity.Entity", remap = false)
-public interface EntityIfaceMixin {
+public interface EntityIfaceMixin extends HoverEventSource<HoverEvent.ShowEntity>, Sound.Emitter {
 
     @Unique
     public abstract void setInvisible(boolean p0);

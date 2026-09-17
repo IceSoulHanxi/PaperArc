@@ -493,4 +493,39 @@ public abstract class CraftEntityApiMixin {
         }
         return scheduler;
     }
+
+    /**
+     * paper-api 的 {@code CommandSender.name()}（{@code Entity extends CommandSender}）。
+     * Paper 返回 {@code Entity#getName()} 的 adventure 形态 —— 有自定义名用自定义名，
+     * 否则用实体类型的翻译名。此前只有 CraftCommandBlock 有实现体，控制台/实体/玩家
+     * 上调用即 AbstractMethodError。
+     */
+    @Unique
+    public net.kyori.adventure.text.Component name() {
+        net.minecraft.network.chat.Component vanilla = this.getHandle().getName();
+        if (vanilla == null) {
+            return net.kyori.adventure.text.Component.empty();
+        }
+        return net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson().deserialize(
+                net.minecraft.network.chat.Component.Serializer.toJson(
+                        vanilla, this.getHandle().level().registryAccess()));
+    }
+
+    /**
+     * paper-api 的 {@code Entity extends HoverEventSource<HoverEvent.ShowEntity>}。
+     * 实体 key 走 NMS 注册表（{@code BuiltInRegistries.ENTITY_TYPE}）而不是 Bukkit
+     * {@code EntityType}，这样模组实体也能取到 key。
+     */
+    @Unique
+    public net.kyori.adventure.text.event.HoverEvent<net.kyori.adventure.text.event.HoverEvent.ShowEntity>
+            asHoverEvent(java.util.function.UnaryOperator<net.kyori.adventure.text.event.HoverEvent.ShowEntity> op) {
+        net.minecraft.world.entity.Entity handle = this.getHandle();
+        net.minecraft.resources.ResourceLocation id =
+                net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(handle.getType());
+        net.kyori.adventure.text.event.HoverEvent.ShowEntity show =
+                net.kyori.adventure.text.event.HoverEvent.ShowEntity.of(
+                        net.kyori.adventure.key.Key.key(id.getNamespace(), id.getPath()),
+                        handle.getUUID(), this.name());
+        return net.kyori.adventure.text.event.HoverEvent.showEntity(op == null ? show : op.apply(show));
+    }
 }

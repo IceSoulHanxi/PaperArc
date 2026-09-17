@@ -1,5 +1,8 @@
 package com.ixnah.mc.paperarc.mixin.common.bukkit;
 
+import com.destroystokyo.paper.network.NetworkClient;
+import net.kyori.adventure.bossbar.BossBarViewer;
+import net.kyori.adventure.identity.Identified;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -7,9 +10,14 @@ import org.spongepowered.asm.mixin.Unique;
  * Interface augmentation for {@link org.bukkit.entity.Player} (generated).
  * Adds 69 paper-api method declaration(s); implementations live in
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
+ *
+ * <p>paper-api 的 {@code Player extends Identified, BossBarViewer, NetworkClient}；
+ * Mixin 会把 mixin 自身的父接口合并到接口目标上（B4b）。实现体在
+ * {@code CraftPlayerApiMixin}：{@code identity()}、{@code getProtocolVersion()}、
+ * {@code getVirtualHost()}；{@code activeBossBars()} 早已有（返回空集合，理由见那里）。
  */
 @Mixin(targets = "org.bukkit.entity.Player", remap = false)
-public interface PlayerIfaceMixin {
+public interface PlayerIfaceMixin extends Identified, BossBarViewer, NetworkClient {
 
     @Unique
     public abstract java.lang.Iterable activeBossBars();

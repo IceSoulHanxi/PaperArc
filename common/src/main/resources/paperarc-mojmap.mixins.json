@@ -14,7 +14,8 @@
     "entity.RavagerJumpMixin",
     "entity.SnifferFertilizeMixin",
     "entity.SonicBoomMixin",
-    "entity.TurtleBreedGoalMixin"
+    "entity.TurtleBreedGoalMixin",
+    "network.ConnectionFieldsMixin"
   ],
   "server": [],
   "injectors": {
