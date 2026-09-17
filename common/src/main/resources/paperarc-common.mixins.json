@@ -82,6 +82,7 @@
     "player.StonecutterMenuRecipeSelectMixin",
     "player.WorldBorderMixin",
     "player.WorldBorderMovingBorderExtentMixin",
+    "server.AsyncChatMixin",
     "server.AsyncTabCompleteMixin",
     "server.PlayerListPostRespawnMixin",
     "server.ServerHandshakeNetworkClientMixin",
