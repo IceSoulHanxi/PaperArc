@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Unique;
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
  */
 @Mixin(targets = "org.bukkit.scoreboard.Team", remap = false)
-public interface TeamIfaceMixin {
+public interface TeamIfaceMixin extends net.kyori.adventure.audience.ForwardingAudience {
 
     @Unique
     public abstract net.kyori.adventure.text.Component displayName();

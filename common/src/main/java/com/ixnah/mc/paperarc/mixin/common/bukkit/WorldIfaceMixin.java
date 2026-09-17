@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Unique;
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
  */
 @Mixin(targets = "org.bukkit.World", remap = false)
-public interface WorldIfaceMixin {
+public interface WorldIfaceMixin extends net.kyori.adventure.audience.ForwardingAudience {
 
     @Unique
     public abstract boolean isVoidDamageEnabled();
@@ -162,4 +162,10 @@ public interface WorldIfaceMixin {
 
     @Unique
     public abstract void setSendViewDistance(int p0);
+
+    /** paper {@code World#audiences()} 的 default 方法体：世界里的玩家。 */
+    @Unique
+    public default Iterable<? extends net.kyori.adventure.audience.Audience> audiences() {
+        return ((org.bukkit.World) this).getPlayers();
+    }
 }
