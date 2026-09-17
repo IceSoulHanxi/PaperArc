@@ -9,38 +9,16 @@ import org.spongepowered.asm.mixin.Unique;
 /**
  * Adds Paper's Ghast explosion-power API.
  *
- * Vanilla NMS only exposes {@code getExplosionPower()}; the backing
- * {@code explosionPower} field is private (Paper publicizes a setter via AT), so
- * the setter writes the field reflectively after Paper's 0..127 range check.
+ * <p>Vanilla NMS only exposes {@code getExplosionPower()}; the backing
+ * {@code explosionPower} field is private (Paper publicizes it via AT). The same AT
+ * entry exists here (f_32722_ in META-INF/accesstransformer.cfg), so the setter writes
+ * the field directly — a string-name reflective lookup would fail on the srg runtime.
  */
 @Mixin(CraftGhast.class)
 public abstract class CraftGhastApiMixin {
 
     @Shadow
     public abstract Ghast getHandle();
-
-    @Unique
-    private static volatile java.lang.reflect.Field PAPERARC$EXPLOSION_POWER_FIELD;
-
-    @Unique
-    private static java.lang.reflect.Field paperarc$explosionPowerField() {
-        java.lang.reflect.Field f = PAPERARC$EXPLOSION_POWER_FIELD;
-        if (f == null) {
-            synchronized (CraftGhastApiMixin.class) {
-                if (PAPERARC$EXPLOSION_POWER_FIELD == null) {
-                    try {
-                        java.lang.reflect.Field resolved = Ghast.class.getDeclaredField("explosionPower");
-                        resolved.setAccessible(true);
-                        PAPERARC$EXPLOSION_POWER_FIELD = resolved;
-                    } catch (ReflectiveOperationException e) {
-                        throw new IllegalStateException("NMS Ghast.explosionPower field not found", e);
-                    }
-                }
-                f = PAPERARC$EXPLOSION_POWER_FIELD;
-            }
-        }
-        return f;
-    }
 
     @Unique
     public int getExplosionPower() {
@@ -52,10 +30,6 @@ public abstract class CraftGhastApiMixin {
         com.google.common.base.Preconditions.checkArgument(
             explosionPower >= 0 && explosionPower <= 127,
             "The explosion power has to be between 0 and 127");
-        try {
-            paperarc$explosionPowerField().setInt(getHandle(), explosionPower);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Failed to set NMS Ghast.explosionPower", e);
-        }
+        getHandle().explosionPower = explosionPower;
     }
 }

@@ -99,6 +99,7 @@ public abstract class StonecutterMenuRecipeSelectMixin {
     @Unique
     private static InventoryView paperarc$getBukkitView(AbstractContainerMenu menu) {
         try {
+            // CraftBukkit 侧成员（NMS 类上由 CB 补丁添加，不参与 srg 重映射），按字面名反射在运行时正确。
             return (InventoryView) menu.getClass().getMethod("getBukkitView").invoke(menu);
         } catch (ReflectiveOperationException e) {
             return null;

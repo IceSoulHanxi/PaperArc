@@ -97,6 +97,8 @@ public abstract class CraftSignApiMixin {
         }
     }
 
+    // 反射目标是 CraftBukkit 侧成员（不参与 srg 重映射），按字面名查找在运行时正确；
+    // NMS 成员必须改走 AT/@Accessor —— 见 docs/execution-plan-2026-09-16.md A2。
     @Unique
     private SignBlockEntity paperarc$signBlockEntity() {
         try {

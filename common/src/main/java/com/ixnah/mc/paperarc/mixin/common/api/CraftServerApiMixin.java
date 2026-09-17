@@ -398,19 +398,13 @@ public abstract class CraftServerApiMixin {
     }
 
     /**
-     * Spigot-patched {@code MinecraftServer.recentTps} (1m/5m/15m averages);
-     * absent from the vanilla compile jar, so resolved through privateLookupIn.
+     * Spigot 给 {@code MinecraftServer} 加的 {@code recentTps}（1m/5m/15m 平均值）。
+     * 这是 CraftBukkit/Spigot 侧成员、<b>不参与 srg 重映射</b>，运行时名字就是 recentTps，
+     * 因此按字面名 privateLookupIn 是正确的（vanilla NMS 成员则必须走 AT）。
+     * 解析不到时 getTPS() 退化为 {20,20,20}。
      */
     @Unique
     private static final MethodHandle PAPERARC$RECENT_TPS = paperarc$buildRecentTpsHandle();
-
-    /**
-     * Spigot-patched {@code MinecraftServer.tickTimes} ring buffer. Not present
-     * in current Arclight builds -> null, degrading getTickTimes() to an empty
-     * array.
-     */
-    @Unique
-    private static final MethodHandle PAPERARC$TICK_TIMES = paperarc$buildTickTimesHandle();
 
     @Unique
     private static MethodHandle paperarc$buildRecentTpsHandle() {
@@ -419,16 +413,6 @@ public abstract class CraftServerApiMixin {
                     .findGetter(net.minecraft.server.MinecraftServer.class, "recentTps", double[].class);
         } catch (ReflectiveOperationException e) {
             return null; // getTPS() degrades to {20, 20, 20}
-        }
-    }
-
-    @Unique
-    private static MethodHandle paperarc$buildTickTimesHandle() {
-        try {
-            return MethodHandles.privateLookupIn(net.minecraft.server.MinecraftServer.class, MethodHandles.lookup())
-                    .findGetter(net.minecraft.server.MinecraftServer.class, "tickTimes", long[].class);
-        } catch (ReflectiveOperationException e) {
-            return null; // getTickTimes() degrades to an empty array
         }
     }
 
@@ -449,20 +433,10 @@ public abstract class CraftServerApiMixin {
 
     @Unique
     public long[] getTickTimes() {
-        // Spigot MinecraftServer.tickTimes ring buffer of the last tick
-        // durations in nanoseconds; read through a MethodHandle like getTPS.
-        if (PAPERARC$TICK_TIMES == null) {
-            return new long[0];
-        }
-        try {
-            Object value = PAPERARC$TICK_TIMES.invoke(this.getServer());
-            if (value instanceof long[] ticks) {
-                return ticks;
-            }
-            return new long[0];
-        } catch (Throwable t) {
-            return new long[0];
-        }
+        // MinecraftServer.tickTimes 是 vanilla 的 public final long[]（最近 tick 耗时环形缓冲，
+        // 纳秒）——直访即可；按名字反射会在 srg 运行时（f_129748_）失败。
+        long[] ticks = this.getServer().tickTimes;
+        return ticks == null ? new long[0] : ticks;
     }
 
     @Unique

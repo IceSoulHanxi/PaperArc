@@ -152,11 +152,9 @@ public abstract class CraftPlayerApiMixin {
             if (orb == null) {
                 return remaining;
             }
-            try {
-                com.ixnah.mc.paperarc.bridge.PaperArcMendingAccess.VALUE_FIELD.invokeExact(orb, remaining);
-            } catch (Throwable t) {
-                throw new IllegalStateException("ExperienceOrb.value failed", t);
-            }
+            // ExperienceOrb.value / xpToDurability / durabilityToXp 由 AT 加宽
+            // （f_20770_ / m_20798_ / m_20793_）后直访；字符串反射在 srg 运行时必失败。
+            orb.value = remaining;
             orb.setPosRaw(sp.getX(), sp.getY(), sp.getZ());
 
             int i = Math.min(paperarc$xpToDurability(orb, remaining), itemstack.getDamageValue());
@@ -175,20 +173,12 @@ public abstract class CraftPlayerApiMixin {
 
     @Unique
     private static int paperarc$xpToDurability(net.minecraft.world.entity.ExperienceOrb orb, int amount) {
-        try {
-            return (int) com.ixnah.mc.paperarc.bridge.PaperArcMendingAccess.XP_TO_DURABILITY.invokeExact(orb, amount);
-        } catch (Throwable t) {
-            throw new IllegalStateException("ExperienceOrb.xpToDurability failed", t);
-        }
+        return orb.xpToDurability(amount);
     }
 
     @Unique
     private static int paperarc$durabilityToXp(net.minecraft.world.entity.ExperienceOrb orb, int amount) {
-        try {
-            return (int) com.ixnah.mc.paperarc.bridge.PaperArcMendingAccess.DURABILITY_TO_XP.invokeExact(orb, amount);
-        } catch (Throwable t) {
-            throw new IllegalStateException("ExperienceOrb.durabilityToXp failed", t);
-        }
+        return orb.durabilityToXp(amount);
     }
 
     // ---- calculateTotalExperiencePoints ----
@@ -639,12 +629,14 @@ public abstract class CraftPlayerApiMixin {
                 continue;
             }
             other.connection.send(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(java.util.List.of(self)));
-            // ChunkMap.TrackedEntity is a private nested type in vanilla 1.21.1
-            // (javap-verified) — hold it as Object and invoke reflectively.
-            Object entry = paperarc$trackedEntity(other, self.getId());
+            // ChunkMap$TrackedEntity 本身由 AT 放开（见 accesstransformer.cfg），
+            // removePlayer/updatePlayer 是 vanilla public 方法 —— 直接强转调用；
+            // 按 mojmap 名反射在 srg 运行时（m_140485_/m_140497_）必失败。
+            net.minecraft.server.level.ChunkMap.TrackedEntity entry =
+                    paperarc$trackedEntity(other, self.getId());
             if (entry != null) {
-                paperarc$invokeTracker(entry, "removePlayer", other);
-                paperarc$invokeTracker(entry, "updatePlayer", other);
+                entry.removePlayer(other);
+                entry.updatePlayer(other);
             }
         }
         // Refresh the target client: Paper's refreshPlayer() respawn pipeline.
@@ -675,28 +667,16 @@ public abstract class CraftPlayerApiMixin {
 
     /** Player.gameProfile 由 AT 加宽（f_36084_），无需缓存 Field。 */
     @Unique
-    private static Object paperarc$trackedEntity(
+    private static net.minecraft.server.level.ChunkMap.TrackedEntity paperarc$trackedEntity(
             ServerPlayer viewer, int targetId) {
         try {
             // ChunkMap.entityMap 由 AT 加宽（f_140150_）后直访。
-            it.unimi.dsi.fastutil.ints.Int2ObjectMap<?> map = ((net.minecraft.server.level.ServerLevel) viewer.level())
-                    .getChunkSource().chunkMap.entityMap;
+            it.unimi.dsi.fastutil.ints.Int2ObjectMap<net.minecraft.server.level.ChunkMap.TrackedEntity> map =
+                    ((net.minecraft.server.level.ServerLevel) viewer.level())
+                            .getChunkSource().chunkMap.entityMap;
             return map.get(targetId);
         } catch (ClassCastException e) {
             return null;
-        }
-    }
-
-    /** Reflective {@code ChunkMap.TrackedEntity#removePlayer/updatePlayer} (private nested class). */
-    @Unique
-    private static void paperarc$invokeTracker(Object entry, String name, ServerPlayer viewer) {
-        try {
-            java.lang.reflect.Method method = entry.getClass()
-                    .getMethod(name, net.minecraft.server.level.ServerPlayer.class);
-            method.setAccessible(true);
-            method.invoke(entry, viewer);
-        } catch (ReflectiveOperationException ignored) {
-            // viewer no longer tracks the target — nothing to refresh
         }
     }
 

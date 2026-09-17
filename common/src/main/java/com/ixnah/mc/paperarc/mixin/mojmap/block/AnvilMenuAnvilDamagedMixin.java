@@ -81,6 +81,7 @@ public abstract class AnvilMenuAnvilDamagedMixin {
         try {
             Method m = PAPERARC$GET_VIEW;
             if (m == null) {
+                // CraftBukkit 侧成员（NMS 类上由 CB 补丁添加，不参与 srg 重映射），按字面名反射在运行时正确。
                 m = menu.getClass().getMethod("getBukkitView");
                 m.setAccessible(true);
                 PAPERARC$GET_VIEW = m;

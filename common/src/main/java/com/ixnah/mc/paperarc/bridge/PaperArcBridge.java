@@ -40,6 +40,7 @@ public final class PaperArcBridge {
 
     public static org.bukkit.World bukkitWorld(ServerLevel level) {
         try {
+            // CraftBukkit 侧成员（NMS 类上由 CB 补丁添加，不参与 srg 重映射），按字面名反射在运行时正确。
             Method getWorld = level.getClass().getMethod("getWorld");
             return (org.bukkit.World) getWorld.invoke(level);
         } catch (ReflectiveOperationException e) {

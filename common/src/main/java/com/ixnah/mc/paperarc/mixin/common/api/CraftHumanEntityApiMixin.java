@@ -72,38 +72,21 @@ public abstract class CraftHumanEntityApiMixin {
     @Unique
     private float hurtDirection;
 
-    @Unique
-    private static final MethodHandle PAPERARC$CLOSE_CONTAINER = paperarc$buildCloseHandle();
-
-    @Unique
-    private static MethodHandle paperarc$buildCloseHandle() {
-        try {
-            return MethodHandles.privateLookupIn(net.minecraft.world.entity.player.Player.class, MethodHandles.lookup())
-                    .findVirtual(net.minecraft.world.entity.player.Player.class, "closeContainer",
-                            MethodType.methodType(void.class));
-        } catch (ReflectiveOperationException e) {
-            throw new ExceptionInInitializerError(e);
-        }
-    }
-
     /**
-     * Spigot-patched {@code AbstractContainerMenu.checkReachable} (runtime-only,
-     * absent from the vanilla compile jar); null -> degraded path below.
+     * Spigot-patched {@code AbstractContainerMenu.checkReachable}: a CraftBukkit-added
+     * member that does not exist in the vanilla compile jar and is <b>not</b> srg-mapped,
+     * so reflecting on its literal name is correct here (unlike vanilla NMS members).
+     * null -> degraded path below.
      */
     @Unique
     private static final MethodHandle PAPERARC$CHECK_REACHABLE_FIELD = paperarc$buildCheckReachableHandle();
 
-    /** Spigot-patched {@code AbstractContainerMenu#getBukkitView} (runtime-only). */
+    /**
+     * Spigot-patched {@code AbstractContainerMenu#getBukkitView}: CraftBukkit-added and not
+     * srg-mapped, so the literal-name lookup is correct. null -> degraded path below.
+     */
     @Unique
     private static final MethodHandle PAPERARC$GET_BUKKIT_VIEW_METHOD = paperarc$buildGetBukkitViewHandle();
-
-    /** Protected vanilla/spigot {@code Player#setShoulderEntityLeft(CompoundTag)}. */
-    @Unique
-    private static final MethodHandle PAPERARC$SET_SHOULDER_LEFT_METHOD = paperarc$buildShoulderHandle(false);
-
-    /** Protected vanilla/spigot {@code Player#setShoulderEntityRight(CompoundTag)}. */
-    @Unique
-    private static final MethodHandle PAPERARC$SET_SHOULDER_RIGHT_METHOD = paperarc$buildShoulderHandle(true);
 
     @Unique
     private static MethodHandle paperarc$buildCheckReachableHandle() {
@@ -121,17 +104,6 @@ public abstract class CraftHumanEntityApiMixin {
             return MethodHandles.privateLookupIn(AbstractContainerMenu.class, MethodHandles.lookup())
                     .findVirtual(AbstractContainerMenu.class, "getBukkitView",
                             MethodType.methodType(InventoryView.class));
-        } catch (ReflectiveOperationException e) {
-            return null; // caller degrades with IllegalStateException
-        }
-    }
-
-    @Unique
-    private static MethodHandle paperarc$buildShoulderHandle(boolean right) {
-        try {
-            return MethodHandles.privateLookupIn(Player.class, MethodHandles.lookup())
-                    .findVirtual(Player.class, right ? "setShoulderEntityRight" : "setShoulderEntityLeft",
-                            MethodType.methodType(void.class, CompoundTag.class));
         } catch (ReflectiveOperationException e) {
             return null; // caller degrades with IllegalStateException
         }
@@ -323,16 +295,17 @@ public abstract class CraftHumanEntityApiMixin {
         return entity;
     }
 
+    /**
+     * {@code Player#setShoulderEntityLeft/Right} are protected vanilla members widened by AT
+     * (m_36362_ / m_36364_), so they are called directly — a name-based MethodHandle lookup
+     * would not resolve on the srg runtime.
+     */
     @Unique
     private static void paperarc$setShoulder(Player player, boolean right, CompoundTag value) {
-        MethodHandle handle = right ? PAPERARC$SET_SHOULDER_RIGHT_METHOD : PAPERARC$SET_SHOULDER_LEFT_METHOD;
-        if (handle == null) {
-            throw new IllegalStateException("PaperArc: Player shoulder setter not found");
-        }
-        try {
-            handle.invokeExact(player, value);
-        } catch (Throwable t) {
-            throw new IllegalStateException("PaperArc: Player shoulder setter not found", t);
+        if (right) {
+            player.setShoulderEntityRight(value);
+        } else {
+            player.setShoulderEntityLeft(value);
         }
     }
 

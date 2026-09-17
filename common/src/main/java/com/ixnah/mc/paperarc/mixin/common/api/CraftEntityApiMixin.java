@@ -152,6 +152,7 @@ public abstract class CraftEntityApiMixin {
         // is absent from the vanilla mojmap compile jar -> reflection, falling back
         // to the vanilla yaw accessor.
         try {
+            // CraftBukkit 侧成员（NMS 类上由 CB 补丁添加，不参与 srg 重映射），按字面名反射在运行时正确。
             Method m = this.getHandle().getClass().getMethod("getBukkitYaw");
             return (Float) m.invoke(this.getHandle());
         } catch (ReflectiveOperationException e) {
