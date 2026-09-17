@@ -247,40 +247,10 @@ public abstract class CraftServerApiMixin {
         Preconditions.checkArgument(feedback != null, "feedback cannot be null");
         org.bukkit.command.ConsoleCommandSender console =
                 ((org.bukkit.Server) (Object) this).getConsoleSender();
-        return (org.bukkit.command.CommandSender) java.lang.reflect.Proxy.newProxyInstance(
-                CraftServerApiMixin.class.getClassLoader(),
-                new Class<?>[] {org.bukkit.command.ConsoleCommandSender.class},
-                (proxy, method, args) -> {
-                    String name = method.getName();
-                    if ("sendMessage".equals(name) && args != null && args.length >= 1) {
-                        Object first = args[0];
-                        if (first instanceof Component component) {
-                            feedback.accept(component);
-                            return null;
-                        }
-                        if (first instanceof net.kyori.adventure.text.ComponentLike like) {
-                            feedback.accept(like.asComponent());
-                            return null;
-                        }
-                        if (first instanceof String legacy) {
-                            feedback.accept(LegacyComponentSerializer.legacySection().deserialize(legacy));
-                            return null;
-                        }
-                        if (first instanceof String[] legacies) {
-                            for (String line : legacies) {
-                                feedback.accept(LegacyComponentSerializer.legacySection().deserialize(line));
-                            }
-                            return null;
-                        }
-                    } else if ("toString".equals(name)) {
-                        return "PaperArcCommandSender";
-                    }
-                    try {
-                        return method.invoke(console, args);
-                    } catch (java.lang.reflect.InvocationTargetException e) {
-                        throw e.getCause() == null ? e : e.getCause();
-                    }
-                });
+        // 实现体在 bridge/：写成 mixin 里的 lambda 会让 invokedynamic 的引导方法
+        // 引用 mixin 类自身，合并进 CraftServer 后描述符指向 mixin 包内的类
+        // （checklist §1.6 c/d）。
+        return com.ixnah.mc.paperarc.bridge.PaperarcFeedbackCommandSender.create(console, feedback);
     }
 
     /**

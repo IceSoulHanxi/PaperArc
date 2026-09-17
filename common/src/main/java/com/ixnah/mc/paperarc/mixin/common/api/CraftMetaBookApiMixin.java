@@ -1,7 +1,5 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
-import java.util.Collection;
-
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
@@ -95,41 +93,8 @@ public abstract class CraftMetaBookApiMixin {
 
     @Unique
     public BookMeta.BookMetaBuilder toBuilder() {
-        return new BookMeta.BookMetaBuilder() {
-            @Override
-            public BookMeta.BookMetaBuilder title(Component component) {
-                CraftMetaBookApiMixin.this.title(component);
-                return this;
-            }
-
-            @Override
-            public BookMeta.BookMetaBuilder author(Component component) {
-                CraftMetaBookApiMixin.this.author(component);
-                return this;
-            }
-
-            @Override
-            public BookMeta.BookMetaBuilder addPage(Component component) {
-                CraftMetaBookApiMixin.this.addPages(component);
-                return this;
-            }
-
-            @Override
-            public BookMeta.BookMetaBuilder pages(Component... components) {
-                CraftMetaBookApiMixin.this.addPages(components);
-                return this;
-            }
-
-            @Override
-            public BookMeta.BookMetaBuilder pages(Collection<Component> components) {
-                CraftMetaBookApiMixin.this.addPages(components.toArray(new Component[0]));
-                return this;
-            }
-
-            @Override
-            public BookMeta build() {
-                return (BookMeta) (Object) CraftMetaBookApiMixin.this;
-            }
-        };
+        // 实现体在 bridge/：写成 mixin 里的匿名类会被 Mixin 搬进目标类，
+        // 搬完的 InnerClasses/NestHost 仍指向原 mixin 外围类（checklist §1.6 c）。
+        return new com.ixnah.mc.paperarc.bridge.PaperarcBookMetaBuilder((BookMeta) (Object) this);
     }
 }

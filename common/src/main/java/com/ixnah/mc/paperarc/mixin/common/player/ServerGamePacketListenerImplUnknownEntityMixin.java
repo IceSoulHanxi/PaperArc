@@ -1,14 +1,8 @@
 package com.ixnah.mc.paperarc.mixin.common.player;
 
-import com.destroystokyo.paper.event.player.PlayerUseUnknownEntityEvent;
-import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.phys.Vec3;
-import org.bukkit.craftbukkit.v.CraftEquipmentSlot;
-import org.bukkit.craftbukkit.v.util.CraftVector;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.gen.Accessor;
@@ -37,31 +31,9 @@ public abstract class ServerGamePacketListenerImplUnknownEntityMixin {
         }
         final ServerPlayer sender = this.paperarc$getPlayer();
         final int entityId = ((ServerboundInteractPacketAccessor) packet).paperarc$entityId();
-        packet.dispatch(new ServerboundInteractPacket.Handler() {
-            @Override
-            public void onInteraction(InteractionHand hand) {
-                fire(sender, entityId, false, hand, null);
-            }
-
-            @Override
-            public void onInteraction(InteractionHand hand, Vec3 pos) {
-                fire(sender, entityId, false, hand, pos);
-            }
-
-            @Override
-            public void onAttack() {
-                fire(sender, entityId, true, InteractionHand.MAIN_HAND, null);
-            }
-        });
-    }
-
-    private static void fire(ServerPlayer player, int entityId, boolean isAttack, InteractionHand hand, Vec3 pos) {
-        new PlayerUseUnknownEntityEvent(
-            PaperArcBridge.bukkitPlayer(player),
-            entityId,
-            isAttack,
-            CraftEquipmentSlot.getHand(hand),
-            pos != null ? CraftVector.toBukkit(pos) : null
-        ).callEvent();
+        // Handler 实现在 bridge/：mixin 的匿名类会被 Mixin 搬进目标类，搬完的
+        // InnerClasses/NestHost 仍指向原 mixin 外围类，与目标类互相矛盾
+        // （checklist §1.6 c，main 62ae973）。
+        packet.dispatch(new com.ixnah.mc.paperarc.bridge.PaperarcUnknownEntityHandler(sender, entityId));
     }
 }
