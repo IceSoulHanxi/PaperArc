@@ -44,6 +44,20 @@ public class CraftPlayerProfile implements com.destroystokyo.paper.profile.Playe
 
     private static final String TEXTURES_PROPERTY = "textures";
 
+    /** 会话服务查询用的专用守护线程池（对齐 Paper 的 Util.PROFILE_EXECUTOR）。 */
+    private static final java.util.concurrent.Executor PROFILE_EXECUTOR =
+            java.util.concurrent.Executors.newCachedThreadPool(new java.util.concurrent.ThreadFactory() {
+                private final java.util.concurrent.atomic.AtomicInteger counter =
+                        new java.util.concurrent.atomic.AtomicInteger();
+
+                @Override
+                public Thread newThread(Runnable r) {
+                    Thread t = new Thread(r, "PaperArc Profile Updater #" + counter.incrementAndGet());
+                    t.setDaemon(true);
+                    return t;
+                }
+            });
+
     private GameProfile profile;
 
     public CraftPlayerProfile(GameProfile gameProfile) {
@@ -255,13 +269,20 @@ public class CraftPlayerProfile implements com.destroystokyo.paper.profile.Playe
     }
 
     /**
-     * Sync-fallback: performs the session-service fetch synchronously on the
-     * calling thread (no worker pool) and completes immediately.
+     * Paper 语义：{@code update()} 是**异步**的 —— 会话服务查询是阻塞 HTTP 调用，
+     * 必须扔到工作线程，future 由该线程完成。原实现在调用线程同步查完再返回一个
+     * 已完成的 future，插件在主线程调用就是一次网络阻塞。
+     *
+     * <p>用专用守护线程池（对齐 Paper 的 {@code Util.PROFILE_EXECUTOR}）而不是
+     * {@code ForkJoinPool.commonPool()}：这些任务是阻塞 IO，放进 common pool 会拖垮
+     * 依赖它的并行流。{@code complete(...)} 保持同步语义不变。</p>
      */
     @Override
     public CompletableFuture<PlayerProfile> update() {
-        paperarc$fillFromSessionService(true);
-        return CompletableFuture.completedFuture(this);
+        return CompletableFuture.supplyAsync(() -> {
+            paperarc$fillFromSessionService(true);
+            return this;
+        }, PROFILE_EXECUTOR);
     }
 
     // ===== serialization / cloning =====
