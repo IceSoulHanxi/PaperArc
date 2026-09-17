@@ -3,11 +3,6 @@
 # 跑法见 common/build.gradle 的 checkIfaceImplPairing 任务（./gradlew :common:check）。
 #
 # ---- NO_DECL (63) ----
-# 全部同一个原因：实现体写的是 **1.20.2+/1.21 才加进 paper-api 的方法**
-# （getVoidDamage*/getActiveItem*/isAggressive/getSentChunks/hasStructureAt…），
-# 1.20.1 的 paper-api 根本没有对应的接口声明，插件也就无从调用 —— 属"提前实现"，
-# 留在 Craft 类上不影响运行时，不删。真正挂错宿主（块状态 vs 块数据）的 40 条
-# 与缺声明的 12 条已在 A4-1 修掉。
 NO_DECL org/bukkit/craftbukkit/v/CraftChunk#getChunkSnapshot/4
 NO_DECL org/bukkit/craftbukkit/v/CraftRaid#getBossBar/0
 NO_DECL org/bukkit/craftbukkit/v/CraftRaid#getId/0
@@ -108,74 +103,4 @@ NO_IMPL org/bukkit/util/CachedServerIcon#getData/0
 
 # ---- NO_RUNTIME_IMPLCLASS (1) ----
 NO_RUNTIME_IMPLCLASS org/bukkit/plugin/Plugin#getPluginMeta/0
-
-# ---- PARTIAL_IMPL (68) ----
-PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftBarrel
-PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftBeacon
-PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftBlastFurnace
-PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftBrewingStand
-PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftChest
-PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftDispenser
-PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftDropper
-PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftEnchantingTable
-PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftFurnaceFurnace
-PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftHopper
-PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftShulkerBox
-PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftSmoker
-PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftBarrel
-PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftBeacon
-PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftBlastFurnace
-PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftBrewingStand
-PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftChest
-PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftDispenser
-PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftDropper
-PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftEnchantingTable
-PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftFurnaceFurnace
-PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftHopper
-PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftShulkerBox
-PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftSmoker
-PARTIAL_IMPL org/bukkit/OfflinePlayer#getLastLogin/0 缺 org/bukkit/craftbukkit/v/entity/CraftPlayer
-PARTIAL_IMPL org/bukkit/OfflinePlayer#getLastSeen/0 缺 org/bukkit/craftbukkit/v/entity/CraftPlayer
-PARTIAL_IMPL org/bukkit/OfflinePlayer#isConnected/0 缺 org/bukkit/craftbukkit/v/entity/CraftPlayer
-PARTIAL_IMPL org/bukkit/attribute/Attributable#registerAttribute/1 缺 org/bukkit/craftbukkit/v/attribute/CraftAttributeMap
-PARTIAL_IMPL org/bukkit/block/data/type/Leaves#getMaximumDistance/0 缺 org/bukkit/craftbukkit/v/block/impl/CraftCherryLeaves
-PARTIAL_IMPL org/bukkit/block/data/type/Leaves#getMaximumDistance/0 缺 org/bukkit/craftbukkit/v/block/impl/CraftMangroveLeaves
-PARTIAL_IMPL org/bukkit/block/data/type/Leaves#getMinimumDistance/0 缺 org/bukkit/craftbukkit/v/block/impl/CraftCherryLeaves
-PARTIAL_IMPL org/bukkit/block/data/type/Leaves#getMinimumDistance/0 缺 org/bukkit/craftbukkit/v/block/impl/CraftMangroveLeaves
-PARTIAL_IMPL org/bukkit/entity/Projectile#canHitEntity/1 缺 org/bukkit/craftbukkit/v/entity/CraftArrow
-PARTIAL_IMPL org/bukkit/entity/Projectile#canHitEntity/1 缺 org/bukkit/craftbukkit/v/entity/CraftFireball
-PARTIAL_IMPL org/bukkit/entity/Projectile#canHitEntity/1 缺 org/bukkit/craftbukkit/v/entity/CraftLlamaSpit
-PARTIAL_IMPL org/bukkit/entity/Projectile#canHitEntity/1 缺 org/bukkit/craftbukkit/v/entity/CraftShulkerBullet
-PARTIAL_IMPL org/bukkit/entity/Projectile#getOwnerUniqueId/0 缺 org/bukkit/craftbukkit/v/entity/CraftArrow
-PARTIAL_IMPL org/bukkit/entity/Projectile#getOwnerUniqueId/0 缺 org/bukkit/craftbukkit/v/entity/CraftFireball
-PARTIAL_IMPL org/bukkit/entity/Projectile#getOwnerUniqueId/0 缺 org/bukkit/craftbukkit/v/entity/CraftLlamaSpit
-PARTIAL_IMPL org/bukkit/entity/Projectile#getOwnerUniqueId/0 缺 org/bukkit/craftbukkit/v/entity/CraftShulkerBullet
-PARTIAL_IMPL org/bukkit/entity/Projectile#hasBeenShot/0 缺 org/bukkit/craftbukkit/v/entity/CraftArrow
-PARTIAL_IMPL org/bukkit/entity/Projectile#hasBeenShot/0 缺 org/bukkit/craftbukkit/v/entity/CraftFireball
-PARTIAL_IMPL org/bukkit/entity/Projectile#hasBeenShot/0 缺 org/bukkit/craftbukkit/v/entity/CraftLlamaSpit
-PARTIAL_IMPL org/bukkit/entity/Projectile#hasBeenShot/0 缺 org/bukkit/craftbukkit/v/entity/CraftShulkerBullet
-PARTIAL_IMPL org/bukkit/entity/Projectile#hasLeftShooter/0 缺 org/bukkit/craftbukkit/v/entity/CraftArrow
-PARTIAL_IMPL org/bukkit/entity/Projectile#hasLeftShooter/0 缺 org/bukkit/craftbukkit/v/entity/CraftFireball
-PARTIAL_IMPL org/bukkit/entity/Projectile#hasLeftShooter/0 缺 org/bukkit/craftbukkit/v/entity/CraftLlamaSpit
-PARTIAL_IMPL org/bukkit/entity/Projectile#hasLeftShooter/0 缺 org/bukkit/craftbukkit/v/entity/CraftShulkerBullet
-PARTIAL_IMPL org/bukkit/entity/Projectile#hitEntity/1 缺 org/bukkit/craftbukkit/v/entity/CraftArrow
-PARTIAL_IMPL org/bukkit/entity/Projectile#hitEntity/1 缺 org/bukkit/craftbukkit/v/entity/CraftFireball
-PARTIAL_IMPL org/bukkit/entity/Projectile#hitEntity/1 缺 org/bukkit/craftbukkit/v/entity/CraftLlamaSpit
-PARTIAL_IMPL org/bukkit/entity/Projectile#hitEntity/1 缺 org/bukkit/craftbukkit/v/entity/CraftShulkerBullet
-PARTIAL_IMPL org/bukkit/entity/Projectile#hitEntity/2 缺 org/bukkit/craftbukkit/v/entity/CraftArrow
-PARTIAL_IMPL org/bukkit/entity/Projectile#hitEntity/2 缺 org/bukkit/craftbukkit/v/entity/CraftFireball
-PARTIAL_IMPL org/bukkit/entity/Projectile#hitEntity/2 缺 org/bukkit/craftbukkit/v/entity/CraftLlamaSpit
-PARTIAL_IMPL org/bukkit/entity/Projectile#hitEntity/2 缺 org/bukkit/craftbukkit/v/entity/CraftShulkerBullet
-PARTIAL_IMPL org/bukkit/entity/Projectile#setHasBeenShot/1 缺 org/bukkit/craftbukkit/v/entity/CraftArrow
-PARTIAL_IMPL org/bukkit/entity/Projectile#setHasBeenShot/1 缺 org/bukkit/craftbukkit/v/entity/CraftFireball
-PARTIAL_IMPL org/bukkit/entity/Projectile#setHasBeenShot/1 缺 org/bukkit/craftbukkit/v/entity/CraftLlamaSpit
-PARTIAL_IMPL org/bukkit/entity/Projectile#setHasBeenShot/1 缺 org/bukkit/craftbukkit/v/entity/CraftShulkerBullet
-PARTIAL_IMPL org/bukkit/entity/Projectile#setHasLeftShooter/1 缺 org/bukkit/craftbukkit/v/entity/CraftArrow
-PARTIAL_IMPL org/bukkit/entity/Projectile#setHasLeftShooter/1 缺 org/bukkit/craftbukkit/v/entity/CraftFireball
-PARTIAL_IMPL org/bukkit/entity/Projectile#setHasLeftShooter/1 缺 org/bukkit/craftbukkit/v/entity/CraftLlamaSpit
-PARTIAL_IMPL org/bukkit/entity/Projectile#setHasLeftShooter/1 缺 org/bukkit/craftbukkit/v/entity/CraftShulkerBullet
-PARTIAL_IMPL org/bukkit/generator/WorldInfo#vanillaBiomeProvider/0 缺 org/bukkit/craftbukkit/v/CraftWorld
-PARTIAL_IMPL org/bukkit/inventory/EntityEquipment#getDropChance/1 缺 org/bukkit/craftbukkit/v/inventory/CraftInventoryPlayer
-PARTIAL_IMPL org/bukkit/inventory/EntityEquipment#setDropChance/2 缺 org/bukkit/craftbukkit/v/inventory/CraftInventoryPlayer
-PARTIAL_IMPL org/bukkit/projectiles/ProjectileSource#launchProjectile/3 缺 org/bukkit/craftbukkit/v/projectiles/CraftBlockProjectileSource
 

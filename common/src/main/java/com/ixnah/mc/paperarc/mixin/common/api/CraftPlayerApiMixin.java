@@ -5,6 +5,7 @@ import com.destroystokyo.paper.Title;
 import com.google.common.base.Preconditions;
 import com.ixnah.mc.paperarc.bridge.ConnectionBridge;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
+import com.ixnah.mc.paperarc.bridge.ServerPlayerBridge;
 import com.mojang.authlib.GameProfile;
 import io.papermc.paper.math.Position;
 import java.lang.invoke.MethodHandle;
@@ -1058,6 +1059,27 @@ public abstract class CraftPlayerApiMixin {
         paperarc$send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(
                 key == null ? null : new net.minecraft.resources.ResourceLocation(key.namespace(), key.value()),
                 paperarc$soundSource(stop.source())));
+    }
+
+    // ===== OfflinePlayer 的三个方法（A4-1 r）=====
+    // OfflinePlayer 有两个互不继承的实现类：CraftOfflinePlayer 与 CraftPlayer。
+    // 实现体原先只挂在前者，插件拿到在线 Player 再调这三个就是 AbstractMethodError。
+
+    @Unique
+    public long getLastLogin() {
+        return ((ServerPlayerBridge) this.getHandle()).paper$loginTime();
+    }
+
+    @Unique
+    public long getLastSeen() {
+        // 在线玩家"最后一次看到"就是现在（与 CraftOfflinePlayerApiMixin 的在线分支一致）
+        return System.currentTimeMillis();
+    }
+
+    @Unique
+    public boolean isConnected() {
+        // ServerGamePacketListenerImpl 没有 isDisconnected()（javap 核对），用 isAcceptingMessages()
+        return this.getHandle().connection != null && this.getHandle().connection.isAcceptingMessages();
     }
 
     /** adventure {@code Sound.Source} 与 NMS {@code SoundSource} 的常量顺序完全一致（javap 核对）。 */

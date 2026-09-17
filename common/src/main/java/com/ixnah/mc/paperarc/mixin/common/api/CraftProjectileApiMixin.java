@@ -5,16 +5,21 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.bukkit.craftbukkit.v.entity.CraftEntity;
-import org.bukkit.craftbukkit.v.entity.CraftProjectile;
+import com.ixnah.mc.paperarc.bridge.craft.CraftEntityBridge;
+import org.bukkit.craftbukkit.v.entity.AbstractProjectile;
 import org.bukkit.util.Vector;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 import java.util.UUID;
 
 /**
- * Port of Paper's More-Projectile-API additions on {@link CraftProjectile}.
+ * Port of Paper's More-Projectile-API additions on {@link AbstractProjectile}.
+ *
+ * <p>宿主是 {@code AbstractProjectile} 而不是 {@code CraftProjectile}：CB 里
+ * {@code CraftArrow}/{@code CraftFireball}/{@code CraftLlamaSpit}/{@code CraftShulkerBullet}
+ * 直接继承 {@code AbstractProjectile}，挂在 {@code CraftProjectile} 上这四个类走到就是
+ * {@code AbstractMethodError}（A4-1 r 实测 32 条）。
  *
  * <p>Mappings to this codebase's NMS (mojmap 1.21.1 {@code Projectile}):
  * <ul>
@@ -32,37 +37,45 @@ import java.util.UUID;
  *       reflection; guarded by the same removed-check Paper uses.</li>
  * </ul>
  */
-@Mixin(CraftProjectile.class)
+@Mixin(AbstractProjectile.class)
 public abstract class CraftProjectileApiMixin {
 
-    @Shadow
-    public abstract Projectile getHandle();
+    /**
+     * {@code AbstractProjectile} 自己没有收窄的 {@code getHandle()}（只有
+     * {@code CraftProjectile} 有），所以走 {@code CraftEntity} 上的 duck 接口取句柄。
+     */
+    // 名字不能叫 getHandle：CraftEntity 上已有同名方法，Mixin 按方法名判冲突会
+    // 直接丢弃整个 @Unique 方法（docs/mixin-conventions.md）。
+    @Unique
+    private Projectile paperarc$handle() {
+        return (Projectile) ((CraftEntityBridge) (Object) this).paperarc$getHandle();
+    }
 
     @Unique
     public boolean canHitEntity(org.bukkit.entity.Entity entity) {
-        return this.getHandle().canHitEntity(((CraftEntity) entity).getHandle());
+        return this.paperarc$handle().canHitEntity(((CraftEntity) entity).getHandle());
     }
 
     @Unique
     public UUID getOwnerUniqueId() {
-        return this.getHandle().ownerUUID;
+        return this.paperarc$handle().ownerUUID;
     }
 
     @Unique
     public boolean hasBeenShot() {
-        return this.getHandle().hasBeenShot;
+        return this.paperarc$handle().hasBeenShot;
     }
 
     @Unique
     public boolean hasLeftShooter() {
-        return this.getHandle().leftOwner;
+        return this.paperarc$handle().leftOwner;
     }
 
     @Unique
     public void hitEntity(org.bukkit.entity.Entity entity) {
-        Preconditions.checkState(!this.getHandle().isRemoved(),
+        Preconditions.checkState(!this.paperarc$handle().isRemoved(),
             "Cannot hit entity on a removed projectile");
-        this.getHandle()
+        this.paperarc$handle()
             .onHit(new EntityHitResult(((CraftEntity) entity).getHandle()));
     }
 
@@ -76,11 +89,11 @@ public abstract class CraftProjectileApiMixin {
 
     @Unique
     public void setHasBeenShot(boolean hasBeenShot) {
-        this.getHandle().hasBeenShot = hasBeenShot;
+        this.paperarc$handle().hasBeenShot = hasBeenShot;
     }
 
     @Unique
     public void setHasLeftShooter(boolean hasLeftShooter) {
-        this.getHandle().leftOwner = hasLeftShooter;
+        this.paperarc$handle().leftOwner = hasLeftShooter;
     }
 }

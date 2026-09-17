@@ -473,4 +473,17 @@ public abstract class CraftWorldApiMixin {
             }
         }
     }
+    /**
+     * {@code WorldInfo} 的第二个实现类：{@code CraftWorldInfo} 之外，{@code CraftWorld}
+     * 本身也实现 {@code WorldInfo}，只挂一个走到另一个就是 {@code AbstractMethodError}
+     * （A4-1 r）。降级理由同 {@code CraftWorldInfoApiMixin}。
+     */
+    @Unique
+    public org.bukkit.generator.BiomeProvider vanillaBiomeProvider() {
+        throw new UnsupportedOperationException(
+            "PaperArc: World#vanillaBiomeProvider() needs Paper's extended CraftWorldInfo "
+                + "constructor storing vanillaChunkGenerator + RegistryAccess; Arclight's base "
+                + "CraftWorldInfo holds neither");
+    }
+
 }
