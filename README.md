@@ -41,8 +41,10 @@ Paper API 的插件可以像在 Paper 服务端上一样正常加载与运行。
 
 1. 把构建产物 `common/build/libs/common-<version>.jar` 放进 Arclight 服务端的
    `mods/`（可自行改名为 `paperarc.jar`）；
-2. 同时需要 `mixinextras-forge-0.4.1.jar`（GAMELIBRARY，**不**打进本 Mod）也放进
-   `mods/`；
+2. MixinExtras **无需另外安装**：`mixinextras-forge` 以 Forge Jar-in-Jar 形式嵌在本
+   Mod 里（`META-INF/jarjar/metadata.json` + `META-INF/jars/`），原样嵌套不 relocate。
+   `mods/` 里若另有一份外置或别的 mod 自带的 MixinExtras，Forge 会按版本区间去重，
+   只会初始化一次；
 3. 你的插件照常放在 `plugins/` 目录；
 4. 启动服务器，日志出现 `Done (` 且无 `Mixin apply failed` 即安装成功。
 
