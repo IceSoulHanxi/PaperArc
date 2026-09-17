@@ -113,6 +113,53 @@ subprojects {
     tasks.named('check') {
         dependsOn 'checkMixinRegistry'
     }
+
+    // AccessWidener -> Forge/NeoForge AccessTransformer。
+    // loom 的 `convertAccessWideners = true` 只作用于**开发期**运行时，产物 jar 里不会有
+    // META-INF/accesstransformer.cfg；而 fabric.mod.json 的 "accessWidener" 只有 Fabric 认。
+    // 结果是 paperarc.accesswidener 里的每一条在 Forge/NeoForge 生产服上都没生效，
+    // 一访问被放开的 NMS 成员就 IllegalAccessError（B4 在 CompoundTag.tags 上实测）。
+    // 这里从同一份 AW 生成 AT，保证三端访问权限一致、单一事实来源。
+    if (project.name in ['forge', 'neoforge']) {
+        def awFile = rootProject.file('common/src/main/resources/paperarc.accesswidener')
+        def atDir = layout.buildDirectory.dir('generated/accesstransformer')
+        def genAt = tasks.register('generateAccessTransformer') {
+            inputs.file(awFile)
+            outputs.dir(atDir)
+            doLast {
+                def out = ['# 由 generateAccessTransformer 从 common/src/main/resources/paperarc.accesswidener 生成，勿手改。']
+                awFile.eachLine { raw ->
+                    def line = raw.replaceAll('#.*$', '').trim()
+                    if (!line || line.startsWith('accessWidener')) {
+                        return
+                    }
+                    def p = line.split('\\s+')
+                    def access = p[0]
+                    def kind = p[1]
+                    def owner = p[2].replace('/', '.')
+                    if (access != 'accessible' && access != 'mutable') {
+                        throw new GradleException("unsupported access widener verb '${access}': ${line}")
+                    }
+                    // accessible -> public；mutable -> 去掉 final
+                    def at = access == 'mutable' ? 'public-f' : 'public'
+                    switch (kind) {
+                        case 'class':  out << "${at} ${owner}"; break
+                        case 'field':  out << "${at} ${owner} ${p[3]}"; break
+                        case 'method': out << "${at} ${owner} ${p[3]}${p[4]}"; break
+                        default: throw new GradleException("unsupported access widener target '${kind}': ${line}")
+                    }
+                }
+                def f = atDir.get().file('META-INF/accesstransformer.cfg').asFile
+                f.parentFile.mkdirs()
+                f.text = out.join('\n') + '\n'
+                logger.lifecycle("generateAccessTransformer(${project.name}): ${out.size() - 1} entries")
+            }
+        }
+        tasks.named('processResources') {
+            dependsOn genAt
+            from(atDir)
+        }
+    }
 }
 
 allprojects {

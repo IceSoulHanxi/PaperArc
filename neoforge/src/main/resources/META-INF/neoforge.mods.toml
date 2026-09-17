@@ -13,6 +13,11 @@ on top of Arclight's Bukkit layer, without porting Paper's optimizations.
 '''
 authors="PaperArc Contributors"
 
+# 由 generateAccessTransformer 从 common/src/main/resources/paperarc.accesswidener 生成。
+# fabric.mod.json 的 accessWidener 只有 Fabric 认，loom 的 convertAccessWideners 只作用于开发期。
+[[accessTransformers]]
+file="META-INF/accesstransformer.cfg"
+
 [[mixins]]
 config="paperarc-common.mixins.json"
 
