@@ -70,6 +70,8 @@ public abstract class CraftEntityApiMixin {
     public abstract boolean teleport(Location location, PlayerTeleportEvent.TeleportCause cause);
 
     // ===== shared reflection helpers =====
+    // 反射目标只剩 Arclight 注入在 NMS Entity 上的 persistentInvisibility（EntityMixin），
+    // 这类成员不参与 srg 重映射，按字面名查找在运行时正确；NMS 自身成员一律走 AT/@Accessor。
 
     @Unique
     private static Field paperarc$field(Class<?> owner, String name) {
@@ -79,19 +81,6 @@ public abstract class CraftEntityApiMixin {
             return f;
         } catch (ReflectiveOperationException e) {
             return null;
-        }
-    }
-
-    @Unique
-    private static boolean paperarc$getBoolField(Entity handle, String name, boolean def) {
-        Field f = paperarc$field(Entity.class, name);
-        if (f == null) {
-            return def;
-        }
-        try {
-            return f.getBoolean(handle);
-        } catch (IllegalAccessException e) {
-            return def;
         }
     }
 
@@ -106,21 +95,6 @@ public abstract class CraftEntityApiMixin {
             return true;
         } catch (IllegalAccessException e) {
             return false;
-        }
-    }
-
-    @Unique
-    private static Object paperarc$invoke(Entity handle, String name, Object... args) {
-        Class<?>[] types = new Class<?>[args.length];
-        for (int i = 0; i < args.length; i++) {
-            types[i] = args[i] == null ? Object.class : args[i].getClass();
-        }
-        try {
-            Method m = Entity.class.getDeclaredMethod(name, types);
-            m.setAccessible(true);
-            return m.invoke(handle, args);
-        } catch (ReflectiveOperationException e) {
-            return null;
         }
     }
 
@@ -284,31 +258,25 @@ public abstract class CraftEntityApiMixin {
 
     @Unique
     public boolean fromMobSpawner() {
-        // Spigot-added NMS field `spawnedViaMobSpawner`; absent from the vanilla
-        // compile jar -> reflection, default false
-        return paperarc$getBoolField(this.getHandle(), "spawnedViaMobSpawner", false);
+        // Spigot 的 NMS 字段 spawnedViaMobSpawner 在 Arclight 1.20.1 上**不存在**
+        // （vanilla 没有、Arclight 的 EntityMixin 也没注入，已逐个核对），原先的反射
+        // 恒取不到值。语义不变地返回默认值，登记在 docs/gaps.md。
+        return false;
     }
 
     @Unique
     public CreatureSpawnEvent.SpawnReason getEntitySpawnReason() {
-        // Spigot-added NMS field `spawnReason`
-        Field f = paperarc$field(Entity.class, "spawnReason");
-        if (f != null) {
-            try {
-                Object v = f.get(this.getHandle());
-                if (v instanceof CreatureSpawnEvent.SpawnReason reason) {
-                    return reason;
-                }
-            } catch (IllegalAccessException ignored) {
-            }
-        }
+        // 同 fromMobSpawner()：Spigot 的 NMS 字段 spawnReason 在 Arclight 1.20.1 上不存在。
         return CreatureSpawnEvent.SpawnReason.DEFAULT;
     }
 
     @Unique
     public boolean isTicking() {
-        Object r = paperarc$invoke(this.getHandle(), "isTicking");
-        return r instanceof Boolean b && b;
+        // Paper 的 NMS Entity#isTicking() 不存在于 vanilla，其实现就是
+        // ServerLevel#isPositionEntityTicking(blockPosition())，这里直接内联。
+        Entity handle = this.getHandle();
+        return handle.level() instanceof ServerLevel level
+                && level.isPositionEntityTicking(handle.blockPosition());
     }
 
     @Unique
@@ -388,14 +356,8 @@ public abstract class CraftEntityApiMixin {
         }
         Entity handle = this.getHandle();
         handle.moveTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
-        // keep the spawn-reason API consistent for the added entity
-        Field reasonField = paperarc$field(Entity.class, "spawnReason");
-        if (reasonField != null) {
-            try {
-                reasonField.set(handle, reason);
-            } catch (IllegalAccessException ignored) {
-            }
-        }
+        // 注：Arclight 1.20.1 的 NMS Entity 上没有 Spigot 的 spawnReason 字段，
+        // 无处保存 reason（见 getEntitySpawnReason()）。
         net.minecraft.world.level.Level level = handle.level();
         try {
             // Spigot patches addFreshEntity(Entity, SpawnReason) onto Level;
