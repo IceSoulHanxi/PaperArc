@@ -221,6 +221,7 @@
     "bukkit.EnderSignalIfaceMixin",
     "bukkit.MenuTypeTypedIfaceMixin",
     "bukkit.PersistentDataContainerIfaceMixin",
+    "bukkit.PluginIfaceMixin",
     "bukkit.ProfileBanListIfaceMixin",
     "bukkit.SculkCatalystIfaceMixin",
     "bukkit.ServerLinksIfaceMixin",

@@ -20,6 +20,7 @@ arclight-api = '1.7.3'
 paper-api = '1.21.1-R0.1-SNAPSHOT'
 # Paper API 引用的 adventure 组件库（运行时 Arclight 不提供，需随包 shade）
 adventure = '4.17.0'
+kyori-option = '1.0.0'
 examination = '1.3.0'
 # MixinExtras（wrap 系列注入器，降低与 Arclight mixin 的冲突面）
 mixinextras = '0.4.1'
@@ -42,6 +43,10 @@ adventure-serializer-gson = { module = 'net.kyori:adventure-text-serializer-gson
 adventure-serializer-json = { module = 'net.kyori:adventure-text-serializer-json', version.ref = 'adventure' }
 adventure-serializer-legacy = { module = 'net.kyori:adventure-text-serializer-legacy', version.ref = 'adventure' }
 adventure-serializer-plain = { module = 'net.kyori:adventure-text-serializer-plain', version.ref = 'adventure' }
+# Plugin.getComponentLogger() 的返回类型 ComponentLogger 所在模块（slf4j-api 由各 loader 提供，不传递）
+adventure-logger-slf4j = { module = 'net.kyori:adventure-text-logger-slf4j', version.ref = 'adventure' }
+# adventure 4.17 起 Pointered/HoverEvent 等的静态初始化依赖 net.kyori:option 的 OptionState
+kyori-option = { module = 'net.kyori:option', version.ref = 'kyori-option' }
 examination-api = { module = 'net.kyori:examination-api', version.ref = 'examination' }
 examination-string = { module = 'net.kyori:examination-string', version.ref = 'examination' }
 
@@ -56,5 +61,6 @@ adventure = [
     'adventure-api', 'adventure-key', 'adventure-text-minimessage',
     'adventure-serializer-gson', 'adventure-serializer-json',
     'adventure-serializer-legacy', 'adventure-serializer-plain',
+    'adventure-logger-slf4j', 'kyori-option',
     'examination-api', 'examination-string',
 ]
