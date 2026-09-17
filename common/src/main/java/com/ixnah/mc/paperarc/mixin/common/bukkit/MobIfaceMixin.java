@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Unique;
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
  */
 @Mixin(targets = "org.bukkit.entity.Mob", remap = false)
-public interface MobIfaceMixin {
+public interface MobIfaceMixin extends io.papermc.paper.entity.Leashable {
 
     @Unique
     public abstract com.destroystokyo.paper.entity.Pathfinder getPathfinder();

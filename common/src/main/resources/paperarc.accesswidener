@@ -182,3 +182,7 @@ accessible field net/minecraft/world/level/block/entity/ChestBlockEntity openers
 accessible field net/minecraft/world/level/block/entity/EnderChestBlockEntity openersCounter Lnet/minecraft/world/level/block/entity/ContainerOpenersCounter;
 accessible field net/minecraft/world/entity/Mob lootTable Lnet/minecraft/resources/ResourceKey;
 accessible field net/minecraft/world/entity/Mob lootTableSeed J
+
+# AbstractSchoolingFish: private 鱼群状态（io.papermc.paper.entity.SchoolableFish，B3-2）
+accessible field net/minecraft/world/entity/animal/AbstractSchoolingFish leader Lnet/minecraft/world/entity/animal/AbstractSchoolingFish;
+accessible field net/minecraft/world/entity/animal/AbstractSchoolingFish schoolSize I

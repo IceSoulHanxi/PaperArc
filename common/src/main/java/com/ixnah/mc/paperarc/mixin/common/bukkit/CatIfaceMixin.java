@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Unique;
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
  */
 @Mixin(targets = "org.bukkit.entity.Cat", remap = false)
-public interface CatIfaceMixin {
+public interface CatIfaceMixin extends io.papermc.paper.entity.CollarColorable {
 
     @Unique
     public abstract void setLyingDown(boolean p0);
