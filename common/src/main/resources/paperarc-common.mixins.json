@@ -181,6 +181,7 @@
     "api.EyeOfEnderAccessorMixin",
     "api.HopperBlockEntityInvokerMixin",
     "api.JavaPluginApiMixin",
+    "api.LocationFinePositionMixin",
     "api.PaperEventApiMixin",
     "api.PersistentDataViewHolderBridgeMixin",
     "api.ProxiedNativeCommandSenderApiMixin",
