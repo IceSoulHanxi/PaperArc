@@ -255,11 +255,61 @@ public final class RuntimeClassInjector {
                         trace("[PaperArc] RuntimeClassInjector: bytes not found for " + name + " at " + resource);
                         continue;
                     }
-                    map.put(name, in.readAllBytes());
+                    map.put(name, stripNestAttributes(name, in.readAllBytes()));
                 }
             }
         }
         return map;
+    }
+
+    /**
+     * 剥掉嵌套类的 {@code InnerClasses} 自条目、{@code EnclosingMethod} 与 {@code NestHost}。
+     *
+     * <p>为什么必须剥：注入的是 paper-api 编译产物，`PlayerKickEvent$Cause` 的
+     * InnerClasses 里写着"我的外围类是 PlayerKickEvent"，而运行时的
+     * `PlayerKickEvent`（Arclight/spigot 版）根本没有这个嵌套类，它的 InnerClasses
+     * 里也就没有对应条目。JVM 的 {@code Class#getDeclaringClass0} 会双向校验这对
+     * 属性，一旦插件对注入类型调用 {@code getSimpleName()}/{@code getDeclaringClass()}
+     * /{@code getEnclosingClass()} 就抛
+     * {@code IncompatibleClassChangeError: … disagree on InnerClasses attribute}。
+     * Debuggery v1.5.1 金丝雀实测：它遍历 API 方法签名时对每个参数类型调
+     * {@code getSimpleName()}，直接导致插件 enable 失败（见任务书 A2-1 第五项）。
+     *
+     * <p>代价：这些类型的 {@code getSimpleName()} 变成二进制名（"PlayerKickEvent$Cause"
+     * 而不是 "Cause"），{@code getDeclaringClass()} 返回 null。相比整插件崩掉可以接受；
+     * 外围类在运行时已被 Arclight 的 mixin 管线加载/变换，去改它的 InnerClasses 不可行。
+     */
+    private static byte[] stripNestAttributes(String name, byte[] bytes) {
+        String internal = name.replace('.', '/');
+        if (internal.indexOf('$') < 0) {
+            return bytes;
+        }
+        try {
+            org.objectweb.asm.ClassReader reader = new org.objectweb.asm.ClassReader(bytes);
+            org.objectweb.asm.ClassWriter writer = new org.objectweb.asm.ClassWriter(0);
+            reader.accept(new org.objectweb.asm.ClassVisitor(org.objectweb.asm.Opcodes.ASM9, writer) {
+                @Override
+                public void visitOuterClass(String owner, String methodName, String descriptor) {
+                    // drop
+                }
+
+                @Override
+                public void visitNestHost(String nestHost) {
+                    // drop
+                }
+
+                @Override
+                public void visitInnerClass(String innerName, String outerName, String simpleName, int access) {
+                    if (!internal.equals(innerName)) {
+                        super.visitInnerClass(innerName, outerName, simpleName, access);
+                    }
+                }
+            }, 0);
+            return writer.toByteArray();
+        } catch (Throwable t) {
+            trace("[PaperArc] RuntimeClassInjector: strip nest attributes failed for " + name + ": " + t);
+            return bytes;
+        }
     }
 
     /** Collects the mod loader's whole parent chain plus TCCL, system loader and module layers. */
