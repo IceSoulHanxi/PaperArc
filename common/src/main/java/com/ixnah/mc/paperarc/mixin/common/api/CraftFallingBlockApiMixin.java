@@ -1,7 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.google.common.base.Preconditions;
-import com.ixnah.mc.paperarc.bridge.ApiState;
+import com.ixnah.mc.paperarc.bridge.FallingBlockEntityBridge;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -19,13 +19,14 @@ import org.spongepowered.asm.mixin.Unique;
  * Adds Paper's Expand-FallingBlock-API to {@link CraftFallingBlock}.
  *
  * <p>The {@code autoExpire} flag lives in an NMS field added by Paper's server
- * patch ({@code FallingBlockEntity.autoExpire}) which does not exist in this
- * Arclight-based runtime, so it is stored side-map style in {@link ApiState}
- * keyed by the NMS entity (default {@code true}, matching Paper's default).</p>
+ * patch ({@code FallingBlockEntity.autoExpire}); it is injected into the NMS
+ * class by {@code FallingBlockEntityFieldsMixin} and reached through
+ * {@link com.ixnah.mc.paperarc.bridge.FallingBlockEntityBridge} (default
+ * {@code true}, matching Paper's default).</p>
  *
  * <p>{@code FallingBlockEntity.blockState} is private in vanilla 1.21.1 with no
- * public setter, so {@link #setBlockData(BlockState)} writes it reflectively
- * (mojmap runtime name: {@code blockState}).</p>
+ * public setter, so {@link #setBlockData(BlockState)} writes it directly (the
+ * field is public in this NMS build; no reflection).</p>
  */
 @Mixin(CraftFallingBlock.class)
 public abstract class CraftFallingBlockApiMixin {
@@ -40,48 +41,13 @@ public abstract class CraftFallingBlockApiMixin {
     }
 
     @Unique
-    private static final String PAPERARC$AUTO_EXPIRE_KEY = "autoExpire";
-
-    @Unique
-    private static volatile java.lang.reflect.Field PAPERARC$BLOCK_STATE_FIELD;
-
-    @Unique
-    private static java.lang.reflect.Field paperarc$blockStateField() {
-        java.lang.reflect.Field f = PAPERARC$BLOCK_STATE_FIELD;
-        if (f == null) {
-            synchronized (CraftFallingBlockApiMixin.class) {
-                if (PAPERARC$BLOCK_STATE_FIELD == null) {
-                    try {
-                        java.lang.reflect.Field resolved = FallingBlockEntity.class.getDeclaredField("blockState");
-                        resolved.setAccessible(true);
-                        PAPERARC$BLOCK_STATE_FIELD = resolved;
-                    } catch (ReflectiveOperationException e) {
-                        throw new IllegalStateException("NMS FallingBlockEntity.blockState field not found", e);
-                    }
-                    f = PAPERARC$BLOCK_STATE_FIELD;
-                }
-            }
-        }
-        return f;
-    }
-
-    @Unique
-    private void paperarc$setNmsBlockState(BlockState newState) {
-        try {
-            paperarc$blockStateField().set(getHandle(), newState);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Failed to set NMS FallingBlockEntity.blockState", e);
-        }
-    }
-
-    @Unique
     public boolean doesAutoExpire() {
-        return ApiState.get(getHandle(), PAPERARC$AUTO_EXPIRE_KEY, Boolean.TRUE);
+        return ((com.ixnah.mc.paperarc.bridge.FallingBlockEntityBridge) getHandle()).paper$autoExpire();
     }
 
     @Unique
     public void shouldAutoExpire(boolean autoExpires) {
-        ApiState.put(getHandle(), PAPERARC$AUTO_EXPIRE_KEY, autoExpires);
+        ((com.ixnah.mc.paperarc.bridge.FallingBlockEntityBridge) getHandle()).paper$setAutoExpire(autoExpires);
     }
 
     @Unique
@@ -92,14 +58,9 @@ public abstract class CraftFallingBlockApiMixin {
     @Unique
     public void setBlockData(final BlockData blockData) {
         Preconditions.checkArgument(blockData != null, "blockData");
-        BlockState oldState;
-        try {
-            oldState = (BlockState) paperarc$blockStateField().get(getHandle());
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Failed to read NMS FallingBlockEntity.blockState", e);
-        }
+        BlockState oldState = getHandle().blockState;
         BlockState newState = ((CraftBlockData) blockData).getState();
-        paperarc$setNmsBlockState(newState);
+        getHandle().blockState = newState;
         this.getHandle().blockData = null;
 
         if (oldState != newState) {

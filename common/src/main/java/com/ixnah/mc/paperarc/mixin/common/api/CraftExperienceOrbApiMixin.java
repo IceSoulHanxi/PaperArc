@@ -1,24 +1,29 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
-import com.ixnah.mc.paperarc.bridge.ApiState;
+import com.ixnah.mc.paperarc.bridge.ExperienceOrbBridge;
 import org.bukkit.craftbukkit.v.entity.CraftExperienceOrb;
-import org.bukkit.entity.ExperienceOrb;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
-import java.lang.reflect.Field;
 import java.util.UUID;
 
 /**
  * Adds Paper's ExperienceOrb API (ExperienceOrbs-API-for-Reason-Source-Triggering-play
  * + ExperienceOrb-merging-stacking-API).
  *
- * {@code count} exists as a private vanilla field (reflection). The CB-added NMS
- * fields {@code sourceEntityId}, {@code triggerEntityId} and {@code spawnReason} do
- * not exist in the runtime NMS jar and Arclight adds no tracking either, so those
- * getters read the ApiState side-map and default to {@code null}; nothing populates
- * them until a spawn-site tracking bridge lands.
+ * {@code count} is widened via AT (public net.minecraft.world.entity.ExperienceOrb
+ * f_147072_) and accessed directly — no reflection. The CB-added NMS fields
+ * {@code sourceEntityId}, {@code triggerEntityId} and {@code spawnReason} are
+ * injected into the NMS orb by {@code ExperienceOrbFieldsMixin} and reached
+ * through {@link com.ixnah.mc.paperarc.bridge.ExperienceOrbBridge}; they
+ * default to {@code null} (IDs) / {@code UNKNOWN} (spawnReason) until a
+ * spawn-site tracking bridge populates them.
+ *
+ * <p>{@code spawnReason} is exposed again: its paper-api enum type
+ * {@code org.bukkit.entity.ExperienceOrb.SpawnReason} is injected into the
+ * classloader at mod construction by {@code RuntimeClassInjector} (embedded
+ * class bytes), so the runtime now has the type needed by the mixin signature.</p>
  */
 @Mixin(CraftExperienceOrb.class)
 public abstract class CraftExperienceOrbApiMixin {
@@ -27,58 +32,32 @@ public abstract class CraftExperienceOrbApiMixin {
     public abstract net.minecraft.world.entity.ExperienceOrb getHandle();
 
     @Unique
-    private static final String PAPERARC$KEY_SOURCE = "paperarc$sourceEntityId";
-    @Unique
-    private static final String PAPERARC$KEY_TRIGGER = "paperarc$triggerEntityId";
-    @Unique
-    private static final String PAPERARC$KEY_REASON = "paperarc$spawnReason";
-
-    // Owner for side-map entries: the NMS orb, so state survives Craft mirror recreation.
-    @Unique
-    private Object paperarc$owner() {
-        return this.getHandle();
-    }
-
-    @Unique
-    private int paperarc$count() {
-        try {
-            Field f = net.minecraft.world.entity.ExperienceOrb.class.getDeclaredField("count");
-            f.setAccessible(true);
-            return f.getInt(getHandle());
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("NMS ExperienceOrb.count not found", e);
-        }
-    }
-
-    @Unique
-    private void paperarc$count(int count) {
-        try {
-            Field f = net.minecraft.world.entity.ExperienceOrb.class.getDeclaredField("count");
-            f.setAccessible(true);
-            f.setInt(getHandle(), count);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("NMS ExperienceOrb.count not found", e);
-        }
-    }
-
-    @Unique
     public int getCount() {
-        return paperarc$count();
+        return this.getHandle().count;
     }
 
     @Unique
     public void setCount(int count) {
-        paperarc$count(count);
+        this.getHandle().count = count;
     }
 
     @Unique
     public UUID getSourceEntityId() {
-        return ApiState.get(paperarc$owner(), PAPERARC$KEY_SOURCE, null);
+        return ((ExperienceOrbBridge) this.getHandle()).paper$getSourceEntityId();
     }
 
     @Unique
     public UUID getTriggerEntityId() {
-        return ApiState.get(paperarc$owner(), PAPERARC$KEY_TRIGGER, null);
+        return ((ExperienceOrbBridge) this.getHandle()).paper$getTriggerEntityId();
+    }
+
+    @Unique
+    public org.bukkit.entity.ExperienceOrb.SpawnReason getSpawnReason() {
+        int ordinal = ((ExperienceOrbBridge) this.getHandle()).paper$getSpawnReasonOrdinal();
+        org.bukkit.entity.ExperienceOrb.SpawnReason[] values =
+                org.bukkit.entity.ExperienceOrb.SpawnReason.values();
+        return ordinal >= 0 && ordinal < values.length ? values[ordinal]
+                : org.bukkit.entity.ExperienceOrb.SpawnReason.UNKNOWN;
     }
 
 }

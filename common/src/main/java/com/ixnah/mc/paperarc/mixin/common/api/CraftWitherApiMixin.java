@@ -1,21 +1,22 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
+import com.ixnah.mc.paperarc.bridge.WitherBossBridge;
+import net.minecraft.world.entity.boss.wither.WitherBoss;
 import org.bukkit.craftbukkit.v.entity.CraftWither;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
-import com.ixnah.mc.paperarc.bridge.ApiState;
-import net.minecraft.world.entity.boss.wither.WitherBoss;
-
 /**
  * Adds Paper's Missing-Entity-API additions to CraftWither.
  *
- * Paper ref: patches/server/Missing-Entity-API.patch (CraftWither + WitherBoss hunks).
+ * <p>Paper ref: patches/server/Missing-Entity-API.patch (CraftWither + WitherBoss hunks).
  * All methods delegate straight to NMS WitherBoss except setCanTravelThroughPortals:
- * Paper stores the flag in a private {@code canPortal} field added to WitherBoss, which
- * does not exist in vanilla mojmap NMS, so it is kept in the ApiState side-map keyed by
- * the handle instance (no vanilla consumer reads it; noted in report).
+ * Paper stores the flag in a private {@code canPortal} field added to WitherBoss,
+ * injected here by {@code WitherBossFieldsMixin} and reached through
+ * {@link WitherBossBridge}. Paper adds a NMS setter
+ * {@code setCanTravelThroughPortals(boolean)} (used by the bridge under that name)
+ * and no getter, so the read path uses {@code paper$canPortal()}.
  */
 @Mixin(CraftWither.class)
 public abstract class CraftWitherApiMixin {
@@ -40,19 +41,30 @@ public abstract class CraftWitherApiMixin {
 
     @Unique
     public boolean canTravelThroughPortals() {
-        // Paper: return getHandle().canUsePortal(false);
+        // 1.21.1：无参的 canChangeDimensions() 已换成 canUsePortal(boolean)
+        //（无参版在 1.20.1 存在；1.21.1 只剩 canChangeDimensions(Level, Level)）。
+        // allowPassengers=false 对应 Paper 这里的语义：只问实体自身能不能走传送门。
         return this.getHandle().canUsePortal(false);
     }
 
     @Unique
     public void setCanTravelThroughPortals(boolean value) {
-        // Paper sets a private WitherBoss#canPortal field that vanilla mojmap lacks -> side-map.
-        ApiState.put(this.getHandle(), "canTravelThroughPortals", value);
+        ((WitherBossBridge) this.getHandle()).setCanTravelThroughPortals(value);
     }
 
     @Unique
     public void enterInvulnerabilityPhase() {
         // Paper: this.getHandle().makeInvulnerable();
         this.getHandle().makeInvulnerable();
+    }
+
+    /** Paper 在 WitherBoss 上覆写 canChangeDimensions 以尊重 API 开关；1.21.1 改成两参签名。 */
+    @Unique
+    public boolean canChangeDimensions(net.minecraft.world.level.Level from,
+                                       net.minecraft.world.level.Level to) {
+        if (!((WitherBossBridge) this.getHandle()).paper$canPortal()) {
+            return false;
+        }
+        return this.getHandle().canChangeDimensions(from, to);
     }
 }

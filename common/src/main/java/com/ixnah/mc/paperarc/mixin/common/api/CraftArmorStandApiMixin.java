@@ -14,10 +14,10 @@ import org.spongepowered.asm.mixin.Unique;
  *
  * <p>Rotations map directly onto vanilla {@code net.minecraft.core.Rotations}
  * pose getters/setters (public in mojmap). {@code disabledSlots} is private in
- * vanilla NMS and there is no access-widener here, so it is read/written via
- * reflection using vanilla's own bit layout. {@code canMove}/{@code canTick}
- * are Paper-added NMS fields that do not exist in this vanilla-based runtime,
- * so they live in the ApiState side map keyed by the NMS handle.</p>
+ * vanilla NMS, widened via AT (f_31541_) and read/written directly using
+ * vanilla's own bit layout. {@code canMove}/{@code canTick} are Paper-added NMS
+ * fields injected into {@code ArmorStand} by {@code ArmorStandFieldsMixin} and
+ * reached through {@link com.ixnah.mc.paperarc.bridge.ArmorStandBridge}.</p>
  */
 @Mixin(CraftArmorStand.class)
 public abstract class CraftArmorStandApiMixin {
@@ -28,7 +28,6 @@ public abstract class CraftArmorStandApiMixin {
     @Unique
     public ItemStack getItem(EquipmentSlot slot) {
         com.google.common.base.Preconditions.checkArgument(slot != null, "slot");
-        com.google.common.base.Preconditions.checkArgument(slot != EquipmentSlot.BODY, "Cannot get body item");
         return org.bukkit.craftbukkit.v.inventory.CraftItemStack.asCraftMirror(
                 this.getHandle().getItemBySlot(CraftEquipmentSlot.getNMS(slot)));
     }
@@ -36,7 +35,6 @@ public abstract class CraftArmorStandApiMixin {
     @Unique
     public void setItem(EquipmentSlot slot, ItemStack item) {
         com.google.common.base.Preconditions.checkArgument(slot != null, "slot");
-        com.google.common.base.Preconditions.checkArgument(slot != EquipmentSlot.BODY, "Cannot set body item");
         org.bukkit.inventory.EntityEquipment equipment = ((org.bukkit.entity.LivingEntity) (Object) this).getEquipment();
         switch (slot) {
             case HAND:
@@ -61,31 +59,10 @@ public abstract class CraftArmorStandApiMixin {
         throw new UnsupportedOperationException(slot.name());
     }
 
-    // vanilla ArmorStand.disabledSlots is private and there is no access widener here
-    @Unique
-    private static java.lang.reflect.Field paperarc$disabledSlotsField;
-
-    @Unique
-    private static java.lang.reflect.Field paperarc$disabledSlotsField() {
-        if (paperarc$disabledSlotsField == null) {
-            try {
-                java.lang.reflect.Field f = net.minecraft.world.entity.decoration.ArmorStand.class.getDeclaredField("disabledSlots");
-                f.setAccessible(true);
-                paperarc$disabledSlotsField = f;
-            } catch (ReflectiveOperationException e) {
-                throw new IllegalStateException("paperarc: cannot reflect ArmorStand.disabledSlots", e);
-            }
-        }
-        return paperarc$disabledSlotsField;
-    }
-
+    // vanilla ArmorStand.disabledSlots widened via AT (f_31541_)
     @Unique
     private int paperarc$getRawDisabledSlots() {
-        try {
-            return paperarc$disabledSlotsField().getInt(this.getHandle());
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("paperarc: cannot read ArmorStand.disabledSlots", e);
-        }
+        return this.getHandle().disabledSlots;
     }
 
     @Unique
@@ -113,11 +90,7 @@ public abstract class CraftArmorStandApiMixin {
             net.minecraft.world.entity.EquipmentSlot nmsSlot = CraftEquipmentSlot.getNMS(slot);
             disabled += (1 << nmsSlot.getFilterFlag()) + (1 << (nmsSlot.getFilterFlag() + 8)) + (1 << (nmsSlot.getFilterFlag() + 16));
         }
-        try {
-            paperarc$disabledSlotsField().setInt(this.getHandle(), disabled);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("paperarc: cannot write ArmorStand.disabledSlots", e);
-        }
+        this.getHandle().disabledSlots = disabled;
     }
 
     @Unique
@@ -196,25 +169,25 @@ public abstract class CraftArmorStandApiMixin {
 
     @Unique
     public boolean canMove() {
-        // Paper stores this as an NMS field (public boolean canMove); not present in vanilla runtime -> side-map
-        return com.ixnah.mc.paperarc.bridge.ApiState.get(this.getHandle(), "paperarc.canMove", Boolean.TRUE);
+        return ((com.ixnah.mc.paperarc.bridge.ArmorStandBridge) this.getHandle()).paper$canMove();
     }
 
     @Unique
     public void setCanMove(boolean move) {
-        com.ixnah.mc.paperarc.bridge.ApiState.put(this.getHandle(), "paperarc.canMove", move);
+        ((com.ixnah.mc.paperarc.bridge.ArmorStandBridge) this.getHandle()).paper$setCanMove(move);
     }
 
     @Unique
     public boolean canTick() {
-        // Paper default: world.paperConfig().entities.armorStands.tick (defaults to true)
-        return com.ixnah.mc.paperarc.bridge.ApiState.get(this.getHandle(), "paperarc.canTick", Boolean.TRUE);
+        return ((com.ixnah.mc.paperarc.bridge.ArmorStandBridge) this.getHandle()).paper$canTick();
     }
 
     @Unique
     public void setCanTick(boolean tick) {
-        // Paper also sets canTickSetByAPI=true for NBT persistence; side-map has no persistence layer
-        com.ixnah.mc.paperarc.bridge.ApiState.put(this.getHandle(), "paperarc.canTick", tick);
+        com.ixnah.mc.paperarc.bridge.ArmorStandBridge handle =
+                (com.ixnah.mc.paperarc.bridge.ArmorStandBridge) this.getHandle();
+        handle.paper$setCanTick(tick);
+        handle.paper$setCanTickSetByAPI(true); // Paper persists the override via NBT
     }
 
     @Unique

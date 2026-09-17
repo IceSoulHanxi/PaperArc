@@ -38,3 +38,18 @@ accessible field net/minecraft/world/entity/item/FallingBlockEntity blockState L
 # NetworkClient（Player.getProtocolVersion/getVirtualHost）：连接对象在 1.21.1 上移到了
 # ServerCommonPacketListenerImpl，且是 protected（ServerHandshakeNetworkClientMixin / CraftPlayerApiMixin）
 accessible field net/minecraft/server/network/ServerCommonPacketListenerImpl connection Lnet/minecraft/network/Connection;
+
+# B6/B8：字段注入重构与去反射需要的 NMS 成员（条目由
+# tools/scripts/aw-from-compile-errors.py 从 javac 的可见性错误生成，描述符经 javap 核对）。
+# 注意 1.20.1 分支的 accesstransformer.cfg 是 srg 名，不能机械搬过来。
+accessible field net/minecraft/world/entity/decoration/ArmorStand disabledSlots I
+accessible method net/minecraft/world/entity/animal/Bee isRolling ()Z
+accessible method net/minecraft/world/entity/animal/Bee setRolling (Z)V
+accessible field net/minecraft/world/entity/animal/Bee numCropsGrownSincePollination I
+accessible field net/minecraft/world/entity/animal/Bee ticksWithoutNectarSinceExitingHive I
+accessible field net/minecraft/world/entity/ExperienceOrb count I
+accessible field net/minecraft/world/entity/item/ItemEntity age I
+accessible field net/minecraft/world/entity/item/ItemEntity health I
+accessible field net/minecraft/world/entity/item/ItemEntity pickupDelay I
+accessible field net/minecraft/world/entity/monster/Phantom anchorPoint Lnet/minecraft/core/BlockPos;
+accessible field net/minecraft/world/entity/npc/WanderingTrader wanderTarget Lnet/minecraft/core/BlockPos;
