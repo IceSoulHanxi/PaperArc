@@ -119,6 +119,10 @@ dependencies {
     shade "net.kyori:adventure-text-serializer-json:${rootProject.adventure_version}"
     shade "net.kyori:adventure-text-serializer-legacy:${rootProject.adventure_version}"
     shade "net.kyori:adventure-text-serializer-plain:${rootProject.adventure_version}"
+    // Plugin.getComponentLogger() 的返回类型，运行时必须能解析（slf4j-api 由 Forge 提供，故不传递）
+    shade("net.kyori:adventure-text-logger-slf4j:${rootProject.adventure_version}") {
+        transitive = false
+    }
     shade "net.kyori:examination-api:${rootProject.examination_version}"
     shade "net.kyori:examination-string:${rootProject.examination_version}"
     // 注意：MixinExtras 不 shade，作为独立 jar 由 Forge 以 GAMELIBRARY 方式从 mods/ 加载
