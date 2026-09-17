@@ -1160,4 +1160,28 @@ public abstract class CraftPlayerApiMixin {
         return handle.serverLevel().getChunkSource().chunkMap.isChunkTracked(
                 handle, (int) chunkKey, (int) (chunkKey >> 32));
     }
+
+    @Unique
+    public com.destroystokyo.paper.profile.PlayerProfile getPlayerProfile() {
+        return new com.ixnah.mc.paperarc.bridge.CraftPlayerProfile(getHandle().getGameProfile());
+    }
+
+    // CraftPlayer 走的是 CraftHumanEntity 那条链，拿不到 CraftOfflinePlayer 上的实现体，
+    // 这三个 OfflinePlayer 方法要在两边各写一份（PARTIAL_IMPL 门禁抓到）。
+
+    @Unique
+    public boolean isConnected() {
+        return getHandle().connection != null;
+    }
+
+    @Unique
+    public long getLastLogin() {
+        return ((org.bukkit.OfflinePlayer) (Object) this).getLastPlayed();
+    }
+
+    @Unique
+    public long getLastSeen() {
+        org.bukkit.OfflinePlayer self = (org.bukkit.OfflinePlayer) (Object) this;
+        return self.isOnline() ? System.currentTimeMillis() : self.getLastPlayed();
+    }
 }

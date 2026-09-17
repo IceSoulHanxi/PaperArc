@@ -64,4 +64,10 @@ public interface ItemMetaIfaceMixin {
 
     @Unique
     public abstract void setPlaceableKeys(java.util.Collection p0);
+
+    @Unique
+    public abstract net.kyori.adventure.text.Component itemName();
+
+    @Unique
+    public abstract void itemName(net.kyori.adventure.text.Component p0);
 }

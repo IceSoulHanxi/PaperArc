@@ -16,7 +16,11 @@ import org.spongepowered.asm.mixin.Unique;
  * protected static {@code getMin}/{@code getMax} helpers used by Paper's
  * implementation resolve after the mixin is merged into the target.
  */
-@Mixin(CraftLeaves.class)
+// CraftCherryLeaves / CraftMangroveLeaves 是独立生成的 BlockData 实现类，
+// 不继承 CraftLeaves，必须一起挂（PARTIAL_IMPL 门禁）。
+@Mixin({CraftLeaves.class,
+        org.bukkit.craftbukkit.v.block.impl.CraftCherryLeaves.class,
+        org.bukkit.craftbukkit.v.block.impl.CraftMangroveLeaves.class})
 public abstract class CraftLeavesApiMixin extends CraftBlockData {
 
     @Unique

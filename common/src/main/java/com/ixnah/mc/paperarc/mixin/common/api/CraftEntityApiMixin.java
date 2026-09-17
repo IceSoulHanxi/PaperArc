@@ -467,4 +467,21 @@ public abstract class CraftEntityApiMixin {
                         handle.getUUID(), this.name());
         return net.kyori.adventure.text.event.HoverEvent.showEntity(op == null ? show : op.apply(show));
     }
+
+    // ===== B2-4：Nameable 的 adventure 版（paper） =====
+
+    @Unique
+    public net.kyori.adventure.text.Component customName() {
+        String legacy = ((org.bukkit.entity.Entity) (Object) this).getCustomName();
+        return legacy == null ? null
+                : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
+                        .legacySection().deserialize(legacy);
+    }
+
+    @Unique
+    public void customName(net.kyori.adventure.text.Component customName) {
+        ((org.bukkit.entity.Entity) (Object) this).setCustomName(customName == null ? null
+                : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
+                        .legacySection().serialize(customName));
+    }
 }

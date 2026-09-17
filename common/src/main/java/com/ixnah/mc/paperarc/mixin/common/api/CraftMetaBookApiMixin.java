@@ -19,28 +19,37 @@ import org.spongepowered.asm.mixin.Unique;
  * {@code BookMetaBuilder} returned by {@code toBuilder()} mutates this meta in
  * place (Arclight has no builder plumbing) but satisfies the injected interface.</p>
  */
-@Mixin(CraftMetaBook.class)
+// CraftMetaBookSigned 直接继承 CraftMetaItem 并实现 BookMeta（不继承 CraftMetaBook），
+// 不一起挂的话成书调 title()/author()/toBuilder() 就是 AbstractMethodError（PARTIAL_IMPL 门禁）。
+// 多目标 mixin 的硬要求：每个 @Shadow 都要写 remap = false —— 一个 @Shadow 在多个目标之间
+// 没法共用一条 refmap 条目，Mixin 直接 InvalidMixinException
+// （实测 "Found a remappable @Shadow annotation on getTitle"，整个 mixin 不应用，
+// 连原本单目标时能用的方法也一起没了）。注意写在 @Mixin 上的 remap = false **不管用**，
+// 它只影响注解处理器生成 refmap，运行期查的是 @Shadow 自己的 remap。
+// 这里目标全是 CraftBukkit 类，本来就不参与重映射。
+@Mixin(value = {CraftMetaBook.class, org.bukkit.craftbukkit.v.inventory.CraftMetaBookSigned.class},
+       remap = false)
 public abstract class CraftMetaBookApiMixin {
 
-    @Shadow
+    @Shadow(remap = false)
     public abstract String getTitle();
 
-    @Shadow
+    @Shadow(remap = false)
     public abstract boolean setTitle(String title);
 
-    @Shadow
+    @Shadow(remap = false)
     public abstract String getAuthor();
 
-    @Shadow
+    @Shadow(remap = false)
     public abstract void setAuthor(String author);
 
-    @Shadow
+    @Shadow(remap = false)
     public abstract String getPage(int index);
 
-    @Shadow
+    @Shadow(remap = false)
     public abstract void setPage(int index, String page);
 
-    @Shadow
+    @Shadow(remap = false)
     public abstract void addPage(String... pages);
 
     @Unique

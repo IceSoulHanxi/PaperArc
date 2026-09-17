@@ -63,4 +63,54 @@ public abstract class CraftProfileBanListApiMixin {
         }
         return (BanEntry<PlayerProfile>) (BanEntry<?>) this.addBan(gameProfile, reason, expires, source);
     }
+
+    // ===== B2-4：paper 的 org.bukkit.profile.PlayerProfile 重载 =====
+
+    @Unique
+    private com.mojang.authlib.GameProfile paperarc$gameProfile(org.bukkit.profile.PlayerProfile target) {
+        Preconditions.checkArgument(target != null, "Target cannot be null");
+        return new com.mojang.authlib.GameProfile(
+                target.getUniqueId() == null ? new java.util.UUID(0L, 0L) : target.getUniqueId(),
+                target.getName());
+    }
+
+    @Unique
+    @SuppressWarnings("unchecked")
+    public <E extends BanEntry<? super PlayerProfile>> E addBan(org.bukkit.profile.PlayerProfile target,
+                                                                String reason, java.time.Duration duration,
+                                                                String source) {
+        Date expires = duration == null ? null
+                : Date.from(java.time.Instant.now().plus(duration));
+        return (E) (BanEntry<?>) this.addBan(paperarc$gameProfile(target), reason, expires, source);
+    }
+
+    @Unique
+    @SuppressWarnings("unchecked")
+    public <E extends BanEntry<? super PlayerProfile>> E addBan(org.bukkit.profile.PlayerProfile target,
+                                                                String reason, java.time.Instant instant,
+                                                                String source) {
+        return (E) (BanEntry<?>) this.addBan(paperarc$gameProfile(target), reason,
+                instant == null ? null : Date.from(instant), source);
+    }
+
+    @Unique
+    @SuppressWarnings("unchecked")
+    public <E extends BanEntry<? super PlayerProfile>> E getBanEntry(org.bukkit.profile.PlayerProfile target) {
+        return (E) (BanEntry<?>) ((org.bukkit.BanList<com.mojang.authlib.GameProfile>) (Object) this)
+                .getBanEntry(paperarc$gameProfile(target));
+    }
+
+    @Unique
+    @SuppressWarnings("unchecked")
+    public boolean isBanned(org.bukkit.profile.PlayerProfile target) {
+        return ((org.bukkit.BanList<com.mojang.authlib.GameProfile>) (Object) this)
+                .isBanned(paperarc$gameProfile(target));
+    }
+
+    @Unique
+    @SuppressWarnings("unchecked")
+    public void pardon(org.bukkit.profile.PlayerProfile target) {
+        ((org.bukkit.BanList<com.mojang.authlib.GameProfile>) (Object) this)
+                .pardon(paperarc$gameProfile(target));
+    }
 }

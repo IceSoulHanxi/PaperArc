@@ -22,4 +22,7 @@ public interface OfflinePlayerIfaceMixin {
 
     @Unique
     public abstract io.papermc.paper.persistence.PersistentDataContainerView getPersistentDataContainer();
+
+    @Unique
+    public abstract com.destroystokyo.paper.profile.PlayerProfile getPlayerProfile();
 }

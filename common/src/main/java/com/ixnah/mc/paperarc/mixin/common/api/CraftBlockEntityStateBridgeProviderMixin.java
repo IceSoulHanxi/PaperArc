@@ -5,6 +5,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.bukkit.craftbukkit.v.block.CraftBlockEntityState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 
 /**
  * Merges {@link CraftBlockEntityStateBridge} onto {@code CraftBlockEntityState}.
@@ -19,6 +20,20 @@ public abstract class CraftBlockEntityStateBridgeProviderMixin implements CraftB
     @Override
     public BlockEntity paperarc$getSnapshot() {
         return this.getSnapshot();
+    }
+
+    @Shadow
+    @org.spongepowered.asm.mixin.Final
+    private BlockEntity tileEntity;
+
+    @Shadow
+    @org.spongepowered.asm.mixin.Final
+    private BlockEntity snapshot;
+
+    /** Paper 的 {@code TileState#isSnapshot()}：快照副本与世界里的实体不是同一个对象即为快照。 */
+    @Unique
+    public boolean isSnapshot() {
+        return this.snapshot != this.tileEntity;
     }
 
     @Shadow

@@ -28,4 +28,11 @@ public interface RegionAccessorIfaceMixin {
 
     @Unique
     public abstract boolean hasCollisionsIn(org.bukkit.util.BoundingBox p0);
+
+    /**
+     * 实现体是运行时 CraftBukkit 自带的（CraftRegionAccessor 上已有同签名方法），
+     * 只有运行时**接口**少了这条声明，插件按接口调用才会 NoSuchMethodError。
+     */
+    @Unique
+    public abstract org.bukkit.entity.Entity spawn(org.bukkit.Location p0, java.lang.Class p1, java.util.function.Consumer p2, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason p3);
 }

@@ -13,4 +13,19 @@ public interface ProfileBanListIfaceMixin {
 
     @Unique
     public abstract org.bukkit.BanEntry addBan(com.destroystokyo.paper.profile.PlayerProfile p0, java.lang.String p1, java.util.Date p2, java.lang.String p3);
+
+    @Unique
+    public abstract org.bukkit.BanEntry addBan(org.bukkit.profile.PlayerProfile p0, java.lang.String p1, java.time.Duration p2, java.lang.String p3);
+
+    @Unique
+    public abstract org.bukkit.BanEntry addBan(org.bukkit.profile.PlayerProfile p0, java.lang.String p1, java.time.Instant p2, java.lang.String p3);
+
+    @Unique
+    public abstract org.bukkit.BanEntry getBanEntry(org.bukkit.profile.PlayerProfile p0);
+
+    @Unique
+    public abstract boolean isBanned(org.bukkit.profile.PlayerProfile p0);
+
+    @Unique
+    public abstract void pardon(org.bukkit.profile.PlayerProfile p0);
 }

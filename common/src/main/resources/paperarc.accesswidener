@@ -178,3 +178,7 @@ mutable field net/minecraft/world/entity/player/Player gameProfile Lcom/mojang/a
 mutable field net/minecraft/network/protocol/game/ClientboundPlayerInfoUpdatePacket entries Ljava/util/List;
 accessible method net/minecraft/server/level/ChunkMap isChunkTracked (Lnet/minecraft/server/level/ServerPlayer;II)Z
 accessible field net/minecraft/world/level/block/entity/BeaconBlockEntity levels I
+accessible field net/minecraft/world/level/block/entity/ChestBlockEntity openersCounter Lnet/minecraft/world/level/block/entity/ContainerOpenersCounter;
+accessible field net/minecraft/world/level/block/entity/EnderChestBlockEntity openersCounter Lnet/minecraft/world/level/block/entity/ContainerOpenersCounter;
+accessible field net/minecraft/world/entity/Mob lootTable Lnet/minecraft/resources/ResourceKey;
+accessible field net/minecraft/world/entity/Mob lootTableSeed J

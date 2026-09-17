@@ -1,5 +1,21 @@
-# check-iface-impl-pairing.py 的基线（B2-1c 建立，2026-09-17）。
+# check-iface-impl-pairing.py 的基线（B2-1c 建立，B2-4 更新）。
 # 每行一条已知问题；门禁只对**新增**条目失败。修掉一条就从这里删一行。
 #
-# 2026-09-17 B2-4：建立时的 29 条 NO_IMPL（Player 19 / Server 5 / Beacon 3 / Campfire 2）
-# 已全部实现，基线清空。以后新增条目要写清楚原因和计划。
+# 2026-09-17 B2-4：建立时的 29 条 NO_IMPL 与 PARTIAL_IMPL 抓出来的 36 条已全部实现，
+# 只剩下面三条脚本口径造成的误报。
+
+# 实现体故意挂在公共基类 CraftBlockEntityState 上（它本身不实现 Nameable，
+# 但所有实现 Nameable 的方块状态都继承它），脚本要求宿主自己实现该接口，属误报。
+NO_DECL org/bukkit/craftbukkit/v/block/CraftBlockEntityState#customName/0
+NO_DECL org/bukkit/craftbukkit/v/block/CraftBlockEntityState#customName/1
+
+# Plugin 的具体实现类是**插件自己的主类**，不在 org.bukkit 里；脚本只扫运行时 jar，
+# 找不到具体实现类。实际实现体在 api/JavaPluginApiMixin 上（探针 P12 已验证 pluginMeta）。
+NO_RUNTIME_IMPLCLASS org/bukkit/plugin/Plugin#getPluginMeta/0
+
+# PotionBrewer 的实现体在 bridge/PaperarcPotionBrewer（Arclight 1.21.1 运行时没有
+# CraftPotionBrewer，Server#getPotionBrewer() 返回的就是这个普通类）。脚本只扫 mixin 与
+# 运行时 jar，看不到仓库里的普通 bridge 类，属误报；探针 P16 已真机验证。
+NO_RUNTIME_IMPLCLASS org/bukkit/potion/PotionBrewer#addPotionMix/1
+NO_RUNTIME_IMPLCLASS org/bukkit/potion/PotionBrewer#removePotionMix/1
+NO_RUNTIME_IMPLCLASS org/bukkit/potion/PotionBrewer#resetPotionMixes/0

@@ -246,4 +246,7 @@ public interface PlayerIfaceMixin extends Identified, BossBarViewer, NetworkClie
 
     @Unique
     public abstract void showTitle(net.md_5.bungee.api.chat.BaseComponent[] p0, net.md_5.bungee.api.chat.BaseComponent[] p1, int p2, int p3, int p4);
+
+    @Unique
+    public abstract com.destroystokyo.paper.profile.PlayerProfile getPlayerProfile();
 }

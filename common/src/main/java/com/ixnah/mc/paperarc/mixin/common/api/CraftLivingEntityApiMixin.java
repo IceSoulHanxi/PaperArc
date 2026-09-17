@@ -488,4 +488,46 @@ public abstract class CraftLivingEntityApiMixin {
         }
         this.getHandle().startUsingItem(nmsHand);
     }
+
+    // ===== B2-4：paper-api 缺口 =====
+
+    @Unique
+    public void heal(double amount, org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason reason) {
+        com.google.common.base.Preconditions.checkArgument(reason != null, "reason cannot be null");
+        org.bukkit.entity.LivingEntity self = (org.bukkit.entity.LivingEntity) (Object) this;
+        org.bukkit.event.entity.EntityRegainHealthEvent event =
+                new org.bukkit.event.entity.EntityRegainHealthEvent(self, amount, reason);
+        if (!event.callEvent()) {
+            return;
+        }
+        self.setHealth(Math.min(self.getHealth() + event.getAmount(), self.getMaxHealth()));
+    }
+
+    @Unique
+    public <T extends org.bukkit.entity.Projectile> T launchProjectile(
+            Class<? extends T> projectile, org.bukkit.util.Vector velocity,
+            java.util.function.Consumer<? super T> function) {
+        // 偏差同 CraftBlockProjectileSourceApiMixin：Paper 在实体入世前跑 consumer，这里在之后。
+        T launched = ((org.bukkit.projectiles.ProjectileSource) (Object) this)
+                .launchProjectile(projectile, velocity);
+        if (function != null && launched != null) {
+            function.accept(launched);
+        }
+        return launched;
+    }
+
+    @Unique
+    public void registerAttribute(org.bukkit.attribute.Attribute attribute) {
+        com.google.common.base.Preconditions.checkArgument(attribute != null, "attribute cannot be null");
+        net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> holder =
+                org.bukkit.craftbukkit.v.attribute.CraftAttribute.bukkitToMinecraftHolder(attribute);
+        net.minecraft.world.entity.ai.attributes.AttributeMap map = this.getHandle().getAttributes();
+        if (map.hasAttribute(holder)) {
+            return;
+        }
+        // NMS AttributeMap 没有 registerAttribute（那是 Paper 加的），直接往
+        // paperarc.accesswidener 放开的 attributes 表里塞一个默认实例。
+        map.attributes.put(holder, new net.minecraft.world.entity.ai.attributes.AttributeInstance(
+                holder, instance -> { }));
+    }
 }
