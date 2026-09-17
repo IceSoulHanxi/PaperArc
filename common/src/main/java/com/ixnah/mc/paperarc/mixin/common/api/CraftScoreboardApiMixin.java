@@ -23,9 +23,10 @@ import java.util.Set;
  *   <li>Paper "Improve-scoreboard-entries": {@code getEntityTeam(Entity)},
  *       {@code getScoresFor(Entity)} and {@code resetScoresFor(Entity)}. These are pure
  *       entry-string conveniences, so they delegate to the existing String-based
- *       {@code getEntryTeam}/{@code getScores}/{@code resetScores} keyed by the entity's
- *       scoreboard name ({@link Entity#getName()}, identical to NMS
- *       {@code Entity#getScoreBoardName()}).</li>
+ *       {@code getEntryTeam}/{@code getScores}/{@code resetScores} keyed by NMS
+ *       {@code Entity#getScoreboardName()}（玩家是用户名，其余实体是 UUID 串）。
+ *       注意**不能**用 Bukkit 的 {@link Entity#getName()}：非玩家实体返回的是
+ *       "entity.minecraft.xxx" 翻译键，与 CraftTeam 侧的条目名对不上。</li>
  *   <li>Paper "Adventure": {@code registerNewObjective} overloads taking a
  *       {@link Component} display name. Components are serialized to legacy Strings
  *       (same strategy as CraftMenuTypeApiMixin / CraftSignSideApiMixin, since this
@@ -61,19 +62,19 @@ public abstract class CraftScoreboardApiMixin {
     @Unique
     public Team getEntityTeam(Entity entity) {
         Preconditions.checkArgument(entity != null, "Entity cannot be null");
-        return this.getEntryTeam(entity.getName());
+        return this.getEntryTeam(paperarc$scoreboardName(entity));
     }
 
     @Unique
     public Set<Score> getScoresFor(Entity entity) {
         Preconditions.checkArgument(entity != null, "Entity cannot be null");
-        return this.getScores(entity.getName());
+        return this.getScores(paperarc$scoreboardName(entity));
     }
 
     @Unique
     public void resetScoresFor(Entity entity) {
         Preconditions.checkArgument(entity != null, "Entity cannot be null");
-        this.resetScores(entity.getName());
+        this.resetScores(paperarc$scoreboardName(entity));
     }
 
     // ---- Adventure registerNewObjective ----
@@ -134,5 +135,11 @@ public abstract class CraftScoreboardApiMixin {
             PAPERARC$REGISTER_CRITERIA = m;
         }
         return m;
+    }
+
+    /** 见类注释：记分板条目名一律取 NMS Entity#getScoreboardName()。 */
+    @Unique
+    private static String paperarc$scoreboardName(Entity entity) {
+        return ((org.bukkit.craftbukkit.v.entity.CraftEntity) entity).getHandle().getScoreboardName();
     }
 }
