@@ -48,7 +48,7 @@ public abstract class LecternMenuPageChangeMixin {
         PlayerLecternPageChangeEvent event = new PlayerLecternPageChangeEvent(
             PaperArcBridge.bukkitPlayer(player),
             inv.getHolder(),
-            inv.getBook(),
+            inv.getItem(0), // Paper 的 LecternInventory#getBook() 是 default 方法，运行时接口没有
             direction,
             oldPage,
             oldPage + delta

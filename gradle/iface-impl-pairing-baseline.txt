@@ -2,7 +2,7 @@
 # 每行一条已知问题；门禁只对**新增**条目失败。修掉一条就从这里删一行。
 # 跑法见 common/build.gradle 的 checkIfaceImplPairing 任务（./gradlew :common:check）。
 #
-# ---- NO_DECL (115) ----
+# ---- NO_DECL (113) ----
 NO_DECL org/bukkit/craftbukkit/v/CraftChunk#getChunkSnapshot/4
 NO_DECL org/bukkit/craftbukkit/v/CraftRaid#getBossBar/0
 NO_DECL org/bukkit/craftbukkit/v/CraftRaid#getId/0
@@ -60,8 +60,6 @@ NO_DECL org/bukkit/craftbukkit/v/block/CraftStructureBlock#getMode/0
 NO_DECL org/bukkit/craftbukkit/v/block/CraftStructureBlock#setMode/1
 NO_DECL org/bukkit/craftbukkit/v/block/data/CraftBlockData#getCollisionShape/1
 NO_DECL org/bukkit/craftbukkit/v/block/impl/CraftPinkPetals#getMinimumFlowerAmount/0
-NO_DECL org/bukkit/craftbukkit/v/block/sign/CraftSignSide#line/1
-NO_DECL org/bukkit/craftbukkit/v/block/sign/CraftSignSide#line/2
 NO_DECL org/bukkit/craftbukkit/v/entity/CraftEntity#broadcastHurtAnimation/1
 NO_DECL org/bukkit/craftbukkit/v/entity/CraftEntity#hasNoPhysics/0
 NO_DECL org/bukkit/craftbukkit/v/entity/CraftEntity#isInvisible/0

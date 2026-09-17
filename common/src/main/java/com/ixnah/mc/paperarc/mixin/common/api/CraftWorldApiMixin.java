@@ -374,7 +374,7 @@ public abstract class CraftWorldApiMixin {
         Preconditions.checkArgument(origin != null, "location cannot be null");
         // ServerLevel#findLightningTargetAround 由 AT 加宽（m_143288_）后直访
         BlockPos struck = this.getHandle().findLightningTargetAround(
-                BlockPos.containing(origin.x(), origin.y(), origin.z()));
+                BlockPos.containing(origin.getX(), origin.getY(), origin.getZ()));
         return new Location((World) (Object) this, struck.getX() + 0.5D, struck.getY(), struck.getZ() + 0.5D);
     }
 
@@ -382,8 +382,8 @@ public abstract class CraftWorldApiMixin {
     public Location findLightningRod(Location origin) {
         Preconditions.checkArgument(origin != null, "location cannot be null");
         ServerLevel level = this.getHandle();
-        int topX = BlockPos.containing(origin.x(), origin.y(), origin.z()).getX();
-        int topZ = BlockPos.containing(origin.x(), origin.y(), origin.z()).getZ();
+        int topX = BlockPos.containing(origin.getX(), origin.getY(), origin.getZ()).getX();
+        int topZ = BlockPos.containing(origin.getX(), origin.getY(), origin.getZ()).getZ();
         int topY = level.getHeight(Heightmap.Types.MOTION_BLOCKING, topX, topZ);
         // 与 vanilla 引雷一致：在雨面以下向下搜索最多 128 格的避雷针
         BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();

@@ -39,7 +39,7 @@ public abstract class CraftWitchApiMixin {
 
     @Unique
     public void setDrinkingPotion(ItemStack potion) {
-        Preconditions.checkArgument(potion == null || potion.getType().isEmpty() || potion.getType() == Material.POTION, "must be potion, air, or null");
+        Preconditions.checkArgument(potion == null || potion.getType() == Material.AIR || potion.getType() == Material.POTION, "must be potion, air, or null");
         Witch witch = getHandle();
         // Mirror of Paper's NMS Witch#setDrinkingPotion body (minus its event hook).
         witch.setItemSlot(EquipmentSlot.MAINHAND, CraftItemStack.asNMSCopy(potion));

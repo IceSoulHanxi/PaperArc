@@ -6,6 +6,7 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.craftbukkit.v.CraftWorld;
 import org.bukkit.craftbukkit.v.inventory.CraftInventory;
 import org.bukkit.craftbukkit.v.inventory.CraftInventoryFurnace;
@@ -36,7 +37,7 @@ public abstract class CraftInventoryFurnaceApiMixin {
 
     @Unique
     public boolean isFuel(ItemStack stack) {
-        return stack != null && !stack.getType().isEmpty()
+        return stack != null && stack.getType() != Material.AIR
                 && AbstractFurnaceBlockEntity.isFuel(CraftItemStack.asNMSCopy(stack));
     }
 
@@ -45,7 +46,7 @@ public abstract class CraftInventoryFurnaceApiMixin {
         // data packs are always loaded in the main world
         net.minecraft.server.level.ServerLevel world =
                 ((CraftWorld) Bukkit.getWorlds().get(0)).getHandle();
-        return stack != null && !stack.getType().isEmpty()
+        return stack != null && stack.getType() != Material.AIR
                 && world.getRecipeManager().getRecipeFor(
                         ((AbstractFurnaceBlockEntityBridge) this.paperarc$container()).paper$getRecipeType(),
                         new SimpleContainer(CraftItemStack.asNMSCopy(stack)), world).isPresent();

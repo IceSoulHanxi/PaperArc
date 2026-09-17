@@ -13,4 +13,12 @@ public interface SignSideIfaceMixin {
 
     @Unique
     public abstract java.util.List lines();
+
+    // line(int) / line(int, Component) 的实现体一直在 CraftSignSideApiMixin 上，
+    // 接口上没声明 —— CraftSignApiMixin 经 SignSide 接口调用即 NoSuchMethodError（A4-1）。
+    @Unique
+    public abstract net.kyori.adventure.text.Component line(int index);
+
+    @Unique
+    public abstract void line(int index, net.kyori.adventure.text.Component line);
 }
