@@ -442,7 +442,9 @@
     "api.CraftInventoryPlayerEquipmentApiMixin",
     "api.CraftMinecartMobSpawnerApiMixin",
     "api.CraftWorldWorldInfoApiMixin",
-    "api.CraftOfflinePlayerPdcApiMixin"
+    "api.CraftOfflinePlayerPdcApiMixin",
+    "api.CraftEnchantmentApiMixin",
+    "bukkit.EnchantmentIfaceMixin"
   ],
   "server": [],
   "injectors": {
