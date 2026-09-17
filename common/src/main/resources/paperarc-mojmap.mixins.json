@@ -9,10 +9,10 @@
     "block.BeehiveBlockEntityFieldsMixin",
     "block.CampfireBlockEntityFieldsMixin",
     "block.PistonBaseBlockMixin",
-            "entity.AbstractSkeletonFieldsMixin",
-            "entity.AnimalFinalizeSpawnMixin",
-            "entity.ArmorStandFieldsMixin",
-            "entity.AttributeMapFieldsMixin",
+    "entity.AbstractSkeletonFieldsMixin",
+    "entity.AnimalFinalizeSpawnMixin",
+    "entity.ArmorStandFieldsMixin",
+    "entity.AttributeMapFieldsMixin",
     "entity.BeeFieldsMixin",
     "entity.EntityFieldsMixin",
     "entity.ExperienceOrbFieldsMixin",
@@ -29,7 +29,8 @@
     "entity.TurtleBreedGoalMixin",
     "entity.WanderingTraderFieldsMixin",
     "entity.WitherBossFieldsMixin",
-    "entity.ZombieFieldsMixin"
+    "entity.ZombieFieldsMixin",
+    "network.ConnectionFieldsMixin"
   ],
   "server": [],
   "injectors": {

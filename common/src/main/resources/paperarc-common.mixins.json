@@ -351,6 +351,7 @@
     "player.WorldBorderMovingBorderExtentMixin",
     "server.MinecraftServerMixin",
     "server.PlayerListPostRespawnMixin",
+    "server.ServerHandshakeNetworkClientMixin",
     "server.ServerLevelCallbacksMixin",
     "server.SetSpawnCommandMixin",
     "world.ChunkGeneratorStructuresLocateMixin"

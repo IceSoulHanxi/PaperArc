@@ -420,6 +420,24 @@ public abstract class CraftEntityApiMixin {
                         net.minecraft.network.chat.Component.Serializer.toJson(vanilla));
     }
 
+    /**
+     * paper-api 的 {@code Entity extends HoverEventSource<HoverEvent.ShowEntity>}。
+     * 实体 key 走 NMS 注册表（{@code BuiltInRegistries.ENTITY_TYPE}）而不是 Bukkit
+     * {@code EntityType}，避免模组实体在 Bukkit 侧映射不到常量。
+     */
+    @Unique
+    public net.kyori.adventure.text.event.HoverEvent<net.kyori.adventure.text.event.HoverEvent.ShowEntity>
+            asHoverEvent(java.util.function.UnaryOperator<net.kyori.adventure.text.event.HoverEvent.ShowEntity> op) {
+        Entity handle = this.getHandle();
+        net.minecraft.resources.ResourceLocation id =
+                net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(handle.getType());
+        net.kyori.adventure.text.event.HoverEvent.ShowEntity show =
+                net.kyori.adventure.text.event.HoverEvent.ShowEntity.of(
+                        net.kyori.adventure.key.Key.key(id.getNamespace(), id.getPath()),
+                        handle.getUUID(), this.customName());
+        return net.kyori.adventure.text.event.HoverEvent.showEntity(op == null ? show : op.apply(show));
+    }
+
     @Unique
     public net.kyori.adventure.text.Component teamDisplayName() {
         try {

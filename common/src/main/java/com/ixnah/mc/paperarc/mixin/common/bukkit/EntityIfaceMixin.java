@@ -7,9 +7,16 @@ import org.spongepowered.asm.mixin.Unique;
  * Interface augmentation for {@link org.bukkit.entity.Entity} (generated, trimmed for 1.20.1).
  * Adds 30 paper-api method declaration(s); implementations live in
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
+ *
+ * <p>paper-api 的 {@code Entity} 还多两个父接口 —— {@code HoverEventSource<ShowEntity>}
+ * （抽象方法 {@code asHoverEvent}，实现在 CraftEntityApiMixin）与 {@code Sound.Emitter}
+ * （纯标记接口，用于 {@code Audience.playSound(Sound, Emitter)}）。Mixin 会把这里声明的
+ * 父接口合并到接口目标上（见 docs/execution-plan-2026-09-16.md A2-1）。
  */
 @Mixin(targets = "org.bukkit.entity.Entity", remap = false)
-public interface EntityIfaceMixin {
+public interface EntityIfaceMixin extends
+        net.kyori.adventure.text.event.HoverEventSource<net.kyori.adventure.text.event.HoverEvent.ShowEntity>,
+        net.kyori.adventure.sound.Sound.Emitter {
 
     @Unique
     public abstract boolean isFreezeTickingLocked();

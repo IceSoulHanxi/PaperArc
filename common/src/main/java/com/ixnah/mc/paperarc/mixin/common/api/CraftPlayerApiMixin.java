@@ -3,6 +3,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 import com.destroystokyo.paper.ClientOption;
 import com.destroystokyo.paper.Title;
 import com.google.common.base.Preconditions;
+import com.ixnah.mc.paperarc.bridge.ConnectionBridge;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import com.mojang.authlib.GameProfile;
 import io.papermc.paper.math.Position;
@@ -897,6 +898,31 @@ public abstract class CraftPlayerApiMixin {
             Component actual = message == null ? Component.empty() : message;
             connection.disconnect(Serializer.fromJson(GsonComponentSerializer.gson().serialize(actual)));
         }
+    }
+
+    // ===== Identified / NetworkClient（paper-api Player 的父接口，见 A2-1）=====
+
+    @Unique
+    public net.kyori.adventure.identity.Identity identity() {
+        return net.kyori.adventure.identity.Identity.identity(getHandle().getUUID());
+    }
+
+    /**
+     * {@code com.destroystokyo.paper.network.NetworkClient}：握手包的协议号与
+     * 虚拟主机由 {@code ServerHandshakeNetworkClientMixin} 记到
+     * {@code Connection}（Paper 补充字段，经 {@link ConnectionBridge} 读回）。
+     * 连接已断开时按 Paper 语义返回 -1 / null。
+     */
+    @Unique
+    public int getProtocolVersion() {
+        net.minecraft.server.network.ServerGamePacketListenerImpl listener = getHandle().connection;
+        return listener == null ? -1 : ((ConnectionBridge) listener.connection).paper$getProtocolVersion();
+    }
+
+    @Unique
+    public InetSocketAddress getVirtualHost() {
+        net.minecraft.server.network.ServerGamePacketListenerImpl listener = getHandle().connection;
+        return listener == null ? null : ((ConnectionBridge) listener.connection).paper$getVirtualHost();
     }
 
     // ===== Audience 落地（paper-api CommandSender extends Audience，见 A2-1）=====

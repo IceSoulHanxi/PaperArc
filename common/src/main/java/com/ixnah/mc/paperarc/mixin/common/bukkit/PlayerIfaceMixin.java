@@ -7,9 +7,17 @@ import org.spongepowered.asm.mixin.Unique;
  * Interface augmentation for {@link org.bukkit.entity.Player} (generated, trimmed for 1.20.1).
  * Adds 58 paper-api method declaration(s); implementations live in
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
+ *
+ * <p>paper-api 的 {@code Player} 还多三个父接口 —— {@code Identified}（{@code identity()}）、
+ * {@code BossBarViewer}（{@code activeBossBars()}，已有实现体）与
+ * {@code com.destroystokyo.paper.network.NetworkClient}（{@code getAddress}/
+ * {@code getProtocolVersion}/{@code getVirtualHost}）。实现在 CraftPlayerApiMixin。
  */
 @Mixin(targets = "org.bukkit.entity.Player", remap = false)
-public interface PlayerIfaceMixin {
+public interface PlayerIfaceMixin extends
+        net.kyori.adventure.identity.Identified,
+        net.kyori.adventure.bossbar.BossBarViewer,
+        com.destroystokyo.paper.network.NetworkClient {
 
     @Unique
     public abstract java.lang.Iterable activeBossBars();
