@@ -55,4 +55,28 @@ public abstract class CraftCommandBlockApiMixin {
         this.getSnapshot().getCommandBlock().setCustomName(vanilla);
     }
 
+    /** paper {@code CommandBlockHolder#getSuccessCount}（B3-2）。 */
+    @Unique
+    public int getSuccessCount() {
+        return this.getSnapshot().getCommandBlock().getSuccessCount();
+    }
+
+    @Unique
+    public void setSuccessCount(int successCount) {
+        this.getSnapshot().getCommandBlock().setSuccessCount(successCount);
+    }
+
+    @Unique
+    public Component lastOutput() {
+        net.minecraft.network.chat.Component output = this.getSnapshot().getCommandBlock().getLastOutput();
+        return output == null ? null : GsonComponentSerializer.gson().deserialize(
+                Serializer.toJson(output, com.ixnah.mc.paperarc.bridge.api.PaperarcCommandBlockHolder.registryAccess()));
+    }
+
+    @Unique
+    public void lastOutput(Component lastOutput) {
+        this.getSnapshot().getCommandBlock().setLastOutput(lastOutput == null ? null
+                : Serializer.fromJson(GsonComponentSerializer.gson().serialize(lastOutput),
+                        com.ixnah.mc.paperarc.bridge.api.PaperarcCommandBlockHolder.registryAccess()));
+    }
 }

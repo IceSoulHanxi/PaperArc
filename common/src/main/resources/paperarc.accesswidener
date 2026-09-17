@@ -186,3 +186,7 @@ accessible field net/minecraft/world/entity/Mob lootTableSeed J
 # AbstractSchoolingFish: private 鱼群状态（io.papermc.paper.entity.SchoolableFish，B3-2）
 accessible field net/minecraft/world/entity/animal/AbstractSchoolingFish leader Lnet/minecraft/world/entity/animal/AbstractSchoolingFish;
 accessible field net/minecraft/world/entity/animal/AbstractSchoolingFish schoolSize I
+
+# BannerBlockEntity: private 自定义名（org.bukkit.Nameable on Banner，B3-2）
+accessible field net/minecraft/world/level/block/entity/BannerBlockEntity name Lnet/minecraft/network/chat/Component;
+mutable field net/minecraft/world/level/block/entity/BannerBlockEntity name Lnet/minecraft/network/chat/Component;

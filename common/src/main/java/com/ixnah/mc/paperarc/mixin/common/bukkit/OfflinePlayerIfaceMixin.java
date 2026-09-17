@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Unique;
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
  */
 @Mixin(targets = "org.bukkit.OfflinePlayer", remap = false)
-public interface OfflinePlayerIfaceMixin {
+public interface OfflinePlayerIfaceMixin extends io.papermc.paper.persistence.PersistentDataViewHolder {
 
     @Unique
     public abstract boolean isConnected();

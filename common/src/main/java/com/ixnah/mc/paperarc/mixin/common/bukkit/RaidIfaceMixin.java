@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Unique;
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
  */
 @Mixin(targets = "org.bukkit.Raid", remap = false)
-public interface RaidIfaceMixin {
+public interface RaidIfaceMixin extends org.bukkit.persistence.PersistentDataHolder {
 
     @Unique
     public abstract int getId();

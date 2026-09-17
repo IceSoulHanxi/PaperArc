@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Unique;
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).
  */
 @Mixin(targets = "org.bukkit.inventory.meta.BookMeta", remap = false)
-public interface BookMetaIfaceMixin {
+public interface BookMetaIfaceMixin extends net.kyori.adventure.inventory.Book {
 
     @Unique
     public abstract void addPages(net.kyori.adventure.text.Component[] p0);

@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Unique;
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
  */
 @Mixin(targets = "org.bukkit.generator.WorldInfo", remap = false)
-public interface WorldInfoIfaceMixin {
+public interface WorldInfoIfaceMixin extends io.papermc.paper.world.flag.FeatureFlagSetHolder {
 
     @Unique
     public abstract org.bukkit.generator.BiomeProvider vanillaBiomeProvider();

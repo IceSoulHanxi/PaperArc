@@ -39,4 +39,17 @@ public abstract class CraftPersistentDataContainerApiMixin {
             this.putAll(compound.tags);
         }
     }
+
+    /**
+     * paper {@code PersistentDataContainerView#serializeToBytes}（B3-2），与已有的
+     * {@code readFromBytes} 成对：写的是 gzip 压缩的 NBT，格式与 paper 一致。
+     */
+    @Unique
+    public byte[] serializeToBytes() throws IOException {
+        CompoundTag root = new CompoundTag();
+        root.tags.putAll(this.customDataTags);
+        java.io.ByteArrayOutputStream buf = new java.io.ByteArrayOutputStream();
+        NbtIo.writeCompressed(root, buf);
+        return buf.toByteArray();
+    }
 }

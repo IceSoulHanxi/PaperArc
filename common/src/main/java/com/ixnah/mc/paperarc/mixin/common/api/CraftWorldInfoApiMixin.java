@@ -27,4 +27,20 @@ public abstract class CraftWorldInfoApiMixin {
                 + "storing vanillaChunkGenerator + RegistryAccess; Arclight's base CraftWorldInfo "
                 + "holds neither and PrimaryLevelData exposes no dimension registry accessor");
     }
+
+    /**
+     * paper {@code FeatureFlagSetHolder#getFeatureFlags}（B3-2）。
+     *
+     * <p>{@code CraftWorldInfo} 只是世界生成阶段传给 ChunkGenerator 的信息快照，身上没有
+     * {@code ServerLevel} 句柄，拿不到"这个世界"的开关；退一步取服务器存档级的
+     * {@code WorldData#enabledFeatures()} —— vanilla 的特性开关本来就是整个存档一套，
+     * 两者在实践中一致。
+     */
+    @Unique
+    public java.util.Set<org.bukkit.FeatureFlag> getFeatureFlags() {
+        net.minecraft.server.MinecraftServer server =
+                ((org.bukkit.craftbukkit.v.CraftServer) com.ixnah.mc.paperarc.bridge.PaperArcBridge.getServer()).getServer();
+        return java.util.Collections.unmodifiableSet(
+                org.bukkit.craftbukkit.v.CraftFeatureFlag.getFromNMS(server.getWorldData().enabledFeatures()));
+    }
 }

@@ -76,4 +76,11 @@ public abstract class CraftLimitedRegionApiMixin {
         this.getHandle().getBlockEntity(pos)
             .loadWithComponents(((CraftBlockEntityState<?>) state).getSnapshotNBT(), this.getHandle().registryAccess());
     }
+
+    /** paper {@code FeatureFlagSetHolder#getFeatureFlags}（B3-2）：取世代区域所属世界的特性开关。 */
+    @Unique
+    public java.util.Set<org.bukkit.FeatureFlag> getFeatureFlags() {
+        return java.util.Collections.unmodifiableSet(
+                org.bukkit.craftbukkit.v.CraftFeatureFlag.getFromNMS(getHandle().enabledFeatures()));
+    }
 }

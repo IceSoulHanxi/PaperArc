@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Unique;
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
  */
 @Mixin(targets = "org.bukkit.RegionAccessor", remap = false)
-public interface RegionAccessorIfaceMixin {
+public interface RegionAccessorIfaceMixin extends io.papermc.paper.world.flag.FeatureFlagSetHolder, org.bukkit.Keyed {
 
     @Unique
     public abstract org.bukkit.block.Biome getComputedBiome(int p0, int p1, int p2);

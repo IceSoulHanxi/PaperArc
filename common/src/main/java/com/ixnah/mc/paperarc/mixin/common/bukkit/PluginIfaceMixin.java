@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.Unique;
  * {@code Plugin} 本身，接口间强转编译期恒成立，比 @Shadow 稳。
  */
 @Mixin(targets = "org.bukkit.plugin.Plugin", remap = false)
-public interface PluginIfaceMixin {
+public interface PluginIfaceMixin extends io.papermc.paper.plugin.lifecycle.event.LifecycleEventOwner {
 
     @Unique
     public default net.kyori.adventure.text.logger.slf4j.ComponentLogger getComponentLogger() {
