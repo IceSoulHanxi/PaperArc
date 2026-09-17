@@ -186,42 +186,7 @@ public abstract class CraftBlockApiMixin {
     @Unique
     public com.destroystokyo.paper.block.BlockSoundGroup getSoundGroup() {
         // deobf jar 无 CraftBlockSoundGroup（Paper 侧类），内置最小实现委托 CraftSoundGroup
-        return new PaperarcApiBlockSoundGroup((CraftSoundGroup) this.getBlockSoundGroup());
-    }
-
-    /** paper-api com.destroystokyo.paper.block.BlockSoundGroup 的最小实现。 */
-    public static class PaperarcApiBlockSoundGroup implements com.destroystokyo.paper.block.BlockSoundGroup {
-
-        private final SoundGroup handle;
-
-        public PaperarcApiBlockSoundGroup(SoundGroup handle) {
-            this.handle = handle;
-        }
-
-        @Override
-        public org.bukkit.Sound getBreakSound() {
-            return this.handle.getBreakSound();
-        }
-
-        @Override
-        public org.bukkit.Sound getStepSound() {
-            return this.handle.getStepSound();
-        }
-
-        @Override
-        public org.bukkit.Sound getPlaceSound() {
-            return this.handle.getPlaceSound();
-        }
-
-        @Override
-        public org.bukkit.Sound getHitSound() {
-            return this.handle.getHitSound();
-        }
-
-        @Override
-        public org.bukkit.Sound getFallSound() {
-            return this.handle.getFallSound();
-        }
+        return new com.ixnah.mc.paperarc.bridge.PaperarcApiBlockSoundGroup(this.getBlockSoundGroup());
     }
 
     @Unique

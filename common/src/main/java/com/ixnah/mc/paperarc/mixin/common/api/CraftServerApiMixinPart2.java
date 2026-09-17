@@ -239,48 +239,10 @@ public abstract class CraftServerApiMixinPart2 {
     public PotionBrewer getPotionBrewer() {
         PotionBrewer brewer = ApiState.get(this, PAPERARC_POTION_BREWER_KEY, null);
         if (brewer == null) {
-            brewer = new PaperarcPotionBrewer();
+            brewer = new com.ixnah.mc.paperarc.bridge.PaperarcPotionBrewer();
             ApiState.put(this, PAPERARC_POTION_BREWER_KEY, brewer);
         }
         return brewer;
-    }
-
-    /**
-     * Minimal PotionBrewer backed by an in-memory potion-mix side map; the
-     * vanilla brewing registry is untouched.
-     */
-    private static final class PaperarcPotionBrewer implements PotionBrewer {
-
-        private static final List<PotionMix> MIXES = new ArrayList<>();
-
-        @Override
-        public void addPotionMix(PotionMix mix) {
-            synchronized (MIXES) {
-                MIXES.removeIf(existing -> existing.getKey().equals(mix.getKey()));
-                MIXES.add(mix);
-            }
-        }
-
-        @Override
-        public void removePotionMix(NamespacedKey key) {
-            synchronized (MIXES) {
-                MIXES.removeIf(existing -> existing.getKey().equals(key));
-            }
-        }
-
-        @Override
-        public void resetPotionMixes() {
-            synchronized (MIXES) {
-                MIXES.clear();
-            }
-        }
-
-        @Override
-        public Collection<PotionEffect> getEffects(PotionType type, boolean upgraded, boolean extended) {
-            // upgraded/extended variants are not tracked without the NMS mix
-            // registry; the base effect set is returned for every variant.
-            return type.getPotionEffects();
-        }
     }
 
     @Unique

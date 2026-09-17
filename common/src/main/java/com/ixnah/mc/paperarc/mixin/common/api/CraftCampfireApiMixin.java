@@ -1,7 +1,5 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
-import java.lang.reflect.Method;
-
 import org.bukkit.craftbukkit.v.block.CraftCampfire;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -9,6 +7,7 @@ import org.spongepowered.asm.mixin.Unique;
 import com.google.common.base.Preconditions;
 
 import com.ixnah.mc.paperarc.bridge.ApiState;
+import com.ixnah.mc.paperarc.bridge.craft.CraftBlockEntityStateBridge;
 import net.minecraft.world.level.block.entity.CampfireBlockEntity;
 
 /**
@@ -24,45 +23,18 @@ import net.minecraft.world.level.block.entity.CampfireBlockEntity;
  * and vanilla cookTick does not consume it.
  *
  * {@code CraftBlockEntityState#getSnapshot()} is protected (subclass-target mixins
- * cannot shadow inherited members), so it is reached reflectively, matching the
- * established CraftFurnaceApiMixin pattern.
+ * cannot shadow inherited members), so it is reached through
+ * {@link CraftBlockEntityStateBridge}, whose provider mixin shadows the member on
+ * its real declaring class.
  */
 @Mixin(CraftCampfire.class)
 public abstract class CraftCampfireApiMixin {
 
     @Unique
-    private static final String PAPERARC$SNAPSHOT_OWNER = "org.bukkit.craftbukkit.v.block.CraftBlockEntityState";
-
-    @Unique
-    private static volatile Method PAPERARC$SNAPSHOT_METHOD;
-
-    @Unique
-    private static Method paperarc$snapshotMethod() {
-        Method m = PAPERARC$SNAPSHOT_METHOD;
-        if (m == null) {
-            synchronized (CraftCampfireApiMixin.class) {
-                if (PAPERARC$SNAPSHOT_METHOD == null) {
-                    try {
-                        Method resolved = Class.forName(PAPERARC$SNAPSHOT_OWNER).getDeclaredMethod("getSnapshot");
-                        resolved.setAccessible(true);
-                        PAPERARC$SNAPSHOT_METHOD = resolved;
-                    } catch (ReflectiveOperationException e) {
-                        throw new IllegalStateException("PaperArc: cannot access CraftBlockEntityState#getSnapshot()", e);
-                    }
-                }
-                m = PAPERARC$SNAPSHOT_METHOD;
-            }
-        }
-        return m;
-    }
-
-    @Unique
     private CampfireBlockEntity paperarc$snapshot() {
-        try {
-            return (CampfireBlockEntity) paperarc$snapshotMethod().invoke(this);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("PaperArc: failed to read campfire snapshot", e);
-        }
+        // CraftBlockEntityState#getSnapshot() 是 protected，子类 mixin @Shadow 父类成员不可靠；
+        // 走已有的 provider bridge（@Shadow 落在成员真实声明类上）而不是反射。
+        return (CampfireBlockEntity) ((CraftBlockEntityStateBridge) this).paperarc$getSnapshot();
     }
 
     @Unique

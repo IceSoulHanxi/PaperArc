@@ -233,46 +233,8 @@ public abstract class CraftPlayerApiMixinPart1 {
     // ---- helpers ----
     @Unique
     private static com.destroystokyo.paper.SkinParts paperarc$skinParts(final byte raw) {
-        return new com.destroystokyo.paper.SkinParts() {
-            @Override
-            public boolean hasCapeEnabled() {
-                return (raw & 0x01) != 0;
-            }
-
-            @Override
-            public boolean hasJacketEnabled() {
-                return (raw & 0x02) != 0;
-            }
-
-            @Override
-            public boolean hasLeftSleeveEnabled() {
-                return (raw & 0x04) != 0;
-            }
-
-            @Override
-            public boolean hasRightSleeveEnabled() {
-                return (raw & 0x08) != 0;
-            }
-
-            @Override
-            public boolean hasLeftPantsEnabled() {
-                return (raw & 0x10) != 0;
-            }
-
-            @Override
-            public boolean hasRightPantsEnabled() {
-                return (raw & 0x20) != 0;
-            }
-
-            @Override
-            public boolean hasHatsEnabled() {
-                return (raw & 0x40) != 0;
-            }
-
-            @Override
-            public int getRaw() {
-                return raw;
-            }
-        };
+        // 实现体在 bridge/：mixin 包内的（含匿名）类被合并后的 CraftPlayer 字节码引用即
+        // IllegalClassLoadError，且内嵌类的 InnerClasses 属性会与目标类互相矛盾。
+        return new com.ixnah.mc.paperarc.bridge.PaperArcSkinParts(raw);
     }
 }
