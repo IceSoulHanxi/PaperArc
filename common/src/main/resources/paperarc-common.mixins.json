@@ -67,7 +67,6 @@
     "api.CraftEntityEquipmentApiMixin",
     "api.CraftEvokerApiMixin",
     "api.CraftExperienceOrbApiMixin",
-    "api.CraftExperienceOrbSpawnReasonMixin",
     "api.CraftFallingBlockApiMixin",
     "api.CraftFireballApiMixin",
     "api.CraftFireworkApiMixin",

@@ -429,11 +429,6 @@ public interface WorldIfaceMixin extends net.kyori.adventure.audience.Forwarding
         return self.createExplosion(source, source.getLocation(), power, true, true);
     }
 
-    @Unique
-    public default <T> void spawnParticle(Particle particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ, double extra, T data) {
-        World self = (World) this;
-        self.spawnParticle(particle, (List) null, (Player) null, x, y, z, count, offsetX, offsetY, offsetZ, extra, data, true);
-    }
 
     @Unique
     public default <T> void spawnParticle(Particle particle, List<Player> receivers, Player source, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ, double extra, T data) {

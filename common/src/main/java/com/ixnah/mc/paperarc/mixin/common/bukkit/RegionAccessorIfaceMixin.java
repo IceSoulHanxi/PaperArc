@@ -73,11 +73,6 @@ public interface RegionAccessorIfaceMixin extends io.papermc.paper.world.flag.Fe
         return self.getFluidData(location.getBlockX(), location.getBlockY(), location.getBlockZ());
     }
 
-    @Unique
-    public default <T extends Entity> T spawn(Location location, Class<T> clazz, Consumer<? super T> function) throws IllegalArgumentException {
-        RegionAccessor self = (RegionAccessor) this;
-        return self.spawn(location, clazz, CreatureSpawnEvent.SpawnReason.CUSTOM, function);
-    }
 
     @Unique
     public default <T extends Entity> T spawn(Location location, Class<T> clazz, CreatureSpawnEvent.SpawnReason reason) throws IllegalArgumentException {

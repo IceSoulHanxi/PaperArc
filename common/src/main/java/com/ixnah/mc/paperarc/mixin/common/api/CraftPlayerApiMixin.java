@@ -938,10 +938,6 @@ public abstract class CraftPlayerApiMixin {
         paperarc$send(new net.minecraft.network.protocol.game.ClientboundClearTitlesPacket(false));
     }
 
-    @Unique
-    public void resetTitle() {
-        paperarc$send(new net.minecraft.network.protocol.game.ClientboundClearTitlesPacket(true));
-    }
 
     @Unique
     public void playSound(net.kyori.adventure.sound.Sound sound) {
