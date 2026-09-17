@@ -101,9 +101,11 @@ dependencies {
     annotationProcessor "org.spongepowered:mixin:${rootProject.mixin_version}:processor"
 }
 
-// ---- 打包：shade paper-api + adventure + mixinextras，产出单个 mod jar ----
+// ---- 打包：shade paper-api + adventure，MixinExtras 走 Jar-in-Jar，产出单个 mod jar ----
 configurations {
     shade
+    // Jar-in-Jar（Forge JiJ）嵌套的完整 jar，不解包、不 relocate
+    jij
 }
 
 dependencies {
@@ -125,8 +127,12 @@ dependencies {
     }
     shade "net.kyori:examination-api:${rootProject.examination_version}"
     shade "net.kyori:examination-string:${rootProject.examination_version}"
-    // 注意：MixinExtras 不 shade，作为独立 jar 由 Forge 以 GAMELIBRARY 方式从 mods/ 加载
-    //（自带 FMLModType=GAMELIBRARY + META-INF/jars 嵌套布局；shade 会引发模块导出冲突）
+    // MixinExtras 不 shade：未 relocate 的 com.llamalad7 包与其它同样带 MixinExtras 的 mod
+    // 会产生模块导出冲突。改为 Forge Jar-in-Jar 原样嵌套（自带 FMLModType=GAMELIBRARY），
+    // 由 Forge 的 JarInJar 定位器在多个提供方之间按版本去重。
+    jij("io.github.llamalad7:mixinextras-forge:${rootProject.mixinextras_version}") {
+        transitive = false
+    }
 }
 
 processResources {
@@ -174,14 +180,49 @@ tasks.register('embedRuntimeClasses') {
 }
 processResources.dependsOn('embedRuntimeClasses')
 
-// 打包：shade 依赖（paper-api/adventure/mixinextras）合并进 jar，排除 bukkit 运行时由 Arclight 提供
+// Forge Jar-in-Jar 清单：列出 META-INF/jars/ 下嵌套的 jar 及其版本区间。
+// 不用 ForgeGradle 的 jarJar 任务：那会另出一个 classifier=all 的产物，而
+// reobfJar→versionCraftBukkit→部署 这条链路是接在 jar 上的，多一个产物就要把整条链
+// 复制一遍；手工放入清单与嵌套 jar 只有两行 CopySpec，且最终产物仍然只有一个。
+tasks.register('generateJarJarMetadata') {
+    def outDir = file("${buildDir}/generated/jarjar/META-INF/jarjar")
+    def version = rootProject.mixinextras_version
+    inputs.property 'mixinextras_version', version
+    outputs.dir outDir
+    doLast {
+        outDir.mkdirs()
+        new File(outDir, 'metadata.json').text = groovy.json.JsonOutput.prettyPrint(
+            groovy.json.JsonOutput.toJson([
+                jars: [[
+                    identifier: [group: 'io.github.llamalad7', artifact: 'mixinextras-forge'],
+                    version   : [range: "[${version},)".toString(), artifactVersion: version],
+                    path      : "META-INF/jars/mixinextras-forge-${version}.jar".toString()
+                ]]
+            ]))
+    }
+}
+
+// 打包：shade 依赖（paper-api/adventure）合并进 jar，排除 bukkit 运行时由 Arclight 提供；
+// MixinExtras 以嵌套 jar 形式随本 jar 分发（Jar-in-Jar）
 jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
         attributes('MixinConfigs': 'paperarc-common.mixins.json,paperarc-mojmap.mixins.json,paperarc-forge.mixins.json')
     }
-    from {
+    from({
         configurations.shade.collect { it.isDirectory() ? it : zipTree(it) }
+    }) {
+        // 只排除 shade 依赖自带的嵌套 jar（如 mixinextras-common 的 jarjar 布局）；
+        // 这个 exclude 必须限定在 shade 这一段，否则会把下面自己放进去的嵌套 jar 也排掉
+        exclude 'META-INF/jars/**'
+    }
+    // Jar-in-Jar：原样嵌套 mixinextras-forge（含它自己的 META-INF/jars/MixinExtras-x.y.z.jar），
+    // 不解包不 relocate；Forge 的 JarInJar 定位器会在多个提供方之间按版本区间去重
+    from(configurations.jij) {
+        into 'META-INF/jars'
+    }
+    from(tasks.named('generateJarJarMetadata')) {
+        into 'META-INF/jarjar'
     }
     // org.bukkit 接口类由 Arclight 运行时提供（spigot-api），避免模块双导冲突；
     // 接口增补由 bukkit/*IfaceMixin 完成（1.21.1 已验证路径）
@@ -192,10 +233,8 @@ jar {
     exclude 'META-INF/versions/**'
     // gson 由 Arclight 运行时提供（避免模块系统冲突：paperarc 与 gson 同时导出 com.google.gson.reflect）
     exclude 'com/google/gson/**'
-    // MixinExtras 由 mods/ 独立提供（GAMELIBRARY），不打包（避免模块导出冲突）
+    // MixinExtras 的类只以嵌套 jar 形式提供，不散落进本 jar（否则模块导出冲突）
     exclude 'com/llamalad7/**'
-    // 排除 shade 依赖自带的 META-INF/jars 嵌套 jar（如 mixinextras-forge 的 jarjar 布局）
-    exclude 'META-INF/jars/**'
 }
 
 tasks.withType(JavaCompile).configureEach {
