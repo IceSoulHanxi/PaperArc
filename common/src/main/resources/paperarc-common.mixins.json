@@ -444,7 +444,8 @@
     "api.CraftWorldWorldInfoApiMixin",
     "api.CraftOfflinePlayerPdcApiMixin",
     "api.CraftEnchantmentApiMixin",
-    "bukkit.EnchantmentIfaceMixin"
+    "bukkit.EnchantmentIfaceMixin",
+    "entity.WitherBossPortalMixin"
   ],
   "server": [],
   "injectors": {
