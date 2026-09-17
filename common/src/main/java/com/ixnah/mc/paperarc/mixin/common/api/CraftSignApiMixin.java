@@ -1,6 +1,5 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,18 +25,13 @@ import org.spongepowered.asm.mixin.Unique;
  * <p>Adventure methods delegate to the front {@link SignSide} exactly like
  * Paper's implementation delegates to {@code this.front}; at runtime Paper's
  * CraftSignSide provides the Component overloads declared by paper-api.
- * {@code SignBlockEntity#isFacingFrontText(double, double)} is a Paper-added
- * overload absent from the vanilla mojmap jar, so it is resolved via
- * reflection; the vanilla-backed editor accessors are called directly.
+ * <p>{@code getInteractableSideFor} 原先反射找 {@code SignBlockEntity#isFacingFrontText(double,
+ * double)} —— 那是 <b>Paper 自己加的重载</b>，Arclight 运行时压根没有，整条路径一调就
+ * {@code IllegalStateException}（B3-3 探针 P20 实测；同 checklist §1.6 o 那一类）。
+ * 现在改为在 {@code bridge/api/PaperarcSignFacing} 里照抄 vanilla 的那段夹角计算。
  */
 @Mixin(CraftSign.class)
 public abstract class CraftSignApiMixin {
-
-    @Unique
-    private static Method paperarc$tileEntityMethod;
-
-    @Unique
-    private static Method paperarc$isFacingFrontTextMethod;
 
     @Shadow
     public abstract SignSide getSide(Side side);
@@ -76,13 +70,8 @@ public abstract class CraftSignApiMixin {
     @Unique
     public Side getInteractableSideFor(final double x, final double z) {
         Preconditions.checkState(((CraftBlockState) (Object) this).isPlaced(), "The blockState must be placed");
-        boolean front;
-        try {
-            front = (Boolean) paperarc$isFacingFrontTextOverload().invoke(this.paperarc$signBlockEntity(), x, z);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("PaperArc: cannot invoke SignBlockEntity#isFacingFrontText(double,double)", e);
-        }
-        return front ? Side.FRONT : Side.BACK;
+        return com.ixnah.mc.paperarc.bridge.api.PaperarcSignFacing
+                .isFacingFrontText(this.paperarc$signBlockEntity(), x, z) ? Side.FRONT : Side.BACK;
     }
 
     /**
@@ -108,23 +97,4 @@ public abstract class CraftSignApiMixin {
         return sign;
     }
 
-    @Unique
-    private static Method paperarc$isFacingFrontTextOverload() {
-        if (paperarc$isFacingFrontTextMethod == null) {
-            for (Method method : SignBlockEntity.class.getDeclaredMethods()) {
-                Class<?>[] params = method.getParameterTypes();
-                // Paper's overload: isFacingFrontText(double x, double z)
-                if (method.getName().equals("isFacingFrontText") && params.length == 2
-                    && params[0] == double.class && params[1] == double.class) {
-                    method.setAccessible(true);
-                    paperarc$isFacingFrontTextMethod = method;
-                    break;
-                }
-            }
-        }
-        if (paperarc$isFacingFrontTextMethod == null) {
-            throw new IllegalStateException("PaperArc: SignBlockEntity#isFacingFrontText(double,double) not found");
-        }
-        return paperarc$isFacingFrontTextMethod;
-    }
 }

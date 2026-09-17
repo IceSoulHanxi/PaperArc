@@ -62,10 +62,15 @@ public interface RegionAccessorIfaceMixin extends io.papermc.paper.world.flag.Fe
         return self.getFluidData(position.blockX(), position.blockY(), position.blockZ());
     }
 
+    /**
+     * paper 原文用的是 {@code location.blockX()}（它让 Location 实现了 FinePosition），
+     * Arclight 的 Location 没有那层继承，调了就是 NoSuchMethodError —— 换成
+     * {@code getBlockX()} 系列，语义相同（docs/mixin-conventions.md 反射一节）。
+     */
     @Unique
     public default FluidData getFluidData(Location location) {
         RegionAccessor self = (RegionAccessor) this;
-        return self.getFluidData(location.blockX(), location.blockY(), location.blockZ());
+        return self.getFluidData(location.getBlockX(), location.getBlockY(), location.getBlockZ());
     }
 
     @Unique

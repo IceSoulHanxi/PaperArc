@@ -1,7 +1,6 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Map;
 
@@ -33,11 +32,13 @@ public abstract class CraftPersistentDataContainerApiMixin {
         if (clear) {
             this.customDataTags.clear();
         }
-        try (DataInputStream dataInput = new DataInputStream(new ByteArrayInputStream(bytes))) {
-            CompoundTag compound = NbtIo.read(dataInput);
-            // compound.tags opened via paperarc.accesswidener (project rule: AW over reflection)
-            this.putAll(compound.tags);
-        }
+        // paper 写的是 gzip 压缩的 NBT（serializeToBytes 用 writeCompressed），
+        // 这里原先用不压缩的 NbtIo.read，自家写出来的字节自己都读不回来
+        // （B3-3 探针 P20 往返实测 "Loading NBT data"）。
+        CompoundTag compound = NbtIo.readCompressed(new ByteArrayInputStream(bytes),
+                net.minecraft.nbt.NbtAccounter.unlimitedHeap());
+        // compound.tags opened via paperarc.accesswidener (project rule: AW over reflection)
+        this.putAll(compound.tags);
     }
 
     /**
