@@ -19,4 +19,12 @@ public interface ExperienceOrbIfaceMixin {
 
     @Unique
     public abstract org.bukkit.entity.ExperienceOrb.SpawnReason getSpawnReason();
+    // ===== A4-4：paper-api 的 default 方法体照搬（运行时接口里一个都没有）=====
+
+    @Unique
+    public default boolean isFromBottle() {
+        return ((org.bukkit.entity.ExperienceOrb) this).getSpawnReason()
+                == org.bukkit.entity.ExperienceOrb.SpawnReason.EXP_BOTTLE;
+    }
+
 }

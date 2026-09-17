@@ -132,4 +132,32 @@ public interface EntityIfaceMixin extends
 
     @Unique
     public abstract boolean teleport(org.bukkit.Location p0, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause p1, io.papermc.paper.entity.TeleportFlag... p2);
+    // ===== A4-4：paper-api 的 default 方法体照搬（运行时接口里一个都没有）=====
+
+    @Unique
+    public default org.bukkit.Chunk getChunk() {
+        return ((org.bukkit.entity.Entity) this).getLocation().getChunk();
+    }
+
+    @Unique
+    public default void setPose(org.bukkit.entity.Pose pose) {
+        setPose(pose, false);
+    }
+
+    @Unique
+    public default boolean spawnAt(org.bukkit.Location location) {
+        return spawnAt(location, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.CUSTOM);
+    }
+
+    @Unique
+    public default boolean teleport(org.bukkit.Location location, io.papermc.paper.entity.TeleportFlag... flags) {
+        // 偏差：Arclight 没有 Paper 的 TeleportFlag 传送管线，退化为普通 teleport（PLUGIN 原因）
+        return ((org.bukkit.entity.Entity) this).teleport(location,
+                org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.PLUGIN);
+    }
+
+    /** 实现体在 CraftEntityApiMixin 上（HoverEventSource 的终端方法）。 */
+    @Unique
+    public abstract net.kyori.adventure.text.event.HoverEvent<net.kyori.adventure.text.event.HoverEvent.ShowEntity> asHoverEvent(java.util.function.UnaryOperator<net.kyori.adventure.text.event.HoverEvent.ShowEntity> op);
+
 }

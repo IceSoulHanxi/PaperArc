@@ -153,4 +153,208 @@ public interface WorldIfaceMixin extends net.kyori.adventure.audience.Forwarding
     public abstract int getNoTickViewDistance();
     @Unique
     public abstract void setNoTickViewDistance(int viewDistance);
+    // ===== A4-4：paper-api 的 default 方法体照搬（运行时接口里一个都没有）=====
+
+    @Unique
+    public default boolean createExplosion(org.bukkit.entity.Entity source, float power) {
+        return createExplosion(source, power, false, true);
+    }
+
+    @Unique
+    public default boolean createExplosion(org.bukkit.entity.Entity source, float power, boolean setFire) {
+        return createExplosion(source, power, setFire, true);
+    }
+
+    @Unique
+    public default boolean createExplosion(org.bukkit.entity.Entity source, float power, boolean setFire, boolean breakBlocks) {
+        return ((org.bukkit.World) this).createExplosion(source, source.getLocation(), power, setFire, breakBlocks);
+    }
+
+    @Unique
+    public default boolean createExplosion(org.bukkit.entity.Entity source, org.bukkit.Location loc, float power) {
+        return ((org.bukkit.World) this).createExplosion(source, loc, power, true, true);
+    }
+
+    @Unique
+    public default boolean createExplosion(org.bukkit.entity.Entity source, org.bukkit.Location loc, float power, boolean setFire) {
+        return ((org.bukkit.World) this).createExplosion(source, loc, power, setFire, true);
+    }
+
+    @Unique
+    public default org.bukkit.block.Block getBlockAtKey(long key) {
+        int x = (int) ((key << 37) >> 37);
+        int y = (int) (key >>> 54);
+        int z = (int) ((key << 10) >> 37);
+        return ((org.bukkit.World) this).getBlockAt(x, y, z);
+    }
+
+    @Unique
+    public default org.bukkit.Location getLocationAtKey(long key) {
+        int x = (int) ((key << 37) >> 37);
+        int y = (int) (key >>> 54);
+        int z = (int) ((key << 10) >> 37);
+        return new org.bukkit.Location((org.bukkit.World) this, x, y, z);
+    }
+
+    @Unique
+    public default org.bukkit.Chunk getChunkAt(long chunkKey) {
+        return getChunkAt(chunkKey, true);
+    }
+
+    @Unique
+    public default org.bukkit.Chunk getChunkAt(long chunkKey, boolean generate) {
+        return ((org.bukkit.World) this).getChunkAt((int) chunkKey, (int) (chunkKey >> 32), generate);
+    }
+
+    @Unique
+    public default boolean isChunkGenerated(long chunkKey) {
+        return ((org.bukkit.World) this).isChunkGenerated((int) chunkKey, (int) (chunkKey >> 32));
+    }
+
+    @Unique
+    public default org.bukkit.block.Block getHighestBlockAt(int x, int z, com.destroystokyo.paper.HeightmapType heightmap) {
+        return ((org.bukkit.World) this).getBlockAt(x, getHighestBlockYAt(x, z, heightmap), z);
+    }
+
+    @Unique
+    public default org.bukkit.block.Block getHighestBlockAt(org.bukkit.Location location, com.destroystokyo.paper.HeightmapType heightmap) {
+        return getHighestBlockAt(location.getBlockX(), location.getBlockZ(), heightmap);
+    }
+
+    @Unique
+    public default int getHighestBlockYAt(org.bukkit.Location location, com.destroystokyo.paper.HeightmapType heightmap) {
+        return getHighestBlockYAt(location.getBlockX(), location.getBlockZ(), heightmap);
+    }
+
+    /**
+     * paper-api 里这一条是抽象方法（CraftWorld 实现），运行时没有。
+     * 按 Paper 的 CraftWorld 映射转调运行时已有的 {@code getHighestBlockYAt(int, int, HeightMap)}。
+     */
+    @Unique
+    public default int getHighestBlockYAt(int x, int z, com.destroystokyo.paper.HeightmapType heightmap) {
+        org.bukkit.HeightMap mapped;
+        switch (heightmap) {
+            case ANY: mapped = org.bukkit.HeightMap.WORLD_SURFACE; break;
+            case SOLID: mapped = org.bukkit.HeightMap.OCEAN_FLOOR; break;
+            case SOLID_OR_LIQUID: mapped = org.bukkit.HeightMap.MOTION_BLOCKING; break;
+            case SOLID_OR_LIQUID_NO_LEAVES: mapped = org.bukkit.HeightMap.MOTION_BLOCKING_NO_LEAVES; break;
+            default:
+                // LIGHT_BLOCKING：vanilla 没有对应的 heightmap（Paper 自己也抛这个异常）
+                throw new UnsupportedOperationException("LIGHT_BLOCKING heightmap is not supported");
+        }
+        return ((org.bukkit.World) this).getHighestBlockYAt(x, z, mapped);
+    }
+
+    @Unique
+    public default java.util.Collection<org.bukkit.entity.Player> getNearbyPlayers(org.bukkit.Location loc, double radius) {
+        return getNearbyPlayers(loc, radius, radius, radius, null);
+    }
+
+    @Unique
+    public default java.util.Collection<org.bukkit.entity.Player> getNearbyPlayers(org.bukkit.Location loc, double xzRadius, double yRadius) {
+        return getNearbyPlayers(loc, xzRadius, yRadius, xzRadius, null);
+    }
+
+    @Unique
+    public default java.util.Collection<org.bukkit.entity.Player> getNearbyPlayers(org.bukkit.Location loc, double xRadius, double yRadius, double zRadius) {
+        return getNearbyPlayers(loc, xRadius, yRadius, zRadius, null);
+    }
+
+    @Unique
+    public default java.util.Collection<org.bukkit.entity.Player> getNearbyPlayers(org.bukkit.Location loc, double radius, java.util.function.Predicate<org.bukkit.entity.Player> predicate) {
+        return getNearbyPlayers(loc, radius, radius, radius, predicate);
+    }
+
+    @Unique
+    public default java.util.Collection<org.bukkit.entity.Player> getNearbyPlayers(org.bukkit.Location loc, double xzRadius, double yRadius, java.util.function.Predicate<org.bukkit.entity.Player> predicate) {
+        return getNearbyPlayers(loc, xzRadius, yRadius, xzRadius, predicate);
+    }
+
+    @Unique
+    public default java.util.Collection<org.bukkit.entity.Player> getNearbyPlayers(org.bukkit.Location loc, double xRadius, double yRadius, double zRadius, java.util.function.Predicate<org.bukkit.entity.Player> predicate) {
+        return getNearbyEntitiesByType(org.bukkit.entity.Player.class, loc, xRadius, yRadius, zRadius, predicate);
+    }
+
+    @Unique
+    public default java.util.Collection<org.bukkit.entity.LivingEntity> getNearbyLivingEntities(org.bukkit.Location loc, double radius) {
+        return getNearbyLivingEntities(loc, radius, radius, radius, null);
+    }
+
+    @Unique
+    public default java.util.Collection<org.bukkit.entity.LivingEntity> getNearbyLivingEntities(org.bukkit.Location loc, double xzRadius, double yRadius) {
+        return getNearbyLivingEntities(loc, xzRadius, yRadius, xzRadius, null);
+    }
+
+    @Unique
+    public default java.util.Collection<org.bukkit.entity.LivingEntity> getNearbyLivingEntities(org.bukkit.Location loc, double xRadius, double yRadius, double zRadius) {
+        return getNearbyLivingEntities(loc, xRadius, yRadius, zRadius, null);
+    }
+
+    @Unique
+    public default java.util.Collection<org.bukkit.entity.LivingEntity> getNearbyLivingEntities(org.bukkit.Location loc, double radius, java.util.function.Predicate<org.bukkit.entity.LivingEntity> predicate) {
+        return getNearbyLivingEntities(loc, radius, radius, radius, predicate);
+    }
+
+    @Unique
+    public default java.util.Collection<org.bukkit.entity.LivingEntity> getNearbyLivingEntities(org.bukkit.Location loc, double xzRadius, double yRadius, java.util.function.Predicate<org.bukkit.entity.LivingEntity> predicate) {
+        return getNearbyLivingEntities(loc, xzRadius, yRadius, xzRadius, predicate);
+    }
+
+    @Unique
+    public default java.util.Collection<org.bukkit.entity.LivingEntity> getNearbyLivingEntities(org.bukkit.Location loc, double xRadius, double yRadius, double zRadius, java.util.function.Predicate<org.bukkit.entity.LivingEntity> predicate) {
+        return getNearbyEntitiesByType(org.bukkit.entity.LivingEntity.class, loc, xRadius, yRadius, zRadius, predicate);
+    }
+
+    @Unique
+    public default <T extends org.bukkit.entity.Entity> java.util.Collection<T> getNearbyEntitiesByType(Class<? extends T> clazz, org.bukkit.Location loc, double radius) {
+        return getNearbyEntitiesByType(clazz, loc, radius, radius, radius, null);
+    }
+
+    @Unique
+    public default <T extends org.bukkit.entity.Entity> java.util.Collection<T> getNearbyEntitiesByType(Class<? extends T> clazz, org.bukkit.Location loc, double xzRadius, double yRadius) {
+        return getNearbyEntitiesByType(clazz, loc, xzRadius, yRadius, xzRadius, null);
+    }
+
+    @Unique
+    public default <T extends org.bukkit.entity.Entity> java.util.Collection<T> getNearbyEntitiesByType(Class<? extends T> clazz, org.bukkit.Location loc, double xRadius, double yRadius, double zRadius) {
+        return getNearbyEntitiesByType(clazz, loc, xRadius, yRadius, zRadius, null);
+    }
+
+    @Unique
+    public default <T extends org.bukkit.entity.Entity> java.util.Collection<T> getNearbyEntitiesByType(Class<? extends T> clazz, org.bukkit.Location loc, double radius, java.util.function.Predicate<T> predicate) {
+        return getNearbyEntitiesByType(clazz, loc, radius, radius, radius, predicate);
+    }
+
+    @Unique
+    public default <T extends org.bukkit.entity.Entity> java.util.Collection<T> getNearbyEntitiesByType(Class<? extends T> clazz, org.bukkit.Location loc, double xzRadius, double yRadius, java.util.function.Predicate<T> predicate) {
+        return getNearbyEntitiesByType(clazz, loc, xzRadius, yRadius, xzRadius, predicate);
+    }
+
+    /** paper 的主实现：按 AABB 取实体再按类型/谓词过滤。 */
+    @Unique
+    @SuppressWarnings("unchecked")
+    public default <T extends org.bukkit.entity.Entity> java.util.Collection<T> getNearbyEntitiesByType(Class<? extends org.bukkit.entity.Entity> clazz, org.bukkit.Location loc, double xRadius, double yRadius, double zRadius, java.util.function.Predicate<T> predicate) {
+        if (clazz == null) {
+            clazz = org.bukkit.entity.Entity.class;
+        }
+        java.util.List<T> nearby = new java.util.ArrayList<>();
+        for (org.bukkit.entity.Entity bukkitEntity : ((org.bukkit.World) this).getNearbyEntities(loc, xRadius, yRadius, zRadius)) {
+            if (clazz.isAssignableFrom(bukkitEntity.getClass())
+                    && (predicate == null || predicate.test((T) bukkitEntity))) {
+                nearby.add((T) bukkitEntity);
+            }
+        }
+        return nearby;
+    }
+
+    /** paper 的 12 参重载：默认 force = false。 */
+    @Unique
+    public default <T> void spawnParticle(org.bukkit.Particle particle, java.util.List<org.bukkit.entity.Player> receivers, org.bukkit.entity.Player source, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ, double extra, T data) {
+        spawnParticle(particle, receivers, source, x, y, z, count, offsetX, offsetY, offsetZ, extra, data, false);
+    }
+
+    /** 实现体在 CraftWorldApiMixin 上（ForwardingAudience 的终端方法）。 */
+    @Unique
+    public abstract Iterable<? extends net.kyori.adventure.audience.Audience> audiences();
+
 }

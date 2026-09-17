@@ -16,4 +16,11 @@ public interface BlockDataIfaceMixin {
 
     @Unique
     public abstract boolean isRandomlyTicked();
+    // ===== A4-4：paper-api 的 default 方法体照搬（运行时接口里一个都没有）=====
+
+    @Unique
+    public default float getDestroySpeed(org.bukkit.inventory.ItemStack itemStack) {
+        return getDestroySpeed(itemStack, false);
+    }
+
 }

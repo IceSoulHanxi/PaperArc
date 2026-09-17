@@ -23,4 +23,17 @@ public interface SignIfaceMixin {
     @Unique
     public abstract void line(int p0, net.kyori.adventure.text.Component p1);
 
+    // ===== A4-4：paper-api 的 default 方法体照搬（运行时接口里一个都没有）=====
+
+    @Unique
+    public default org.bukkit.block.sign.Side getInteractableSideFor(org.bukkit.entity.Entity entity) {
+        org.bukkit.Location loc = entity.getLocation();
+        return getInteractableSideFor(loc.getX(), loc.getZ());
+    }
+
+    @Unique
+    public default org.bukkit.block.sign.Side getInteractableSideFor(io.papermc.paper.math.Position position) {
+        return getInteractableSideFor(position.x(), position.z());
+    }
+
 }

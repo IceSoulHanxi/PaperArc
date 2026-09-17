@@ -388,8 +388,7 @@ public abstract class CraftEntityApiMixin {
      * {@code EntityType}，避免模组实体在 Bukkit 侧映射不到常量。
      */
     @Unique
-    public net.kyori.adventure.text.event.HoverEvent<net.kyori.adventure.text.event.HoverEvent.ShowEntity>
-            asHoverEvent(java.util.function.UnaryOperator<net.kyori.adventure.text.event.HoverEvent.ShowEntity> op) {
+    public net.kyori.adventure.text.event.HoverEvent<net.kyori.adventure.text.event.HoverEvent.ShowEntity> asHoverEvent(java.util.function.UnaryOperator<net.kyori.adventure.text.event.HoverEvent.ShowEntity> op) {
         Entity handle = this.getHandle();
         net.minecraft.resources.ResourceLocation id =
                 net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(handle.getType());

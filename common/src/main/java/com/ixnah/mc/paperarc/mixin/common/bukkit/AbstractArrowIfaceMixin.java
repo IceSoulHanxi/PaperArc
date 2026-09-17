@@ -29,4 +29,18 @@ public interface AbstractArrowIfaceMixin {
     public abstract void setNoPhysics(boolean noPhysics);
     @Unique
     public abstract boolean hasNoPhysics();
+    // ===== A4-4：paper-api 的 default 方法体照搬（运行时接口里一个都没有）=====
+
+    @Unique
+    public default org.bukkit.entity.AbstractArrow.PickupRule getPickupRule() {
+        return org.bukkit.entity.AbstractArrow.PickupRule.valueOf(
+                ((org.bukkit.entity.AbstractArrow) this).getPickupStatus().name());
+    }
+
+    @Unique
+    public default void setPickupRule(org.bukkit.entity.AbstractArrow.PickupRule rule) {
+        ((org.bukkit.entity.AbstractArrow) this).setPickupStatus(
+                org.bukkit.entity.AbstractArrow.PickupStatus.valueOf(rule.name()));
+    }
+
 }

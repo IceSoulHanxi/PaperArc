@@ -17,4 +17,12 @@ public interface ChunkIfaceMixin {
     @Unique
     public abstract org.bukkit.block.BlockState[] getTileEntities(boolean p0);
 
+    // ===== A4-4：paper-api 的 default 方法体照搬（运行时接口里一个都没有）=====
+
+    @Unique
+    public default long getChunkKey() {
+        org.bukkit.Chunk self = (org.bukkit.Chunk) this;
+        return (long) self.getX() & 0xffffffffL | ((long) self.getZ() & 0xffffffffL) << 32;
+    }
+
 }

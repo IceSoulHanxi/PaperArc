@@ -89,4 +89,17 @@ public interface UnsafeValuesIfaceMixin {
     @Unique
     public abstract void setBiomeKey(org.bukkit.RegionAccessor p0, int p1, int p2, int p3, org.bukkit.NamespacedKey p4);
 
+    // ===== A4-4：paper 的两个 default，运行时接口上没有 =====
+
+    @Unique
+    public default com.destroystokyo.paper.util.VersionFetcher getVersionFetcher() {
+        // Paper 的默认实现就是"不做版本检查"的空实现
+        return new com.destroystokyo.paper.util.VersionFetcher.DummyVersionFetcher();
+    }
+
+    @Unique
+    public default org.bukkit.entity.Entity deserializeEntity(byte[] data, org.bukkit.World world) {
+        return deserializeEntity(data, world, false);
+    }
+
 }

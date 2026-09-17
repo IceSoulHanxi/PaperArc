@@ -56,4 +56,33 @@ public interface BlockIfaceMixin extends net.kyori.adventure.translation.Transla
     public abstract org.bukkit.SoundGroup getBlockSoundGroup();
     @Unique
     public abstract java.lang.String getTranslationKey();
+    // ===== A4-4：paper-api 的 default 方法体照搬（运行时接口里一个都没有）=====
+
+    @Unique
+    public default boolean breakNaturally(boolean triggerEffect) {
+        return breakNaturally(triggerEffect, false);
+    }
+
+    @Unique
+    public default boolean breakNaturally(org.bukkit.inventory.ItemStack tool, boolean triggerEffect) {
+        return breakNaturally(tool, triggerEffect, false);
+    }
+
+    @Unique
+    public default long getBlockKey() {
+        org.bukkit.block.Block self = (org.bukkit.block.Block) this;
+        return self.getX() & 0x3FFFFFFL | (self.getZ() & 0x3FFFFFFL) << 26 | (long) self.getY() << 52;
+    }
+
+    @Unique
+    public default float getDestroySpeed(org.bukkit.inventory.ItemStack itemStack) {
+        return getDestroySpeed(itemStack, false);
+    }
+
+    /** paper 的 Block#getDestroySpeed(ItemStack, boolean) 是抽象方法，转调块数据侧的同名实现。 */
+    @Unique
+    public default float getDestroySpeed(org.bukkit.inventory.ItemStack itemStack, boolean considerEnchants) {
+        return ((org.bukkit.block.Block) this).getBlockData().getDestroySpeed(itemStack, considerEnchants);
+    }
+
 }

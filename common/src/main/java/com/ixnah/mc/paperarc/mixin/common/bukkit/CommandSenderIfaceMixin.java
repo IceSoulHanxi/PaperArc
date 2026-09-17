@@ -19,4 +19,35 @@ public interface CommandSenderIfaceMixin extends Audience {
     @Unique
     public abstract net.kyori.adventure.text.Component name();
 
+    // ===== A4-4：paper-api 的 default 方法体照搬（运行时接口里一个都没有）=====
+
+    @Unique
+    public default void sendMessage(net.md_5.bungee.api.chat.BaseComponent component) {
+        ((org.bukkit.command.CommandSender) this).spigot().sendMessage(component);
+    }
+
+    @Unique
+    public default void sendMessage(net.md_5.bungee.api.chat.BaseComponent... components) {
+        ((org.bukkit.command.CommandSender) this).spigot().sendMessage(components);
+    }
+
+    @Unique
+    public default void sendPlainMessage(String message) {
+        ((net.kyori.adventure.audience.Audience) this).sendMessage(
+                net.kyori.adventure.text.Component.text(message));
+    }
+
+    @Unique
+    public default void sendRichMessage(String message) {
+        ((net.kyori.adventure.audience.Audience) this).sendMessage(
+                net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().deserialize(message));
+    }
+
+    @Unique
+    public default void sendRichMessage(String message,
+            net.kyori.adventure.text.minimessage.tag.resolver.TagResolver... resolvers) {
+        ((net.kyori.adventure.audience.Audience) this).sendMessage(
+                net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().deserialize(message, resolvers));
+    }
+
 }

@@ -31,4 +31,11 @@ public interface FireworkIfaceMixin {
 
     @Unique
     public abstract void setTicksToDetonate(int p0);
+    // ===== A4-4：paper-api 的 default 方法体照搬（运行时接口里一个都没有）=====
+
+    @Unique
+    public default org.bukkit.entity.LivingEntity getBoostedEntity() {
+        return ((org.bukkit.entity.Firework) this).getAttachedTo();
+    }
+
 }

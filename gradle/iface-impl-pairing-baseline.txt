@@ -67,7 +67,7 @@ NO_DECL org/bukkit/craftbukkit/v/entity/CraftWither#canChangeDimensions/0
 NO_DECL org/bukkit/craftbukkit/v/inventory/trim/CraftTrimMaterial#description/0
 NO_DECL org/bukkit/craftbukkit/v/inventory/trim/CraftTrimPattern#description/0
 
-# ---- NO_IMPL (32) ----
+# ---- NO_IMPL (31) ----
 NO_IMPL org/bukkit/Server#getRegionScheduler/0
 NO_IMPL org/bukkit/Server#reloadCommandAliases/0
 NO_IMPL org/bukkit/Server#removeRecipe/2
@@ -79,7 +79,6 @@ NO_IMPL org/bukkit/block/Beacon#setEffectRange/1
 NO_IMPL org/bukkit/block/Campfire#startCooking/0
 NO_IMPL org/bukkit/block/Campfire#stopCooking/0
 NO_IMPL org/bukkit/block/data/Levelled#getMinimumLevel/0
-NO_IMPL org/bukkit/entity/Entity#asHoverEvent/1
 NO_IMPL org/bukkit/entity/Player#getWardenTimeSinceLastWarning/0
 NO_IMPL org/bukkit/entity/Player#getWardenWarningCooldown/0
 NO_IMPL org/bukkit/entity/Player#getWardenWarningLevel/0

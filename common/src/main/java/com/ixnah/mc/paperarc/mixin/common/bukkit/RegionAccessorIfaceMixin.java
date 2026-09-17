@@ -27,4 +27,34 @@ public interface RegionAccessorIfaceMixin extends org.bukkit.Keyed {
 
     @Unique
     public abstract boolean hasCollisionsIn(org.bukkit.util.BoundingBox p0);
+    // ===== A4-4：paper-api 的 default 方法体照搬（运行时接口里一个都没有）=====
+
+    @Unique
+    public default <T extends org.bukkit.entity.Entity> T spawn(org.bukkit.Location location, Class<T> clazz,
+            org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason reason) throws IllegalArgumentException {
+        return spawn(location, clazz, reason, null);
+    }
+
+    @Unique
+    public default <T extends org.bukkit.entity.Entity> T spawn(org.bukkit.Location location, Class<T> clazz,
+            org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason reason,
+            org.bukkit.util.Consumer<T> function) throws IllegalArgumentException {
+        return ((org.bukkit.RegionAccessor) this).spawn(location, clazz, function, reason);
+    }
+
+    @Unique
+    public default org.bukkit.entity.Entity spawnEntity(org.bukkit.Location loc, org.bukkit.entity.EntityType type,
+            org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason reason) {
+        return spawnEntity(loc, type, reason, null);
+    }
+
+    @Unique
+    @SuppressWarnings("unchecked")
+    public default org.bukkit.entity.Entity spawnEntity(org.bukkit.Location loc, org.bukkit.entity.EntityType type,
+            org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason reason,
+            org.bukkit.util.Consumer<org.bukkit.entity.Entity> function) {
+        return ((org.bukkit.RegionAccessor) this).spawn(loc,
+                (Class<org.bukkit.entity.Entity>) type.getEntityClass(), function, reason);
+    }
+
 }

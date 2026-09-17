@@ -145,4 +145,14 @@ public interface ServerIfaceMixin extends net.kyori.adventure.audience.Forwardin
     public abstract org.bukkit.generator.ChunkGenerator.ChunkData createVanillaChunkData(org.bukkit.World world, int x, int z);
     @Unique
     public abstract org.bukkit.command.CommandMap getCommandMap();
+    /** 实现体在 CraftServerApiMixin 上（ForwardingAudience 的终端方法，A4-3）。 */
+    @Unique
+    public abstract Iterable<? extends net.kyori.adventure.audience.Audience> audiences();
+
+    /** paper 的 4 参 default：探索地图默认带图钉。 */
+    @Unique
+    public default org.bukkit.inventory.ItemStack createExplorerMap(org.bukkit.World world, org.bukkit.Location location, org.bukkit.generator.structure.StructureType structureType, org.bukkit.map.MapCursor.Type mapIcon) {
+        return createExplorerMap(world, location, structureType, mapIcon, 100, true);
+    }
+
 }

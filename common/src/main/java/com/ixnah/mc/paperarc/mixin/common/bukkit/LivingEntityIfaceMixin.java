@@ -113,4 +113,55 @@ public interface LivingEntityIfaceMixin extends io.papermc.paper.entity.Friction
     public abstract boolean isHandRaised();
     @Unique
     public abstract org.bukkit.inventory.EquipmentSlot getHandRaised();
+    // ===== A4-4：paper-api 的 default 方法体照搬（运行时接口里一个都没有）=====
+
+    @Unique
+    public default org.bukkit.block.Block getTargetBlock(int maxDistance) {
+        return getTargetBlock(maxDistance, com.destroystokyo.paper.block.TargetBlockInfo.FluidMode.NEVER);
+    }
+
+    @Unique
+    public default org.bukkit.block.BlockFace getTargetBlockFace(int maxDistance) {
+        return getTargetBlockFace(maxDistance, org.bukkit.FluidCollisionMode.NEVER);
+    }
+
+    @Unique
+    public default com.destroystokyo.paper.block.TargetBlockInfo getTargetBlockInfo(int maxDistance) {
+        return getTargetBlockInfo(maxDistance, com.destroystokyo.paper.block.TargetBlockInfo.FluidMode.NEVER);
+    }
+
+    @Unique
+    public default org.bukkit.entity.Entity getTargetEntity(int maxDistance) {
+        return getTargetEntity(maxDistance, false);
+    }
+
+    @Unique
+    public default com.destroystokyo.paper.entity.TargetEntityInfo getTargetEntityInfo(int maxDistance) {
+        return getTargetEntityInfo(maxDistance, false);
+    }
+
+    @Unique
+    public default org.bukkit.util.RayTraceResult rayTraceEntities(int maxDistance) {
+        return rayTraceEntities(maxDistance, false);
+    }
+
+    @Unique
+    public default void playPickupItemAnimation(org.bukkit.entity.Item item) {
+        playPickupItemAnimation(item, 1);
+    }
+
+    @Unique
+    public default void swingHand(org.bukkit.inventory.EquipmentSlot hand) {
+        com.google.common.base.Preconditions.checkArgument(
+                hand == org.bukkit.inventory.EquipmentSlot.HAND
+                        || hand == org.bukkit.inventory.EquipmentSlot.OFF_HAND,
+                "Only MAIN_HAND or OFF_HAND is valid, given: %s", hand);
+        org.bukkit.entity.LivingEntity self = (org.bukkit.entity.LivingEntity) this;
+        if (hand == org.bukkit.inventory.EquipmentSlot.HAND) {
+            self.swingMainHand();
+        } else {
+            self.swingOffHand();
+        }
+    }
+
 }

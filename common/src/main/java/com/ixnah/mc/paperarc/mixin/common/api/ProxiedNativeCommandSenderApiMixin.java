@@ -32,10 +32,6 @@ public abstract class ProxiedNativeCommandSenderApiMixin {
         }
         getCallee().sendMessage(source, message, type);
     }
-    /** {@code ForwardingAudience.Single#audience()}（A4-3 父接口差集）：转发给 callee。 */
-    @Unique
-    public net.kyori.adventure.audience.Audience audience() {
-        return getCallee();
-    }
+    // audience() 改为写在 ProxiedCommandSenderIfaceMixin 的 default 方法体上（A4-4）。
 
 }

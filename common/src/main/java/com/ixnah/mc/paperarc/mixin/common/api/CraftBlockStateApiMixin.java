@@ -86,4 +86,17 @@ public abstract class CraftBlockStateApiMixin {
             throw new IllegalStateException("Cannot get drops of an unplaced block state");
         }
     }
+    // ===== io.papermc.paper.block.LockableTileState 带进来的 getDrops（A4-3）=====
+    // paper 的 BlockState#getDrops 转调方块本身的掉落表；运行时 BlockState 接口上没有。
+
+    @Unique
+    public java.util.Collection<org.bukkit.inventory.ItemStack> getDrops() {
+        return ((org.bukkit.block.BlockState) (Object) this).getBlock().getDrops();
+    }
+
+    @Unique
+    public java.util.Collection<org.bukkit.inventory.ItemStack> getDrops(org.bukkit.inventory.ItemStack tool) {
+        return ((org.bukkit.block.BlockState) (Object) this).getBlock().getDrops(tool);
+    }
+
 }

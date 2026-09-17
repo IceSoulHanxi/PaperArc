@@ -54,4 +54,11 @@ public interface HumanEntityIfaceMixin {
 
     @Unique
     public abstract void closeInventory(org.bukkit.event.inventory.InventoryCloseEvent.Reason p0);
+    // ===== A4-4：paper-api 的 default 方法体照搬（运行时接口里一个都没有）=====
+
+    @Unique
+    public default void openSign(org.bukkit.block.Sign sign) {
+        ((org.bukkit.entity.HumanEntity) this).openSign(sign, org.bukkit.block.sign.Side.FRONT);
+    }
+
 }

@@ -29,4 +29,16 @@ public interface PandaIfaceMixin {
     public abstract void setSitting(boolean sitting);
     @Unique
     public abstract boolean isSitting();
+    // ===== A4-4：paper-api 的 default 方法体照搬（运行时接口里一个都没有）=====
+
+    @Unique
+    public default void setIsSitting(boolean sitting) {
+        setSitting(sitting);
+    }
+
+    @Unique
+    public default void setIsOnBack(boolean onBack) {
+        ((org.bukkit.entity.Panda) this).setOnBack(onBack);
+    }
+
 }

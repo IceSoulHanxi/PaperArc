@@ -14,4 +14,11 @@ public interface CachedServerIconIfaceMixin {
     @Unique
     public abstract java.lang.String getData();
 
+    // ===== A4-4：paper-api 的 default 方法体照搬（运行时接口里一个都没有）=====
+
+    @Unique
+    public default boolean isEmpty() {
+        return ((org.bukkit.util.CachedServerIcon) this).getData() == null;
+    }
+
 }

@@ -219,4 +219,149 @@ public interface PlayerIfaceMixin extends
     public abstract void setResourcePack(java.lang.String p0, java.lang.String p1, boolean p2);
     @Unique
     public abstract void setResourcePack(java.lang.String p0, java.lang.String p1, boolean p2, net.kyori.adventure.text.Component p3);
+    // ===== A4-4：paper-api 的 default 方法体照搬（运行时接口里一个都没有）=====
+
+    @Unique
+    public default net.kyori.adventure.identity.Identity identity() {
+        return net.kyori.adventure.identity.Identity.identity(((org.bukkit.entity.Player) this).getUniqueId());
+    }
+
+    @Unique
+    public default void showElderGuardian() {
+        showElderGuardian(false);
+    }
+
+    @Unique
+    public default void lookAt(io.papermc.paper.math.Position position, io.papermc.paper.entity.LookAnchor playerAnchor) {
+        lookAt(position.x(), position.y(), position.z(), playerAnchor);
+    }
+
+    @Unique
+    public default void setResourcePack(String url, byte[] hash, net.kyori.adventure.text.Component prompt) {
+        setResourcePack(url, hash, prompt, false);
+    }
+
+    @Unique
+    public default void sendMessage(net.md_5.bungee.api.chat.BaseComponent component) {
+        ((org.bukkit.entity.Player) this).spigot().sendMessage(component);
+    }
+
+    @Unique
+    public default void sendMessage(net.md_5.bungee.api.chat.BaseComponent... components) {
+        ((org.bukkit.entity.Player) this).spigot().sendMessage(components);
+    }
+
+    @Unique
+    public default void sendMessage(net.md_5.bungee.api.ChatMessageType position, net.md_5.bungee.api.chat.BaseComponent... components) {
+        ((org.bukkit.entity.Player) this).spigot().sendMessage(position, components);
+    }
+
+    /** paper 的 Component 版换牌：转成 legacy 字符串走运行时已有的 String[] 重载。 */
+    @Unique
+    public default void sendSignChange(org.bukkit.Location loc, java.util.List<net.kyori.adventure.text.Component> lines,
+            org.bukkit.DyeColor dyeColor, boolean hasGlowingText) {
+        String[] legacy = new String[4];
+        for (int i = 0; i < 4; i++) {
+            net.kyori.adventure.text.Component line = lines == null || i >= lines.size() ? null : lines.get(i);
+            legacy[i] = line == null ? ""
+                    : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(line);
+        }
+        ((org.bukkit.entity.Player) this).sendSignChange(loc, legacy, dyeColor, hasGlowingText);
+    }
+
+    @Unique
+    public default void sendSignChange(org.bukkit.Location loc, java.util.List<net.kyori.adventure.text.Component> lines) {
+        sendSignChange(loc, lines, org.bukkit.DyeColor.BLACK, false);
+    }
+
+    @Unique
+    public default void sendSignChange(org.bukkit.Location loc, java.util.List<net.kyori.adventure.text.Component> lines,
+            org.bukkit.DyeColor dyeColor) {
+        sendSignChange(loc, lines, dyeColor, false);
+    }
+
+    @Unique
+    public default void sendSignChange(org.bukkit.Location loc, java.util.List<net.kyori.adventure.text.Component> lines,
+            boolean hasGlowingText) {
+        sendSignChange(loc, lines, org.bukkit.DyeColor.BLACK, hasGlowingText);
+    }
+
+    @Unique
+    public default org.bukkit.BanEntry banPlayerFull(String reason) {
+        return banPlayerFull(reason, null, null);
+    }
+
+    @Unique
+    public default org.bukkit.BanEntry banPlayerFull(String reason, String source) {
+        return banPlayerFull(reason, null, source);
+    }
+
+    @Unique
+    public default org.bukkit.BanEntry banPlayerFull(String reason, java.util.Date expires) {
+        return banPlayerFull(reason, expires, null);
+    }
+
+    @Unique
+    public default org.bukkit.BanEntry banPlayerFull(String reason, java.util.Date expires, String source) {
+        ((org.bukkit.OfflinePlayer) this).banPlayer(reason, expires, source);
+        return banPlayerIP(reason, expires, source, true);
+    }
+
+    @Unique
+    public default org.bukkit.BanEntry banPlayerIP(String reason) {
+        return banPlayerIP(reason, null, null);
+    }
+
+    @Unique
+    public default org.bukkit.BanEntry banPlayerIP(String reason, boolean kickPlayer) {
+        return banPlayerIP(reason, null, null, kickPlayer);
+    }
+
+    @Unique
+    public default org.bukkit.BanEntry banPlayerIP(String reason, String source) {
+        return banPlayerIP(reason, null, source);
+    }
+
+    @Unique
+    public default org.bukkit.BanEntry banPlayerIP(String reason, String source, boolean kickPlayer) {
+        return banPlayerIP(reason, null, source, kickPlayer);
+    }
+
+    @Unique
+    public default org.bukkit.BanEntry banPlayerIP(String reason, java.util.Date expires) {
+        return banPlayerIP(reason, expires, null);
+    }
+
+    @Unique
+    public default org.bukkit.BanEntry banPlayerIP(String reason, java.util.Date expires, boolean kickPlayer) {
+        return banPlayerIP(reason, expires, null, kickPlayer);
+    }
+
+    @Unique
+    public default org.bukkit.BanEntry banPlayerIP(String reason, java.util.Date expires, String source) {
+        return banPlayerIP(reason, expires, source, true);
+    }
+
+    @Unique
+    public default org.bukkit.BanEntry banPlayerIP(String reason, java.util.Date expires, String source, boolean kickPlayer) {
+        org.bukkit.entity.Player self = (org.bukkit.entity.Player) this;
+        org.bukkit.BanEntry banEntry = org.bukkit.Bukkit.getServer()
+                .getBanList(org.bukkit.BanList.Type.IP)
+                .addBan(self.getAddress().getAddress().getHostAddress(), reason, expires, source);
+        if (kickPlayer) {
+            self.kickPlayer(reason);
+        }
+        return banEntry;
+    }
+
+    /** 实现体在 CraftEntityApiMixin 上（HoverEventSource 的终端方法）。 */
+    @Unique
+    public abstract net.kyori.adventure.text.event.HoverEvent<net.kyori.adventure.text.event.HoverEvent.ShowEntity> asHoverEvent(java.util.function.UnaryOperator<net.kyori.adventure.text.event.HoverEvent.ShowEntity> op);
+
+    @Unique
+    public default void sendMultiBlockChange(java.util.Map<? extends io.papermc.paper.math.Position, org.bukkit.block.data.BlockData> blockChanges, boolean suppressLightUpdates) {
+        // Arclight 没有 Paper 的“抑制光照更新”通路，退化为普通多方块变更
+        sendMultiBlockChange(blockChanges);
+    }
+
 }
