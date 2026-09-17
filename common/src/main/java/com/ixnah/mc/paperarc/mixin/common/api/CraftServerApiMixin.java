@@ -411,12 +411,6 @@ public abstract class CraftServerApiMixin {
         return new CraftPlayerProfile(new GameProfile(uniqueId, name));
     }
 
-    /** Exact variant: name only, no placeholder UUID derivation. */
-    @Unique
-    public com.destroystokyo.paper.profile.PlayerProfile createProfileExact(String name) {
-        return new CraftPlayerProfile(new GameProfile(null, name));
-    }
-
 
     @Unique
     private static final String PAPERARC_POTION_BREWER_KEY = "paperarc:potionBrewer";
@@ -632,5 +626,16 @@ public abstract class CraftServerApiMixin {
         for (org.bukkit.entity.Player player : ((org.bukkit.Server) (Object) this).getOnlinePlayers()) {
             player.recalculatePermissions();
         }
+    }
+
+    /**
+     * {@code org.bukkit.Server#getCommandMap()} 由 ServerIfaceMixin 声明在运行时接口上。
+     * Arclight 的 CraftServer 只有 {@code SimpleCommandMap getCommandMap()}——它编译时
+     * 接口上没有这个方法，所以 javac 没生成协变桥；这里补出 {@code CommandMap} 返回类型的
+     * 那一版，让增补接口上的 invokeinterface 能解析。
+     */
+    @Unique
+    public org.bukkit.command.CommandMap getCommandMap() {
+        return ((org.bukkit.craftbukkit.v.CraftServer) (Object) this).getCommandMap();
     }
 }

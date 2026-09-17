@@ -214,4 +214,28 @@ public interface PlayerIfaceMixin {
 
     @Unique
     public abstract void sendEntityEffect(org.bukkit.EntityEffect p0, org.bukkit.entity.Entity p1);
+
+    @Unique
+    public abstract void sendActionBar(net.md_5.bungee.api.chat.BaseComponent[] p0);
+
+    @Unique
+    public abstract void sendMultiBlockChange(java.util.Map p0);
+
+    @Unique
+    public abstract void sendSignChange(org.bukkit.Location p0, java.util.List p1, org.bukkit.DyeColor p2, boolean p3);
+
+    @Unique
+    public abstract void setPlayerListHeaderFooter(net.md_5.bungee.api.chat.BaseComponent[] p0, net.md_5.bungee.api.chat.BaseComponent[] p1);
+
+    @Unique
+    public abstract void setResourcePack(java.util.UUID p0, java.lang.String p1, byte[] p2, net.kyori.adventure.text.Component p3, boolean p4);
+
+    @Unique
+    public abstract void setSubtitle(net.md_5.bungee.api.chat.BaseComponent[] p0);
+
+    @Unique
+    public abstract void showTitle(net.md_5.bungee.api.chat.BaseComponent[] p0);
+
+    @Unique
+    public abstract void showTitle(net.md_5.bungee.api.chat.BaseComponent[] p0, net.md_5.bungee.api.chat.BaseComponent[] p1, int p2, int p3, int p4);
 }

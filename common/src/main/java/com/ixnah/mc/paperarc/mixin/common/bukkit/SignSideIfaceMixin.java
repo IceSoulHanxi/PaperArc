@@ -13,4 +13,10 @@ public interface SignSideIfaceMixin {
 
     @Unique
     public abstract java.util.List lines();
+
+    @Unique
+    public abstract net.kyori.adventure.text.Component line(int p0);
+
+    @Unique
+    public abstract void line(int p0, net.kyori.adventure.text.Component p1);
 }

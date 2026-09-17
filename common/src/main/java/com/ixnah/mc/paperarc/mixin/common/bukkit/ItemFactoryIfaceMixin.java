@@ -31,4 +31,16 @@ public interface ItemFactoryIfaceMixin {
 
     @Unique
     public abstract org.bukkit.inventory.ItemStack enchantWithLevels(org.bukkit.inventory.ItemStack p0, int p1, boolean p2, java.util.Random p3);
+
+    @Unique
+    public abstract org.bukkit.inventory.ItemStack enchantWithLevels(org.bukkit.inventory.ItemStack p0, int p1, io.papermc.paper.registry.set.RegistryKeySet p2, java.util.Random p3);
+
+    @Unique
+    public abstract net.md_5.bungee.api.chat.hover.content.Content hoverContentOf(org.bukkit.entity.Entity p0, java.lang.String p1);
+
+    @Unique
+    public abstract net.md_5.bungee.api.chat.hover.content.Content hoverContentOf(org.bukkit.entity.Entity p0, net.md_5.bungee.api.chat.BaseComponent[] p1);
+
+    @Unique
+    public abstract net.md_5.bungee.api.chat.hover.content.Content hoverContentOf(org.bukkit.inventory.ItemStack p0);
 }

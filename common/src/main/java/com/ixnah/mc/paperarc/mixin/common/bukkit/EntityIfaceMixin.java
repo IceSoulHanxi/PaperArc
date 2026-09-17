@@ -115,4 +115,10 @@ public interface EntityIfaceMixin {
 
     @Unique
     public abstract void broadcastHurtAnimation(java.util.Collection p0);
+
+    @Unique
+    public abstract boolean teleport(org.bukkit.Location p0, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause p1, io.papermc.paper.entity.TeleportFlag[] p2);
+
+    @Unique
+    public abstract java.util.concurrent.CompletableFuture teleportAsync(org.bukkit.Location p0, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause p1, io.papermc.paper.entity.TeleportFlag[] p2);
 }

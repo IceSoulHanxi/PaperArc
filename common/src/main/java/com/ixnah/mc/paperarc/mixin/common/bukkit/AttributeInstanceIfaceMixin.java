@@ -19,4 +19,10 @@ public interface AttributeInstanceIfaceMixin {
 
     @Unique
     public abstract void addTransientModifier(org.bukkit.attribute.AttributeModifier p0);
+
+    @Unique
+    public abstract org.bukkit.attribute.AttributeModifier getModifier(net.kyori.adventure.key.Key p0);
+
+    @Unique
+    public abstract void removeModifier(java.util.UUID p0);
 }

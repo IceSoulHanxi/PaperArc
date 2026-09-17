@@ -22,4 +22,7 @@ public interface FishHookIfaceMixin {
 
     @Unique
     public abstract void resetFishingState();
+
+    @Unique
+    public abstract void setTimeUntilBite(int p0);
 }

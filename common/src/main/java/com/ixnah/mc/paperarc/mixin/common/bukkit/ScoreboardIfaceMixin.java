@@ -16,4 +16,19 @@ public interface ScoreboardIfaceMixin {
 
     @Unique
     public abstract org.bukkit.scoreboard.Objective registerNewObjective(java.lang.String p0, java.lang.String p1, net.kyori.adventure.text.Component p2, org.bukkit.scoreboard.RenderType p3);
+
+    @Unique
+    public abstract org.bukkit.scoreboard.Team getEntityTeam(org.bukkit.entity.Entity p0);
+
+    @Unique
+    public abstract java.util.Set getScoresFor(org.bukkit.entity.Entity p0);
+
+    @Unique
+    public abstract org.bukkit.scoreboard.Objective registerNewObjective(java.lang.String p0, java.lang.String p1, net.kyori.adventure.text.Component p2);
+
+    @Unique
+    public abstract org.bukkit.scoreboard.Objective registerNewObjective(java.lang.String p0, org.bukkit.scoreboard.Criteria p1, net.kyori.adventure.text.Component p2, org.bukkit.scoreboard.RenderType p3);
+
+    @Unique
+    public abstract void resetScoresFor(org.bukkit.entity.Entity p0);
 }

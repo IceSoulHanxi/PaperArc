@@ -12,9 +12,6 @@ import org.spongepowered.asm.mixin.Unique;
 public interface AbstractSkeletonIfaceMixin {
 
     @Unique
-    public abstract org.bukkit.entity.Skeleton.SkeletonType getSkeletonType();
-
-    @Unique
     public abstract boolean shouldBurnInDay();
 
     @Unique

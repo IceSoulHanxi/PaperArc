@@ -12,9 +12,6 @@ import org.spongepowered.asm.mixin.Unique;
 public interface AbstractHorseIfaceMixin {
 
     @Unique
-    public abstract org.bukkit.entity.Horse.Variant getVariant();
-
-    @Unique
     public abstract boolean isEatingGrass();
 
     @Unique

@@ -28,4 +28,7 @@ public interface ScoreIfaceMixin {
 
     @Unique
     public abstract void numberFormat(io.papermc.paper.scoreboard.numbers.NumberFormat p0);
+
+    @Unique
+    public abstract void resetScore();
 }

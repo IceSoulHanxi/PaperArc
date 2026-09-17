@@ -34,4 +34,7 @@ public interface VillagerIfaceMixin {
 
     @Unique
     public abstract void clearReputations();
+
+    @Unique
+    public abstract void setReputations(java.util.Map p0);
 }

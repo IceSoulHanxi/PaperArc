@@ -46,4 +46,13 @@ public interface MobIfaceMixin {
 
     @Unique
     public abstract int getPossibleExperienceReward();
+
+    @Unique
+    public abstract void lookAt(org.bukkit.Location p0);
+
+    @Unique
+    public abstract void lookAt(org.bukkit.Location p0, float p1, float p2);
+
+    @Unique
+    public abstract void lookAt(org.bukkit.entity.Entity p0, float p1, float p2);
 }

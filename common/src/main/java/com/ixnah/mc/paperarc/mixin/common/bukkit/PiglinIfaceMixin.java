@@ -22,4 +22,7 @@ public interface PiglinIfaceMixin {
 
     @Unique
     public abstract boolean isDancing();
+
+    @Unique
+    public abstract void setDancing(long p0);
 }

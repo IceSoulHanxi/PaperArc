@@ -108,9 +108,6 @@ public interface ServerIfaceMixin {
     public abstract com.destroystokyo.paper.profile.PlayerProfile createProfile(java.lang.String p0);
 
     @Unique
-    public abstract com.destroystokyo.paper.profile.PlayerProfile createProfileExact(java.lang.String p1);
-
-    @Unique
     public abstract int getCurrentTick();
 
     @Unique
@@ -145,4 +142,19 @@ public interface ServerIfaceMixin {
 
     @Unique
     public abstract boolean isOwnedByCurrentRegion(org.bukkit.World p0, int p1, int p2, int p3);
+
+    @Unique
+    public abstract org.bukkit.inventory.Inventory createInventory(org.bukkit.inventory.InventoryHolder p0, org.bukkit.event.inventory.InventoryType p1, net.kyori.adventure.text.Component p2);
+
+    @Unique
+    public abstract boolean isOwnedByCurrentRegion(org.bukkit.Location p0);
+
+    @Unique
+    public abstract boolean isOwnedByCurrentRegion(org.bukkit.Location p0, int p1);
+
+    @Unique
+    public abstract boolean isOwnedByCurrentRegion(org.bukkit.World p0, int p1, int p2);
+
+    @Unique
+    public abstract org.bukkit.command.CommandMap getCommandMap();
 }

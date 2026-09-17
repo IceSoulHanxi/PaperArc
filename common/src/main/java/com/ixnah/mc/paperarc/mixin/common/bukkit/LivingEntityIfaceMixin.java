@@ -148,4 +148,10 @@ public interface LivingEntityIfaceMixin {
 
     @Unique
     public abstract boolean canUseEquipmentSlot(org.bukkit.inventory.EquipmentSlot p0);
+
+    @Unique
+    public abstract org.bukkit.inventory.ItemStack damageItemStack(org.bukkit.inventory.ItemStack p0, int p1);
+
+    @Unique
+    public abstract org.bukkit.block.BlockFace getTargetBlockFace(int p0, com.destroystokyo.paper.block.TargetBlockInfo.FluidMode p1);
 }

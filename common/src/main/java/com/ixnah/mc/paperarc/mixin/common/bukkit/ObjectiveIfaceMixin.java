@@ -28,4 +28,7 @@ public interface ObjectiveIfaceMixin {
 
     @Unique
     public abstract void numberFormat(io.papermc.paper.scoreboard.numbers.NumberFormat p0);
+
+    @Unique
+    public abstract org.bukkit.scoreboard.Score getScoreFor(org.bukkit.entity.Entity p0);
 }

@@ -16,4 +16,7 @@ public interface InventoryIfaceMixin {
 
     @Unique
     public abstract org.bukkit.inventory.InventoryHolder getHolder(boolean p0);
+
+    @Unique
+    public abstract java.util.HashMap removeItemAnySlot(org.bukkit.inventory.ItemStack[] p0);
 }

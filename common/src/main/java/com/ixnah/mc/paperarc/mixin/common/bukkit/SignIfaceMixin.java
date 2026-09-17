@@ -22,4 +22,10 @@ public interface SignIfaceMixin {
 
     @Unique
     public abstract org.bukkit.block.sign.Side getInteractableSideFor(double p0, double p1);
+
+    @Unique
+    public abstract net.kyori.adventure.text.Component line(int p0);
+
+    @Unique
+    public abstract void line(int p0, net.kyori.adventure.text.Component p1);
 }
