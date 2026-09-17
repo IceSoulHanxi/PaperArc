@@ -14,9 +14,18 @@ configurations {
     runtimeClassSource
 }
 
+// Arclight 实现类的编译期桩源码集（见 src/arclightStub 下的类注释）。
+// 只进 compileClasspath，不进产物。
+sourceSets {
+    arclightStub
+}
+
 dependencies {
     // 仅用于 fabric-loader 的 @Environment 注解与 mixin 基础设施，不得使用其他类
     modImplementation libs.fabric.loader
+
+    // 让 Mixin 注解处理器能验证锚 Arclight 自身类的那几个 mixin 的 @Mixin target
+    compileOnly sourceSets.arclightStub.output
 
     runtimeClassSource(libs.paper.api) { transitive = false }
 
