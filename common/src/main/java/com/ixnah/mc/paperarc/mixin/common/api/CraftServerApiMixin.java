@@ -623,4 +623,80 @@ public abstract class CraftServerApiMixin {
     public org.bukkit.command.CommandMap getCommandMap() {
         return ((org.bukkit.craftbukkit.v.CraftServer) (Object) this).getCommandMap();
     }
+
+    // ===== B2-4：IfaceMixin 早就声明、却一直没有实现体的 paper 方法 =====
+
+    /** Paper 侧补充状态：RegionScheduler 的 sync-fallback 实例。 */
+    @Unique
+    private io.papermc.paper.threadedregions.scheduler.RegionScheduler paperarc$regionScheduler;
+
+    @Unique
+    public io.papermc.paper.threadedregions.scheduler.RegionScheduler getRegionScheduler() {
+        io.papermc.paper.threadedregions.scheduler.RegionScheduler scheduler = this.paperarc$regionScheduler;
+        if (scheduler == null) {
+            scheduler = new com.ixnah.mc.paperarc.bridge.scheduler.SimpleRegionScheduler();
+            this.paperarc$regionScheduler = scheduler;
+        }
+        return scheduler;
+    }
+
+    @Unique
+    public boolean removeRecipe(NamespacedKey key, boolean resendRecipes) {
+        boolean removed = ((CraftServer) (Object) this).removeRecipe(key);
+        if (removed && resendRecipes) {
+            this.updateRecipes();
+        }
+        return removed;
+    }
+
+    @Unique
+    public void updateRecipes() {
+        net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket packet =
+                new net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket(
+                        this.getServer().getRecipeManager().getRecipes());
+        for (net.minecraft.server.level.ServerPlayer player : this.getHandle().getPlayers()) {
+            if (player.connection != null) {
+                player.connection.send(packet);
+            }
+        }
+    }
+
+    @Unique
+    public void updateResources() {
+        // Paper：重新下发标签 + 配方 + 命令树，让客户端跟上数据包的变化。
+        net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket tags =
+                new net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket(
+                        net.minecraft.tags.TagNetworkSerialization
+                                .serializeTagsToNetwork(this.getServer().registries()));
+        for (net.minecraft.server.level.ServerPlayer player : this.getHandle().getPlayers()) {
+            if (player.connection != null) {
+                player.connection.send(tags);
+            }
+        }
+        this.updateRecipes();
+        ((CraftServer) (Object) this).syncCommands();
+    }
+
+    @Unique
+    public boolean reloadCommandAliases() {
+        CraftServer server = (CraftServer) (Object) this;
+        java.util.Set<String> removals = new java.util.HashSet<>();
+        java.util.Map<String, org.bukkit.command.Command> known =
+                server.getCommandMap().getKnownCommands();
+        for (java.util.Map.Entry<String, org.bukkit.command.Command> entry : known.entrySet()) {
+            if (entry.getValue() instanceof org.bukkit.command.FormattedCommandAlias) {
+                removals.add(entry.getKey());
+            }
+        }
+        removals.forEach(known::remove);
+        try {
+            server.getCommandMap().registerServerAliases();
+            return true;
+        } catch (Exception e) {
+            // 与 Paper 一致：commands.yml 有问题时返回 false 而不是抛出去
+            server.getLogger().log(java.util.logging.Level.WARNING,
+                    "Failed to reload command aliases from commands.yml", e);
+            return false;
+        }
+    }
 }

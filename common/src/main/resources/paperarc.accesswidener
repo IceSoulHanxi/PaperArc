@@ -176,3 +176,5 @@ accessible field net/minecraft/world/entity/monster/warden/WardenSpawnTracker wa
 # private final：除了放开可见性还要去掉 final（Paper 的 setPlayerProfile / 隐藏 tab-list 条目都要改写）
 mutable field net/minecraft/world/entity/player/Player gameProfile Lcom/mojang/authlib/GameProfile;
 mutable field net/minecraft/network/protocol/game/ClientboundPlayerInfoUpdatePacket entries Ljava/util/List;
+accessible method net/minecraft/server/level/ChunkMap isChunkTracked (Lnet/minecraft/server/level/ServerPlayer;II)Z
+accessible field net/minecraft/world/level/block/entity/BeaconBlockEntity levels I

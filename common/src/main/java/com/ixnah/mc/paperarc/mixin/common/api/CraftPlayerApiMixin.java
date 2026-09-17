@@ -112,6 +112,10 @@ public abstract class CraftPlayerApiMixin {
     @Unique
     private TriState paperarc$flyingFallDamage;
 
+    /** Paper 的 tab-list 隐藏名单（Paper 用 ServerPlayer 上的 Set，这里放在 CraftPlayer 上等价）。 */
+    @Unique
+    private final java.util.Set<java.util.UUID> paperarc$unlisted = new java.util.HashSet<>();
+
     /** Paper 侧补充状态（原 ApiState 副表键 "simulationDistance"）；null = 未设置，读取时回落默认值。 */
     @Unique
     private Integer paperarc$simulationDistance;
@@ -797,6 +801,9 @@ public abstract class CraftPlayerApiMixin {
         if (!(player instanceof CraftPlayer) || getHandle().connection == null) {
             return false;
         }
+        if (!this.paperarc$unlisted.add(player.getUniqueId())) {
+            return false;
+        }
         ServerPlayer other = ((CraftPlayer) player).getHandle();
         ClientboundPlayerInfoUpdatePacket packet = new ClientboundPlayerInfoUpdatePacket(
                 EnumSet.of(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LISTED), List.of(other));
@@ -1000,5 +1007,157 @@ public abstract class CraftPlayerApiMixin {
     private static net.minecraft.sounds.SoundSource paperarc$soundSource(
             net.kyori.adventure.sound.Sound.Source source) {
         return source == null ? null : net.minecraft.sounds.SoundSource.values()[source.ordinal()];
+    }
+
+    // ===== B2-4：IfaceMixin 早就声明、却一直没有实现体的 paper 方法（插件调用即 AbstractMethodError） =====
+
+    @Unique
+    public void kick() {
+        this.kick(net.kyori.adventure.text.Component.translatable("multiplayer.disconnect.kicked"));
+    }
+
+    @Unique
+    public void kick(net.kyori.adventure.text.Component message) {
+        this.kick(message, org.bukkit.event.player.PlayerKickEvent.Cause.PLUGIN);
+    }
+
+    @Unique
+    public void kick(net.kyori.adventure.text.Component message, org.bukkit.event.player.PlayerKickEvent.Cause cause) {
+        // Arclight 的 PlayerKickEvent 没有 Cause 形参（那是 Paper 加的），拿不到透传口子，
+        // 所以 cause 只影响我们这边的判断、不进事件对象；与 1.20.1 A1 的处理一致。
+        ServerPlayer handle = getHandle();
+        if (handle.connection == null) {
+            return;
+        }
+        handle.connection.disconnect(message == null
+                ? net.minecraft.network.chat.Component.empty()
+                : paperarc$vanilla(message));
+    }
+
+    @Unique
+    public java.util.Locale locale() {
+        String tag = getHandle().clientInformation().language();
+        if (tag == null || tag.isEmpty()) {
+            return java.util.Locale.US;
+        }
+        // vanilla 用 "zh_cn" 这种下划线写法，Locale.forLanguageTag 要连字符
+        return java.util.Locale.forLanguageTag(tag.replace('_', '-'));
+    }
+
+    @Unique
+    public void hideTitle() {
+        paperarc$send(new net.minecraft.network.protocol.game.ClientboundClearTitlesPacket(false));
+    }
+
+    @Unique
+    public void lookAt(double x, double y, double z, io.papermc.paper.entity.LookAnchor playerAnchor) {
+        Preconditions.checkNotNull(playerAnchor, "playerAnchor cannot be null");
+        getHandle().lookAt(paperarc$anchor(playerAnchor), new net.minecraft.world.phys.Vec3(x, y, z));
+    }
+
+    @Unique
+    public void lookAt(org.bukkit.entity.Entity entity, io.papermc.paper.entity.LookAnchor playerAnchor,
+                       io.papermc.paper.entity.LookAnchor entityAnchor) {
+        Preconditions.checkNotNull(entity, "entity cannot be null");
+        Preconditions.checkNotNull(playerAnchor, "playerAnchor cannot be null");
+        Preconditions.checkNotNull(entityAnchor, "entityAnchor cannot be null");
+        getHandle().lookAt(paperarc$anchor(playerAnchor),
+                ((CraftEntity) entity).getHandle(), paperarc$anchor(entityAnchor));
+    }
+
+    @Unique
+    private static net.minecraft.commands.arguments.EntityAnchorArgument.Anchor paperarc$anchor(
+            io.papermc.paper.entity.LookAnchor anchor) {
+        return anchor == io.papermc.paper.entity.LookAnchor.EYES
+                ? net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES
+                : net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.FEET;
+    }
+
+    @Unique
+    public void giveExp(int exp, boolean applyMending) {
+        if (applyMending) {
+            // vanilla giveExperiencePoints 里没有修补附魔那一步，Paper 把它拆成了
+            // applyMending(amount) -> 剩余经验再进玩家。这里复刻同样的顺序。
+            exp = ((org.bukkit.entity.Player) (Object) this).applyMending(exp);
+        }
+        getHandle().giveExperiencePoints(exp);
+    }
+
+    @Unique
+    public boolean isListed(org.bukkit.entity.Player player) {
+        Preconditions.checkArgument(player != null, "player must not be null");
+        return !this.paperarc$unlisted.contains(player.getUniqueId());
+    }
+
+    @Unique
+    public boolean listPlayer(org.bukkit.entity.Player player) {
+        Preconditions.checkArgument(player != null, "player must not be null");
+        if (!(player instanceof CraftPlayer) || getHandle().connection == null) {
+            return false;
+        }
+        if (!this.paperarc$unlisted.remove(player.getUniqueId())) {
+            return false;
+        }
+        ServerPlayer other = ((CraftPlayer) player).getHandle();
+        paperarc$send(new ClientboundPlayerInfoUpdatePacket(
+                EnumSet.of(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LISTED), List.of(other)));
+        return true;
+    }
+
+    @Unique
+    public net.kyori.adventure.text.Component playerListFooter() {
+        return paperarc$adventure(playerListFooter);
+    }
+
+    @Unique
+    public int getWardenWarningCooldown() {
+        net.minecraft.world.entity.monster.warden.WardenSpawnTracker tracker = paperarc$wardenTracker();
+        return tracker == null ? 0 : tracker.cooldownTicks;
+    }
+
+    @Unique
+    public int getWardenTimeSinceLastWarning() {
+        net.minecraft.world.entity.monster.warden.WardenSpawnTracker tracker = paperarc$wardenTracker();
+        return tracker == null ? 0 : tracker.ticksSinceLastWarning;
+    }
+
+    @Unique
+    public int getWardenWarningLevel() {
+        net.minecraft.world.entity.monster.warden.WardenSpawnTracker tracker = paperarc$wardenTracker();
+        return tracker == null ? 0 : tracker.warningLevel;
+    }
+
+    @Unique
+    public void increaseWardenWarningLevel() {
+        net.minecraft.world.entity.monster.warden.WardenSpawnTracker tracker = paperarc$wardenTracker();
+        if (tracker != null) {
+            tracker.setWarningLevel(tracker.getWarningLevel() + 1);
+        }
+    }
+
+    @Unique
+    public int getViewDistance() {
+        return getHandle().requestedViewDistance();
+    }
+
+    @Unique
+    public boolean hasSeenWinScreen() {
+        return getHandle().seenCredits;
+    }
+
+    @Unique
+    public TriState hasFlyingFallDamage() {
+        return this.paperarc$flyingFallDamage == null ? TriState.NOT_SET : this.paperarc$flyingFallDamage;
+    }
+
+    @Unique
+    public boolean isChunkSent(long chunkKey) {
+        ServerPlayer handle = getHandle();
+        if (handle.connection == null) {
+            return false;
+        }
+        // chunkKey 的低 32 位是 x、高 32 位是 z（与 Chunk.getChunkKey 一致）
+        return handle.serverLevel().getChunkSource().chunkMap.isChunkTracked(
+                handle, (int) chunkKey, (int) (chunkKey >> 32));
     }
 }

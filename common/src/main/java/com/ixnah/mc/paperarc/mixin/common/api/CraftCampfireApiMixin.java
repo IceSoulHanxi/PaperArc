@@ -52,6 +52,22 @@ public abstract class CraftCampfireApiMixin {
         return previous;
     }
 
+    /** Paper 的无参重载：四个槽一起停。 */
+    @Unique
+    public void stopCooking() {
+        for (int i = 0; i < 4; i++) {
+            this.stopCooking(i);
+        }
+    }
+
+    /** Paper 的无参重载：四个槽一起恢复。 */
+    @Unique
+    public void startCooking() {
+        for (int i = 0; i < 4; i++) {
+            this.startCooking(i);
+        }
+    }
+
     @Unique
     public boolean isCookingDisabled(int index) {
         Preconditions.checkArgument(-1 < index && index < 4, "Slot index must be between 0 (incl) to 3 (incl)");
