@@ -33,7 +33,66 @@ public interface WorldIfaceMixin {
     public abstract org.bukkit.Location findLightningTarget(org.bukkit.Location p0);
 
     @Unique
-    public abstract java.util.concurrent.CompletableFuture getChunkAtAsync(int p0, int p1, boolean p2, boolean p3);
+    public abstract java.util.concurrent.CompletableFuture<org.bukkit.Chunk> getChunkAtAsync(int p0, int p1, boolean p2, boolean p3);
+
+    // paper-api 把 getChunkAtAsync 的其余重载都写成 default 方法，运行时接口里一个都没有 ——
+    // 插件调 getChunkAtAsync(loc) 直接 NoSuchMethodError。方法体照抄 paper-api 的 default 实现。
+    // （interface mixin 的 default 方法体会随接口合并进目标，见 A2-1 的实验结论。）
+
+    @Unique
+    public default java.util.concurrent.CompletableFuture<org.bukkit.Chunk> getChunkAtAsync(int x, int z) {
+        return getChunkAtAsync(x, z, true, false);
+    }
+
+    @Unique
+    public default java.util.concurrent.CompletableFuture<org.bukkit.Chunk> getChunkAtAsync(int x, int z, boolean gen) {
+        return getChunkAtAsync(x, z, gen, false);
+    }
+
+    @Unique
+    public default java.util.concurrent.CompletableFuture<org.bukkit.Chunk> getChunkAtAsync(org.bukkit.Location loc) {
+        return getChunkAtAsync(loc.getBlockX() >> 4, loc.getBlockZ() >> 4, true, false);
+    }
+
+    @Unique
+    public default java.util.concurrent.CompletableFuture<org.bukkit.Chunk> getChunkAtAsync(org.bukkit.Location loc, boolean gen) {
+        return getChunkAtAsync(loc.getBlockX() >> 4, loc.getBlockZ() >> 4, gen, false);
+    }
+
+    @Unique
+    public default java.util.concurrent.CompletableFuture<org.bukkit.Chunk> getChunkAtAsync(org.bukkit.block.Block block) {
+        return getChunkAtAsync(block.getX() >> 4, block.getZ() >> 4, true, false);
+    }
+
+    @Unique
+    public default java.util.concurrent.CompletableFuture<org.bukkit.Chunk> getChunkAtAsync(org.bukkit.block.Block block, boolean gen) {
+        return getChunkAtAsync(block.getX() >> 4, block.getZ() >> 4, gen, false);
+    }
+
+    @Unique
+    public default java.util.concurrent.CompletableFuture<org.bukkit.Chunk> getChunkAtAsyncUrgently(int x, int z) {
+        return getChunkAtAsync(x, z, true, true);
+    }
+
+    @Unique
+    public default java.util.concurrent.CompletableFuture<org.bukkit.Chunk> getChunkAtAsyncUrgently(org.bukkit.Location loc) {
+        return getChunkAtAsync(loc.getBlockX() >> 4, loc.getBlockZ() >> 4, true, true);
+    }
+
+    @Unique
+    public default java.util.concurrent.CompletableFuture<org.bukkit.Chunk> getChunkAtAsyncUrgently(org.bukkit.Location loc, boolean gen) {
+        return getChunkAtAsync(loc.getBlockX() >> 4, loc.getBlockZ() >> 4, gen, true);
+    }
+
+    @Unique
+    public default java.util.concurrent.CompletableFuture<org.bukkit.Chunk> getChunkAtAsyncUrgently(org.bukkit.block.Block block) {
+        return getChunkAtAsync(block.getX() >> 4, block.getZ() >> 4, true, true);
+    }
+
+    @Unique
+    public default java.util.concurrent.CompletableFuture<org.bukkit.Chunk> getChunkAtAsyncUrgently(org.bukkit.block.Block block, boolean gen) {
+        return getChunkAtAsync(block.getX() >> 4, block.getZ() >> 4, gen, true);
+    }
 
     @Unique
     public abstract org.bukkit.entity.Entity getEntity(java.util.UUID p0);

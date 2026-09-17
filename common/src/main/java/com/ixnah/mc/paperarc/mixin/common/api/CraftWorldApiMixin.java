@@ -193,10 +193,41 @@ public abstract class CraftWorldApiMixin {
         return nms == null ? null : new CraftRaid(nms);
     }
 
+    /**
+     * Paper 的 {@code World#getChunkAtAsync}。原实现是
+     * {@code completedFuture(getChunkAt(...))} —— 插件从异步线程调用时会**在异步线程上
+     * 加载区块**（世界数据损坏 / CME），是真 bug 而不只是行为差异。
+     *
+     * <p>现在：非主线程一律 {@code server.execute(...)} 投递到主线程，future 在主线程完成，
+     * 因此 {@code thenAccept} 之类的回调也落在主线程 —— 与 Paper 语义一致，调用方不再自己碰世界。
+     *
+     * <p>与 Paper 的差异（已知并接受，都写在这里）：
+     * <ul>
+     *   <li>主线程调用时仍然是**同步加载**（Paper 不阻塞）。任务书设想用
+     *       {@code ServerChunkCache#getChunkFuture}，实测不可取：javap 反汇编显示它在主线程
+     *       分支里会 {@code mainThreadProcessor.managedBlock(future::isDone)} —— 一样阻塞，
+     *       而且会在主线程任务里**重入** {@code runDistanceManagerUpdates}；真机实测该写法会把
+     *       票据队列写坏（{@code LongLinkedOpenHashSet.shiftKeys} 抛
+     *       ArrayIndexOutOfBoundsException，服务器 "Exception ticking world" 崩溃）。
+     *       Arclight 没有 Paper 的异步区块加载管线，做不到真正的不阻塞。</li>
+     *   <li>{@code urgent} 被忽略：没有加载优先级队列。</li>
+     * </ul>
+     */
     @Unique
     public CompletableFuture<org.bukkit.Chunk> getChunkAtAsync(int x, int z, boolean gen, boolean urgent) {
-        // sync-fallback: Arclight 无 Paper 异步 chunk 调度器，主线程同步取块
-        return CompletableFuture.completedFuture(this.getChunkAt(x, z, gen));
+        net.minecraft.server.MinecraftServer server = this.getHandle().getServer();
+        if (server == null || server.isSameThread()) {
+            return CompletableFuture.completedFuture(this.getChunkAt(x, z, gen));
+        }
+        CompletableFuture<org.bukkit.Chunk> result = new CompletableFuture<>();
+        server.execute(() -> {
+            try {
+                result.complete(this.getChunkAt(x, z, gen));
+            } catch (Throwable t) {
+                result.completeExceptionally(t);
+            }
+        });
+        return result;
     }
 
     @Unique
