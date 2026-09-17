@@ -217,3 +217,65 @@ tasks.named('assemble') {
     dependsOn 'versionCraftBukkit'
 }
 
+
+// mixin 注册一致性检查：mixin/** 下每个带 @Mixin 的类都必须出现在某个
+// paperarc-*.mixins.json，反之 json 里的条目必须有对应源码，且 mixin 包内不得
+// 存在非 mixin 辅助类（会被目标类引用时触发 IllegalClassLoadError，run34 实测）。
+// 与 tools/scripts/check-mixin-registry.py 同规则；此处内联实现以便 CI 的
+// `./gradlew build` 无需外部脚本即可门禁（main 分支 Server/Player/LivingEntity
+// 六个实现 mixin 漏注册的 P0 缺陷就是这条规则漏掉的）。
+tasks.register('checkMixinRegistry') {
+    def resourcesDir = file('src/main/resources')
+    def javaDir = file('src/main/java')
+    inputs.dir(javaDir)
+    inputs.files(fileTree(resourcesDir) { include 'paperarc-*.mixins.json' })
+    outputs.upToDateWhen { false }
+    doLast {
+        def problems = []
+        resourcesDir.listFiles()?.findAll {
+            it.name.startsWith('paperarc-') && it.name.endsWith('.mixins.json')
+        }?.sort { it.name }?.each { cfgFile ->
+            def cfg = new groovy.json.JsonSlurper().parse(cfgFile)
+            if (!cfg.package) {
+                return
+            }
+            def listed = []
+            ['mixins', 'client', 'server'].each { key -> if (cfg[key]) listed.addAll(cfg[key]) }
+            def pkgDir = new File(javaDir, cfg.package.replace('.', '/'))
+            def found = [:]
+            if (pkgDir.isDirectory()) {
+                pkgDir.eachFileRecurse(groovy.io.FileType.FILES) { f ->
+                    if (!f.name.endsWith('.java')) {
+                        return
+                    }
+                    def rel = pkgDir.toPath().relativize(f.toPath()).toString()
+                    def name = rel[0..-6].replace(File.separator, '.')
+                    found[name] = f.text =~ /(?m)^\s*@Mixin\b/
+                }
+            }
+            found.sort().each { name, isMixin ->
+                if (isMixin && !listed.contains(name)) {
+                    problems << "${cfgFile.name}: UNREGISTERED ${name}"
+                } else if (!isMixin) {
+                    problems << "${cfgFile.name}: NON_MIXIN ${name}（mixin 包内不得有非 mixin 类，请移到 bridge/）"
+                }
+            }
+            listed.toSorted().each { name ->
+                if (!found.containsKey(name)) {
+                    problems << "${cfgFile.name}: MISSING ${name}"
+                }
+            }
+            listed.countBy { it }.findAll { it.value > 1 }.each { name, n ->
+                problems << "${cfgFile.name}: DUPLICATE ${name}"
+            }
+        }
+        if (problems) {
+            throw new GradleException("mixin 注册不一致:\n  " + problems.join('\n  '))
+        }
+        logger.lifecycle('checkMixinRegistry: OK')
+    }
+}
+
+tasks.named('check') {
+    dependsOn 'checkMixinRegistry'
+}

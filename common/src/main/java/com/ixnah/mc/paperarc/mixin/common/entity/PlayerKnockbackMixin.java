@@ -1,5 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.entity;
 
+import com.ixnah.mc.paperarc.bridge.EntityKnockbackByEntityEventHelper;
+
 import com.destroystokyo.paper.event.entity.EntityKnockbackByEntityEvent;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;

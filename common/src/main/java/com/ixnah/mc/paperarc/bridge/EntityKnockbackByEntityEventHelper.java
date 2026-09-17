@@ -1,7 +1,6 @@
-package com.ixnah.mc.paperarc.mixin.common.entity;
+package com.ixnah.mc.paperarc.bridge;
 
 import com.destroystokyo.paper.event.entity.EntityKnockbackByEntityEvent;
-import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -16,7 +15,7 @@ public final class EntityKnockbackByEntityEventHelper {
     private EntityKnockbackByEntityEventHelper() {
     }
 
-    static void fire(LivingEntity target, double strength, double x, double z,
+    public static void fire(LivingEntity target, double strength, double x, double z,
                      Entity attacker, Operation<Void> original) {
         org.bukkit.entity.LivingEntity bukkitTarget =
                 (org.bukkit.entity.LivingEntity) PaperArcBridge.bukkitEntity(target);
