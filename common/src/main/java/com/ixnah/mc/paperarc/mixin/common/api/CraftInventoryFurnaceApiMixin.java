@@ -7,11 +7,11 @@ import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.v.CraftWorld;
+import org.bukkit.craftbukkit.v.inventory.CraftInventory;
 import org.bukkit.craftbukkit.v.inventory.CraftInventoryFurnace;
 import org.bukkit.craftbukkit.v.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 /**
@@ -19,16 +19,20 @@ import org.spongepowered.asm.mixin.Unique;
  * to {@link CraftInventoryFurnace}: {@code isFuel(ItemStack)} and
  * {@code canSmelt(ItemStack)}.
  *
- * <p>Both delegate to the NMS furnace recipe machinery; the {@code inventory}
- * field of the {@code CraftInventory} base is shadowed to reach the
- * {@code AbstractFurnaceBlockEntity}. The furnace {@code recipeType} is private,
- * exposed through {@link AbstractFurnaceBlockEntityBridge}.</p>
+ * <p>Both delegate to the NMS furnace recipe machinery. The backing
+ * {@code AbstractFurnaceBlockEntity} is reached through the <b>public</b>
+ * {@code CraftInventory#getInventory()} accessor rather than {@code @Shadow}-ing the
+ * inherited {@code CraftInventory.inventory} field: shadowing a superclass member from a
+ * subclass mixin is unreliable ("was not located in the target class", run35). The furnace
+ * {@code recipeType} is private, exposed through {@link AbstractFurnaceBlockEntityBridge}.</p>
  */
 @Mixin(CraftInventoryFurnace.class)
 public abstract class CraftInventoryFurnaceApiMixin {
 
-    @Shadow
-    protected final net.minecraft.world.Container inventory = null;
+    @Unique
+    private net.minecraft.world.Container paperarc$container() {
+        return ((CraftInventory) (Object) this).getInventory();
+    }
 
     @Unique
     public boolean isFuel(ItemStack stack) {
@@ -43,7 +47,7 @@ public abstract class CraftInventoryFurnaceApiMixin {
                 ((CraftWorld) Bukkit.getWorlds().get(0)).getHandle();
         return stack != null && !stack.getType().isEmpty()
                 && world.getRecipeManager().getRecipeFor(
-                        ((AbstractFurnaceBlockEntityBridge) this.inventory).paper$getRecipeType(),
+                        ((AbstractFurnaceBlockEntityBridge) this.paperarc$container()).paper$getRecipeType(),
                         new SimpleContainer(CraftItemStack.asNMSCopy(stack)), world).isPresent();
     }
 }
