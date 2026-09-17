@@ -1001,11 +1001,6 @@ public abstract class CraftPlayerApiMixin {
     }
 
     @Unique
-    public void resetTitle() {
-        paperarc$send(new net.minecraft.network.protocol.game.ClientboundClearTitlesPacket(true));
-    }
-
-    @Unique
     public void playSound(net.kyori.adventure.sound.Sound sound) {
         ServerPlayer handle = getHandle();
         paperarc$playSound(sound, handle.getX(), handle.getY(), handle.getZ());

@@ -5,14 +5,13 @@ import org.spongepowered.asm.mixin.Unique;
 
 /**
  * Interface augmentation for {@link org.bukkit.entity.AbstractHorse} (generated).
- * Adds 7 paper-api method declaration(s); implementations live in
- * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
+ * Adds 6 paper-api method declaration(s); implementations live in
+ * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).
+ *
+ * <p>getVariant 运行时接口上本来就有，@Unique 声明会被 Mixin 丢弃，已删（A4-1 s）。
  */
 @Mixin(targets = "org.bukkit.entity.AbstractHorse", remap = false)
 public interface AbstractHorseIfaceMixin {
-
-    @Unique
-    public abstract org.bukkit.entity.Horse.Variant getVariant();
 
     @Unique
     public abstract boolean isEatingGrass();
