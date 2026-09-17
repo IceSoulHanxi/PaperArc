@@ -11,6 +11,8 @@
     "org.bukkit.event.player.PlayerRespawnEvent$RespawnFlag",
     "org.bukkit.event.weather.ThunderChangeEvent$Cause",
     "org.bukkit.event.weather.WeatherChangeEvent$Cause",
-    "org.bukkit.World$ChunkLoadCallback"
+    "org.bukkit.World$ChunkLoadCallback",
+    "org.bukkit.inventory.SaddledHorseInventory",
+    "org.bukkit.inventory.ArmoredHorseInventory"
   ]
 }

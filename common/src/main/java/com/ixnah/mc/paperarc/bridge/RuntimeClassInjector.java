@@ -36,10 +36,31 @@ import java.util.regex.Pattern;
  * service's bytecode provider and serves the embedded bytes for any configured
  * class name (dotted, as {@code buildTransformedClassNodeFor} receives).</p>
  *
- * <p>Timing: {@link #inject()} is invoked from {@link SpawnReasonConfigPlugin#onLoad}
- * (runs when the mixin config loads, before any mixin in that config is applied)
- * and from the mod constructor. NMS-side mixins must not reference these types —
- * they store ordinals / avoid the types so Minecraft's Bootstrap passes early.</p>
+ * <p><b>Timing — two phases.</b> {@code defineClass} never runs {@code <clinit>},
+ * but the JVM <em>must</em> resolve a class's direct superclass and superinterfaces
+ * while <em>defining</em> it (JVMS §5.3.5); no "do not initialise" flag avoids that.
+ * Defining a type whose supertype chain reaches an {@code org.bukkit.*} runtime
+ * interface therefore loads that interface — and if this happens from
+ * {@link RuntimeClassConfigPlugin#onLoad}, sibling mixin configs in the same phase
+ * are still preparing, so their iface mixins fail with
+ * {@code MixinTargetAlreadyLoadedException}. Hence:</p>
+ * <ul>
+ *   <li>{@link #hookAndDefineSafe()} — called from {@code onLoad}. Always hooks the
+ *       bytecode provider (side-effect free) and only defines classes whose whole
+ *       supertype chain consists of {@code java.*} types or other injected types
+ *       (enums, {@code World$ChunkLoadCallback}, …).</li>
+ *   <li>{@link #defineDeferred()} — called from the mod constructor, which is after
+ *       every mixin config has been prepared and still before Arclight's bukkit layer
+ *       (and thus the Craft* classes) is initialised. Defining the remaining classes
+ *       here loads their bukkit supertypes through the normal transformer, so the
+ *       iface mixins still apply.</li>
+ * </ul>
+ * <p>Deferred defines must <em>not</em> be done from {@code preApply}/
+ * {@code shouldApplyMixin}: those run inside mixin transformation, where a nested
+ * class load hits MixinProcessor's re-entrance handling.</p>
+ *
+ * <p>Method descriptors referencing {@code org.bukkit} types are harmless — only
+ * direct supertypes are resolved at define time.</p>
  */
 public final class RuntimeClassInjector {
 
@@ -49,28 +70,77 @@ public final class RuntimeClassInjector {
     private static final String LOG = "/tmp/paperarc-injector.log";
     private static final Pattern CLASS_NAME = Pattern.compile("\"([a-zA-Z0-9_$.]+)\"");
 
-    private static volatile boolean done;
+    private static volatile boolean hookDone;
+    private static volatile boolean deferredDone;
+
+    /** Config parsed once by {@link #hookAndDefineSafe()} and reused by {@link #defineDeferred()}. */
+    private static volatile Map<String, byte[]> configured;
 
     private RuntimeClassInjector() {
     }
 
-    /** Loads the config and injects every listed class once. */
-    public static synchronized void inject() {
-        if (done) {
+    /**
+     * Phase 1 (mixin config {@code onLoad}): hook the bytecode provider for every
+     * configured class and define the ones that cannot drag a bukkit runtime type in.
+     * Idempotent.
+     */
+    public static synchronized void hookAndDefineSafe() {
+        if (hookDone) {
             return;
         }
-        Map<String, byte[]> classes;
-        try {
-            classes = readConfiguredClasses();
-        } catch (Throwable t) {
-            trace("[PaperArc] RuntimeClassInjector: read config failed: " + t);
-            return;
-        }
+        Map<String, byte[]> classes = configuredClasses();
         if (classes == null || classes.isEmpty()) {
-            trace("[PaperArc] RuntimeClassInjector: no classes configured in " + CONFIG);
+            hookDone = true;
             return;
         }
         hookTransformerLoader(classes);
+        Map<String, byte[]> safe = new LinkedHashMap<>();
+        Map<String, byte[]> deferred = new LinkedHashMap<>();
+        for (Map.Entry<String, byte[]> entry : classes.entrySet()) {
+            (supertypesAreSafe(entry.getKey(), classes, new LinkedHashSet<>()) ? safe : deferred)
+                    .put(entry.getKey(), entry.getValue());
+        }
+        hookDone = true;
+        trace("[PaperArc] RuntimeClassInjector: phase1 safe=" + safe.keySet()
+                + " deferred=" + deferred.keySet());
+        defineAll("phase1", safe);
+    }
+
+    /**
+     * Phase 2 (mod constructor): define the classes whose supertype chain reaches a
+     * bukkit runtime type, now that every mixin config has been prepared. Idempotent.
+     */
+    public static synchronized void defineDeferred() {
+        if (deferredDone) {
+            return;
+        }
+        Map<String, byte[]> classes = configuredClasses();
+        deferredDone = true;
+        if (classes == null || classes.isEmpty()) {
+            return;
+        }
+        Map<String, byte[]> deferred = new LinkedHashMap<>();
+        for (Map.Entry<String, byte[]> entry : classes.entrySet()) {
+            if (!supertypesAreSafe(entry.getKey(), classes, new LinkedHashSet<>())) {
+                deferred.put(entry.getKey(), entry.getValue());
+            }
+        }
+        if (!hookDone) {
+            // onLoad never ran (config plugin missing?) — fall back to a full injection
+            hookTransformerLoader(classes);
+            hookDone = true;
+            defineAll("phase2-fallback", classes);
+            return;
+        }
+        defineAll("phase2", deferred);
+    }
+
+    /** defineClass {@code classes} into every reachable loader that does not have them yet. */
+    private static void defineAll(String phase, Map<String, byte[]> classes) {
+        if (classes.isEmpty()) {
+            trace("[PaperArc] RuntimeClassInjector: " + phase + " nothing to define");
+            return;
+        }
         boolean any = false;
         StringBuilder sb = new StringBuilder();
         for (ClassLoader loader : candidateLoaders()) {
@@ -95,9 +165,73 @@ public final class RuntimeClassInjector {
                 }
             }
         }
-        done = true;
-        trace("[PaperArc] RuntimeClassInjector: classes=" + classes.keySet()
+        trace("[PaperArc] RuntimeClassInjector: " + phase + " classes=" + classes.keySet()
                 + " candidates=[" + sb + "] done, injected=" + any);
+    }
+
+    /**
+     * True when {@code name}'s whole supertype chain only contains {@code java.*} types
+     * and other configured (injectable) types, i.e. defining it cannot pull an
+     * {@code org.bukkit.*} runtime class in. Read straight off the embedded bytes.
+     */
+    private static boolean supertypesAreSafe(String name, Map<String, byte[]> classes, Set<String> seen) {
+        if (!seen.add(name)) {
+            return true; // cycle guard; already being validated higher up the stack
+        }
+        byte[] bytes = classes.get(name);
+        if (bytes == null) {
+            return false;
+        }
+        org.objectweb.asm.ClassReader reader;
+        try {
+            reader = new org.objectweb.asm.ClassReader(bytes);
+        } catch (Throwable t) {
+            trace("[PaperArc] RuntimeClassInjector: cannot read " + name + ", treating as deferred: " + t);
+            return false;
+        }
+        java.util.List<String> supers = new java.util.ArrayList<>();
+        if (reader.getSuperName() != null) {
+            supers.add(reader.getSuperName().replace('/', '.'));
+        }
+        String[] interfaces = reader.getInterfaces();
+        if (interfaces != null) {
+            for (String itf : interfaces) {
+                supers.add(itf.replace('/', '.'));
+            }
+        }
+        for (String supertype : supers) {
+            if (supertype.startsWith("java.")) {
+                continue;
+            }
+            if (classes.containsKey(supertype)) {
+                if (!supertypesAreSafe(supertype, classes, seen)) {
+                    return false;
+                }
+                continue;
+            }
+            return false; // resolved from the runtime -> must be deferred
+        }
+        return true;
+    }
+
+    /** Parses (and caches) the embedded config. */
+    private static Map<String, byte[]> configuredClasses() {
+        Map<String, byte[]> cached = configured;
+        if (cached != null) {
+            return cached;
+        }
+        try {
+            cached = readConfiguredClasses();
+        } catch (Throwable t) {
+            trace("[PaperArc] RuntimeClassInjector: read config failed: " + t);
+            cached = java.util.Collections.emptyMap();
+        }
+        if (cached == null || cached.isEmpty()) {
+            trace("[PaperArc] RuntimeClassInjector: no classes configured in " + CONFIG);
+            cached = java.util.Collections.emptyMap();
+        }
+        configured = cached;
+        return cached;
     }
 
     /** Parses the JSON config and loads each configured class's bytes. */

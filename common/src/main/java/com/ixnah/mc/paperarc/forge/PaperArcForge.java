@@ -10,9 +10,10 @@ public final class PaperArcForge {
     public static final String MOD_ID = PaperArcMod.MOD_ID;
 
     public PaperArcForge() {
-        // mod 构造期注入运行时缺失的 paper-api 类型（见 bridge/RuntimeClassInjector）
-        // （必须在任何 org.bukkit.* 接口被加载/转换之前完成）
-        com.ixnah.mc.paperarc.bridge.RuntimeClassInjector.inject();
+        // 第二阶段注入：超类型链会拉入 org.bukkit 运行时类的类型推迟到这里 define
+        // ——此时所有 mixin config 已 prepare 完毕，且早于 Arclight bukkit 层初始化
+        // （见 bridge/RuntimeClassInjector 的时序说明）
+        com.ixnah.mc.paperarc.bridge.RuntimeClassInjector.defineDeferred();
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         modEventBus.addListener(this::commonSetup);
     }
