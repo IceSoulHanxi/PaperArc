@@ -1,17 +1,17 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.google.common.base.Preconditions;
-import com.mojang.authlib.GameProfile;
-import com.mojang.datafixers.util.Pair;
 import com.ixnah.mc.paperarc.bridge.ApiState;
 import com.ixnah.mc.paperarc.bridge.CraftPlayerProfile;
 import com.ixnah.mc.paperarc.bridge.api.SimpleMobGoals;
 import com.ixnah.mc.paperarc.bridge.scheduler.SimpleAsyncScheduler;
 import com.ixnah.mc.paperarc.bridge.scheduler.SimpleGlobalRegionScheduler;
-import java.io.File;
-import java.lang.reflect.Field;
-import java.util.Locale;
-import java.util.Optional;
+import com.mojang.authlib.GameProfile;
+import com.mojang.datafixers.util.Pair;
+import io.papermc.paper.math.Position;
+import io.papermc.paper.potion.PotionMix;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -24,28 +24,44 @@ import net.minecraft.world.item.MapItem;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.saveddata.maps.MapDecorationType;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.BanList;
+import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
 import org.bukkit.craftbukkit.v.CraftServer;
 import org.bukkit.craftbukkit.v.CraftWorld;
 import org.bukkit.craftbukkit.v.ban.CraftIpBanList;
 import org.bukkit.craftbukkit.v.ban.CraftProfileBanList;
 import org.bukkit.craftbukkit.v.inventory.CraftItemStack;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.generator.structure.StructureType;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.map.MapCursor;
+import org.bukkit.potion.PotionBrewer;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
+import java.io.File;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+
 /**
- * Part 1 of the CraftServer paper-api extension slice (batch B26).
+ * CraftServer 的 paper-api 扩展（原 batch B26 + B27 两个切片，2026-09-17 合并为一个
+ * mixin —— 拆成 Part1/Part2 只是当初为了并行写代码，运行时两半要共享 @Unique 字段与
+ * @Shadow 声明，分开反而重复）。
  *
  * Adds Paper-only {@link org.bukkit.Server} members missing from this
  * codebase's vanilla-based CraftServer.
@@ -53,11 +69,13 @@ import org.spongepowered.asm.mixin.Unique;
  * <p>Scheduler, mob-goals, command-sender and explorer-map members are
  * provided as sync-fallback implementations (see
  * docs/reports/blocked-batch1.md): everything routes through the classic
- * Bukkit main-thread scheduler and is NOT truly asynchronous. The datapack
- * manager remains unimplemented (needs Datapack wrapper infrastructure).</p>
+ * Bukkit main-thread scheduler and is NOT truly asynchronous. Methods relying
+ * on Folia region schedulers, Paper permission/alias config infrastructure or
+ * datapack resource reloading are intentionally left out and reported as
+ * BLOCKED in docs/reports/api-B27.md.</p>
  */
 @Mixin(CraftServer.class)
-public abstract class CraftServerApiMixinPart1 {
+public abstract class CraftServerApiMixin {
 
     @Unique
     private static final String PAPERARC_PERMISSION_MSG_KEY = "paperarc:permissionMessage";
@@ -397,5 +415,222 @@ public abstract class CraftServerApiMixinPart1 {
     @Unique
     public com.destroystokyo.paper.profile.PlayerProfile createProfileExact(String name) {
         return new CraftPlayerProfile(new GameProfile(null, name));
+    }
+
+
+    @Unique
+    private static final String PAPERARC_POTION_BREWER_KEY = "paperarc:potionBrewer";
+
+    @Unique
+    private static final String PAPERARC_SHUTDOWN_MESSAGE_KEY = "paperarc:shutdownMessage";
+
+    @Unique
+    private static final String PAPERARC_SUGGEST_PLAYER_NAMES_KEY =
+            "paperarc:suggestPlayerNamesWhenNullTabCompletions";
+
+    @Unique
+    private static final String PAPERARC_IS_STOPPING_KEY = "paperarc:isStopping";
+
+    /**
+     * Spigot-patched {@code MinecraftServer.recentTps} (1m/5m/15m averages);
+     * absent from the vanilla compile jar, so resolved through privateLookupIn.
+     */
+    @Unique
+    private static final MethodHandle PAPERARC$RECENT_TPS = paperarc$buildRecentTpsHandle();
+
+    /**
+     * Spigot-patched {@code MinecraftServer.tickTimes} ring buffer. Not present
+     * in current Arclight builds -> null, degrading getTickTimes() to an empty
+     * array.
+     */
+    @Unique
+    private static final MethodHandle PAPERARC$TICK_TIMES = paperarc$buildTickTimesHandle();
+
+    @Unique
+    private static MethodHandle paperarc$buildRecentTpsHandle() {
+        try {
+            return MethodHandles.privateLookupIn(net.minecraft.server.MinecraftServer.class, MethodHandles.lookup())
+                    .findGetter(net.minecraft.server.MinecraftServer.class, "recentTps", double[].class);
+        } catch (ReflectiveOperationException e) {
+            return null; // getTPS() degrades to {20, 20, 20}
+        }
+    }
+
+    @Unique
+    private static MethodHandle paperarc$buildTickTimesHandle() {
+        try {
+            return MethodHandles.privateLookupIn(net.minecraft.server.MinecraftServer.class, MethodHandles.lookup())
+                    .findGetter(net.minecraft.server.MinecraftServer.class, "tickTimes", long[].class);
+        } catch (ReflectiveOperationException e) {
+            return null; // getTickTimes() degrades to an empty array
+        }
+    }
+
+    @Unique
+    public double[] getTPS() {
+        // Spigot-added MinecraftServer.recentTps keeps 1m/5m/15m averages; the
+        // field is spigot-patched and absent from the vanilla mojmap jar, so it
+        // is read through a MethodHandle.
+        if (PAPERARC$RECENT_TPS == null) {
+            return new double[]{20.0D, 20.0D, 20.0D};
+        }
+        try {
+            return (double[]) PAPERARC$RECENT_TPS.invoke(this.getServer());
+        } catch (Throwable t) {
+            return new double[]{20.0D, 20.0D, 20.0D};
+        }
+    }
+
+    @Unique
+    public long[] getTickTimes() {
+        // Spigot MinecraftServer.tickTimes ring buffer of the last tick
+        // durations in nanoseconds; read through a MethodHandle like getTPS.
+        if (PAPERARC$TICK_TIMES == null) {
+            return new long[0];
+        }
+        try {
+            Object value = PAPERARC$TICK_TIMES.invoke(this.getServer());
+            if (value instanceof long[] ticks) {
+                return ticks;
+            }
+            return new long[0];
+        } catch (Throwable t) {
+            return new long[0];
+        }
+    }
+
+    @Unique
+    public Component motd() {
+        return LegacyComponentSerializer.legacySection().deserialize(((CraftServer) (Object) this).getMotd());
+    }
+
+    @Unique
+    public void motd(Component motd) {
+        ((CraftServer) (Object) this).setMotd(LegacyComponentSerializer.legacySection().serialize(motd));
+    }
+
+    @Unique
+    public Component permissionMessage() {
+        String legacy = ApiState.get(this, PAPERARC_PERMISSION_MSG_KEY,
+                PAPERARC_DEFAULT_PERMISSION_MESSAGE);
+        return LegacyComponentSerializer.legacySection().deserialize(legacy);
+    }
+
+    @Unique
+    public Component shutdownMessage() {
+        // Paper keeps an optional shutdown broadcast; nullable by design.
+        return ApiState.get(this, PAPERARC_SHUTDOWN_MESSAGE_KEY, null);
+    }
+
+    @Unique
+    public boolean suggestPlayerNamesWhenNullTabCompletions() {
+        // Paper config option; vanilla behaviour (suggest names) as default.
+        return ApiState.get(this, PAPERARC_SUGGEST_PLAYER_NAMES_KEY, Boolean.TRUE);
+    }
+
+    @Unique
+    public boolean isStopping() {
+        // Paper flips this flag at the start of stopServer(); we expose the
+        // side-map flag (default false) for a bootstrap layer to set.
+        return ApiState.get(this, PAPERARC_IS_STOPPING_KEY, Boolean.FALSE);
+    }
+
+    @Unique
+    public boolean isTickingWorlds() {
+        // Approximation of Paper's flag via MinecraftServer#isStopped(): worlds
+        // stay loaded/ticking until the server has fully stopped.
+        try {
+            Object stopped = net.minecraft.server.MinecraftServer.class.getMethod("isStopped")
+                    .invoke(this.getServer());
+            return !((Boolean) stopped);
+        } catch (ReflectiveOperationException e) {
+            return true;
+        }
+    }
+
+    @Unique
+    public World getWorld(net.kyori.adventure.key.Key worldKey) {
+        // Vanilla worlds live under the minecraft namespace; non-minecraft
+        // namespaces fall back to a case-insensitive name scan.
+        if ("minecraft".equals(worldKey.namespace())) {
+            return ((CraftServer) (Object) this).getWorld(worldKey.value());
+        }
+        for (World world : ((org.bukkit.Server) (Object) this).getWorlds()) {
+            if (world.getName().equalsIgnoreCase(worldKey.value())) {
+                return world;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Single-region (non-Folia) semantics, mirroring Paper's non-Folia
+     * behaviour: every position belongs to the main server thread.
+     */
+    @Unique
+    private boolean paperarc$isOwnedByCurrentRegion() {
+        return ((org.bukkit.Server) (Object) this).isPrimaryThread();
+    }
+
+    @Unique
+    public boolean isOwnedByCurrentRegion(org.bukkit.Location location) {
+        return this.paperarc$isOwnedByCurrentRegion();
+    }
+
+    @Unique
+    public boolean isOwnedByCurrentRegion(org.bukkit.Location location, int squareRadiusChunks) {
+        return this.paperarc$isOwnedByCurrentRegion();
+    }
+
+    @Unique
+    public boolean isOwnedByCurrentRegion(org.bukkit.World world, int chunkX, int chunkZ) {
+        return this.paperarc$isOwnedByCurrentRegion();
+    }
+
+    @Unique
+    public boolean isOwnedByCurrentRegion(org.bukkit.World world, int chunkX, int chunkZ, int squareRadiusChunks) {
+        return this.paperarc$isOwnedByCurrentRegion();
+    }
+
+    @Unique
+    public boolean isOwnedByCurrentRegion(org.bukkit.World world, Position position) {
+        return this.paperarc$isOwnedByCurrentRegion();
+    }
+
+    @Unique
+    public boolean isOwnedByCurrentRegion(org.bukkit.World world, Position position, int squareRadiusChunks) {
+        return this.paperarc$isOwnedByCurrentRegion();
+    }
+
+    @Unique
+    public boolean isOwnedByCurrentRegion(org.bukkit.entity.Entity entity) {
+        return this.paperarc$isOwnedByCurrentRegion();
+    }
+
+    @Unique
+    public PotionBrewer getPotionBrewer() {
+        PotionBrewer brewer = ApiState.get(this, PAPERARC_POTION_BREWER_KEY, null);
+        if (brewer == null) {
+            brewer = new com.ixnah.mc.paperarc.bridge.PaperarcPotionBrewer();
+            ApiState.put(this, PAPERARC_POTION_BREWER_KEY, brewer);
+        }
+        return brewer;
+    }
+
+    @Unique
+    public void reloadPermissions() {
+        // Paper reloads its PermissionsConfig then forces recalcs; here we
+        // re-run CraftBukkit's private loadCustomPermissions() reflectively
+        // and recalculate every online player's effective permissions.
+        try {
+            Method loadCustomPermissions = CraftServer.class.getDeclaredMethod("loadCustomPermissions");
+            loadCustomPermissions.setAccessible(true);
+            loadCustomPermissions.invoke(this);
+        } catch (ReflectiveOperationException e) {
+            return;
+        }
+        for (org.bukkit.entity.Player player : ((org.bukkit.Server) (Object) this).getOnlinePlayers()) {
+            player.recalculatePermissions();
+        }
     }
 }

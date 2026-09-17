@@ -1,24 +1,19 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import com.destroystokyo.paper.ClientOption;
 import com.destroystokyo.paper.Title;
 import com.google.common.base.Preconditions;
+import com.ixnah.mc.paperarc.bridge.ApiState;
+import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import com.mojang.authlib.GameProfile;
+import io.papermc.paper.math.Position;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.util.TriState;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component.Serializer;
 import net.minecraft.network.protocol.Packet;
@@ -34,9 +29,13 @@ import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
-import net.minecraft.world.effect.MobEffectInstance;
-import com.mojang.authlib.GameProfile;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantedItemInUse;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.bukkit.DyeColor;
 import org.bukkit.EntityEffect;
 import org.bukkit.Location;
@@ -46,26 +45,244 @@ import org.bukkit.craftbukkit.v.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.v.entity.CraftEntity;
 import org.bukkit.craftbukkit.v.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v.util.CraftChatMessage;
+import org.bukkit.event.player.PlayerResourcePackStatusEvent;
+import org.bukkit.inventory.MainHand;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
-import com.ixnah.mc.paperarc.bridge.ApiState;
-import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
-import io.papermc.paper.math.Position;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.reflect.Field;
+import java.net.InetSocketAddress;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 /**
- * Adds Paper player API additions on CraftPlayer (B31 part 2).
+ * CraftPlayer 的 paper-api 扩展（原批次 B30 + B31 两个切片，2026-09-17 合并为一个
+ * mixin —— 拆成 Part1/Part2 只是当初为了并行写代码）。
  *
- * PaperAdventure is unavailable in Arclight, so Adventure components are
+ * <p>PaperAdventure is unavailable in Arclight, so Adventure components are
  * converted via a Gson round-trip through {@code Component.Serializer};
  * bungee-chat components are serialized to JSON and parsed the same way.
  * State that vanilla 1.21.1 does not store per-player (Paper-side flags such
  * as affectsSpawning / flyingFallDamage / view-distance overrides) lives in
- * {@link ApiState}.
+ * {@link ApiState}.</p>
  */
 @Mixin(CraftPlayer.class)
-public abstract class CraftPlayerApiMixinPart2 {
+public abstract class CraftPlayerApiMixin {
+
+    @Shadow
+    public abstract ServerPlayer getHandle();
+
+    @Shadow
+    public abstract String getDisplayName();
+
+    @Shadow
+    public abstract void setDisplayName(String displayName);
+
+    @Unique
+    private static PlayerList paperarc$playerList() {
+        return ((org.bukkit.craftbukkit.v.CraftServer) org.bukkit.Bukkit.getServer()).getServer().getPlayerList();
+    }
+
+    // ---- activeBossBars ----
+    @Unique
+    public Iterable activeBossBars() {
+        // vanilla 服务端不维护每玩家 BossBar 注册表（龙/凋灵血条无法反向回查），保守返回空集合
+        return Collections.emptyList();
+    }
+    @Unique
+    public void addAdditionalChatCompletions(Collection completions) {
+        this.getHandle().connection.send(new ClientboundCustomChatCompletionsPacket(
+            ClientboundCustomChatCompletionsPacket.Action.ADD, new ArrayList<>(completions)));
+    }
+
+    // ---- applyMending ----
+    @Unique
+    public int applyMending(int amount) {
+        ServerPlayer sp = this.getHandle();
+        sp.resetLastActionTime();
+        int remaining = amount;
+        for (int guard = 0; guard < 64 && remaining > 0; guard++) {
+            Optional<EnchantedItemInUse> opt = EnchantmentHelper.getRandomItemWith(
+                EnchantmentEffectComponents.REPAIR_WITH_XP, sp, ItemStack::isDamaged);
+            if (opt.isEmpty()) {
+                break;
+            }
+            ItemStack stack = opt.get().itemStack();
+            if (stack.isEmpty() || !stack.isDamaged()) {
+                break;
+            }
+            int want = EnchantmentHelper.modifyDurabilityToRepairFromXp(sp.serverLevel(), stack, remaining * 2);
+            int heal = Math.min(want, stack.getDamageValue());
+            if (heal <= 0) {
+                break;
+            }
+            stack.setDamageValue(stack.getDamageValue() - heal);
+            remaining -= heal / 2;
+        }
+        return Math.max(remaining, 0);
+    }
+
+    // ---- calculateTotalExperiencePoints ----
+    @Unique
+    public int calculateTotalExperiencePoints() {
+        return this.getHandle().totalExperience;
+    }
+
+    // ---- displayName getter/setter ----
+    @Unique
+    public Component displayName() {
+        Component stored = ApiState.get(this, "displayName", null);
+        if (stored != null) {
+            return stored;
+        }
+        String legacy = this.getDisplayName();
+        return legacy == null ? Component.empty()
+            : LegacyComponentSerializer.legacySection().deserialize(legacy);
+    }
+
+    @Unique
+    public void displayName(Component component) {
+        ApiState.put(this, "displayName", component);
+        this.setDisplayName(component == null ? null
+            : LegacyComponentSerializer.legacySection().serialize(component));
+    }
+
+    // ---- getAffectsSpawning ----
+    @Unique
+    public boolean getAffectsSpawning() {
+        Boolean flag = ApiState.get(this, "affectsSpawning", null);
+        return flag == null || flag;
+    }
+
+    // ---- getClientBrandName ----
+    @Unique
+    public String getClientBrandName() {
+        // vanilla 服务端不持久化客户端 brand（MC|Brand 即弃），需上层注入 ApiState
+        return ApiState.get(this, "clientBrandName", null);
+    }
+
+    // ---- getClientOption ----
+    @Unique
+    public Object getClientOption(ClientOption option) {
+        net.minecraft.server.level.ClientInformation info = this.getHandle().clientInformation();
+        if (option == ClientOption.SKIN_PARTS) {
+            return paperarc$skinParts((byte) info.modelCustomisation());
+        }
+        if (option == ClientOption.CHAT_VISIBILITY) {
+            return ClientOption.ChatVisibility.valueOf(info.chatVisibility().name());
+        }
+        if (option == ClientOption.CHAT_COLORS_ENABLED) {
+            return info.chatColors();
+        }
+        if (option == ClientOption.LOCALE) {
+            String lang = info.language();
+            return lang == null ? null : java.util.Locale.forLanguageTag(lang.replace('_', '-'));
+        }
+        if (option == ClientOption.VIEW_DISTANCE) {
+            return info.viewDistance();
+        }
+        if (option == ClientOption.TEXT_FILTERING_ENABLED) {
+            return info.textFilteringEnabled();
+        }
+        if (option == ClientOption.MAIN_HAND) {
+            return MainHand.valueOf(info.mainHand().name());
+        }
+        if (option == ClientOption.ALLOW_SERVER_LISTINGS) {
+            return info.allowsListing();
+        }
+        // 未知/无数据选项（如粒子可见性）返回 null
+        return null;
+    }
+
+    // ---- getCooldownPeriod / getCooledAttackStrength ----
+    @Unique
+    public float getCooldownPeriod() {
+        return this.getHandle().getCurrentItemAttackStrengthDelay();
+    }
+
+    @Unique
+    public float getCooledAttackStrength(float adjustTicks) {
+        return this.getHandle().getAttackStrengthScale(adjustTicks);
+    }
+
+    // ---- getExperiencePointsNeededForNextLevel ----
+    @Unique
+    public int getExperiencePointsNeededForNextLevel() {
+        return this.getHandle().getXpNeededForNextLevel();
+    }
+
+    // ---- getHAProxyAddress ----
+    @Unique
+    public InetSocketAddress getHAProxyAddress() {
+        // 需要 HAProxy proxy-protocol 基建在握手期保存真实地址，当前仅 side-map
+        return ApiState.get(this, "haProxyAddress", null);
+    }
+
+    // ---- getIdleDuration ----
+    @Unique
+    public Duration getIdleDuration() {
+        return Duration.ofMillis(Math.max(0L, Util.getMillis() - this.getHandle().getLastActionTime()));
+    }
+
+    // ---- getResourcePackStatus ----
+    @Unique
+    public PlayerResourcePackStatusEvent.Status getResourcePackStatus() {
+        // spigot 收到资源包状态后只发事件不存储，需上层在事件里回填 ApiState
+        return ApiState.get(this, "resourcePackStatus", null);
+    }
+
+    // ---- getSendViewDistance ----
+    @Unique
+    public int getSendViewDistance() {
+        Integer override = ApiState.get(this, "sendViewDistance", null);
+        if (override != null) {
+            return override;
+        }
+        // vanilla 无每玩家发送距离，回退服务器级 view distance
+        return paperarc$playerList().getViewDistance();
+    }
+
+    // ---- getSentChunkKeys ----
+    @Unique
+    public Set getSentChunkKeys() {
+        // 需要 PlayerChunkLoader 发送队列基建（Paper 内部），保守返回空集合
+        return new HashSet();
+    }
+
+    // ---- getSentChunks ----
+    @Unique
+    public Set getSentChunks() {
+        // 同上，无 chunk 追踪基建，保守返回空集合
+        return Collections.emptySet();
+    }
+
+    // ---- getSimulationDistance ----
+    @Unique
+    public int getSimulationDistance() {
+        // vanilla 无每玩家模拟距离，回退服务器级 simulation distance
+        return paperarc$playerList().getSimulationDistance();
+    }
+
+    // ---- helpers ----
+    @Unique
+    private static com.destroystokyo.paper.SkinParts paperarc$skinParts(final byte raw) {
+        // 实现体在 bridge/：mixin 包内的（含匿名）类被合并后的 CraftPlayer 字节码引用即
+        // IllegalClassLoadError，且内嵌类的 InnerClasses 属性会与目标类互相矛盾。
+        return new com.ixnah.mc.paperarc.bridge.PaperArcSkinParts(raw);
+    }
+
 
     @Unique
     private static final String PAPERARC$KEY_PLAYER_LIST_NAME = "playerListName";
@@ -77,9 +294,6 @@ public abstract class CraftPlayerApiMixinPart2 {
     private static final String PAPERARC$KEY_SEND_VIEW_DISTANCE = "sendViewDistance";
     @Unique
     private static final String PAPERARC$KEY_SIMULATION_DISTANCE = "simulationDistance";
-
-    @Shadow
-    public abstract ServerPlayer getHandle();
 
     @Shadow
     public abstract String getPlayerListName();
