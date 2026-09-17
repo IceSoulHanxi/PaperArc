@@ -50,6 +50,9 @@ jobs:
       - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v3
 
+      # build 会连带跑 check：checkMixinRegistry / checkLoaderMixinParity /
+      # checkNoSilentInjections / checkIfaceImplPairing（后者需要 Arclight 运行时 jar，
+      # CI 里拿不到，脚本会自行降级成 no-op 并只打 warning）。
       - name: Build PaperArc
         working-directory: PaperArc
         run: ./gradlew build --no-daemon

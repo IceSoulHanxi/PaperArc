@@ -14,8 +14,11 @@ Paper API 的插件可以像在 Paper 服务端上一样正常加载与运行。
 - ✅ 提供 `io.papermc.paper.*` 与 `com.destroystokyo.paper.*` 的完整 API 表面：
   - 全部 Paper 专属**事件类型**（如 `ServerTickEndEvent`、`EntityJumpEvent`、
     `PlayerTradeEvent` 等），支持 `@EventHandler` 正常分发；
-  - 在 Bukkit 原生接口上增补 **630 个 Paper 独有方法**与 **106 个 Paper 接口**
-    （如 `Player#tickBoostedEnderPearl`、实体/fluid/材料家族的 Paper 扩展）；
+  - 在 Bukkit 原生接口上增补 **778 条 Paper 独有方法声明 / 857 处实现**，
+    覆盖 128 个 Bukkit 接口（如 `Player#kick(Component, Cause)`、
+    `Enchantment` 的 16 个 1.21 数据驱动方法、实体/方块/物品家族的 Paper 扩展）；
+    三层审计（paper-api ↔ 运行时 ↔ paperarc）的**剩余真实缺口 10 条**，
+    逐条原因见 `docs/gaps.md`；
   - Adventure `Component` 运行时（随 Mod 内置提供）。
 - ❌ 不移植 Paper 的性能优化（异步区块调度、tick 优化、Folia 区域化等）。
   PaperArc 只关心 *API 兼容*，不改变服务端的调度与性能行为。
@@ -29,6 +32,7 @@ Paper API 的插件可以像在 Paper 服务端上一样正常加载与运行。
 | Java | 21 |
 | Arclight | 1.21.1（FeudalKings 分支，1.0.2-SNAPSHOT） |
 | 加载器 | Fabric Loader 0.19.x ／ NeoForge 21.1.x ／ Forge 52.1.x |
+| 构建 | Gradle 8.13 + Architectury Loom |
 
 三个加载器的 Arclight 发行版均可使用，按你现有的 Arclight 类型选择对应产物即可。
 
@@ -41,6 +45,11 @@ Paper API 的插件可以像在 Paper 服务端上一样正常加载与运行。
 2. 将 Jar 放入 Arclight 服务端的 `mods/` 目录；
    你的插件照常放在 `plugins/` 目录。
 3. 启动服务器，日志出现 `Done (` 即安装成功。
+
+> **不需要另外下载 MixinExtras。** Forge 端所需的 MixinExtras 已经通过
+> Jar-in-Jar 嵌在 PaperArc 的产物里（`forge/build.gradle` 的 `include`，
+> `remapJar` 会自动写进 `mods.toml` 的 `[[files]]`）；Fabric 与 NeoForge 由
+> 加载器自带。放一个 Jar 就够了。
 
 ## 构建
 
