@@ -34,7 +34,7 @@ public abstract class ServerGamePacketListenerImplCartographyMixin {
             return false;
         }
         final org.bukkit.inventory.ItemStack result = cartographyInventory.getResult();
-        return result != null && !result.isEmpty();
+        return !com.ixnah.mc.paperarc.bridge.api.PaperarcItemStacks.isEmpty(result);
     }
 
     @WrapOperation(method = "handleContainerClick", at = @At(value = "NEW", remap = false,

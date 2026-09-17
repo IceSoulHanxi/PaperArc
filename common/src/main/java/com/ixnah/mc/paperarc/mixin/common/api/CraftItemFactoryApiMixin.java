@@ -191,7 +191,9 @@ public abstract class CraftItemFactoryApiMixin {
             Optional<? extends HolderSet<net.minecraft.world.item.enchantment.Enchantment>> possibleEnchantments,
             Random random) {
         Preconditions.checkArgument(itemStack != null, "Argument 'itemStack' must not be null");
-        Preconditions.checkArgument(!itemStack.isEmpty(), "Argument 'itemStack' cannot be empty");
+        Preconditions.checkArgument(
+                !com.ixnah.mc.paperarc.bridge.api.PaperarcItemStacks.isEmpty(itemStack),
+                "Argument 'itemStack' cannot be empty");
         Preconditions.checkArgument(levels > 0 && levels <= 30,
                 "Argument 'levels' must be in range [1, 30] (attempted " + levels + ")");
         Preconditions.checkArgument(random != null, "Argument 'random' must not be null");

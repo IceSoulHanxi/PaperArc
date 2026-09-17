@@ -180,9 +180,58 @@ subprojects {
         }
     }
 
+    // 实现体调用的 org.bukkit API 在运行时是否真的存在（Phase A4 立的门禁，两分支通用）。
+    // 直接读编译产物的常量池比对运行时 jar，不用起服务器就能抓 checklist §1.6 n 那一类
+    // ——「编译期有（我们针对 paper-api 编译）、运行时没有」的调用点，例如
+    // ItemStack#isEmpty()/Location#x()。判定同样要仓库外的运行时 jar，取不到就只警告。
+    tasks.register('checkRuntimeApiCalls') {
+        def script = rootProject.file('../tools/scripts/check-runtime-api-calls.py')
+        def repoRoot = rootProject.projectDir
+        def arclightDir = rootProject.file('../Arclight/bootstrap/run_prod/fabric/.arclight/mod_file')
+        def spigotDeobf = rootProject.file('../Arclight/.gradle/arclight/arclight_repo/io/izzel/arclight/generated/spigot/1.21.1/spigot-1.21.1-deobf.jar')
+        def classesDir = file("${buildDir}/classes/java/main")
+        dependsOn tasks.named('classes')
+        outputs.upToDateWhen { false }
+        doLast {
+            def arclight = arclightDir.isDirectory()
+                    ? arclightDir.listFiles().findAll { it.name.startsWith('arclight-1.21.1-') }
+                    : []
+            if (!script.isFile() || arclight.isEmpty() || !spigotDeobf.isFile() || !classesDir.isDirectory()) {
+                logger.warn("checkRuntimeApiCalls(${project.name}): 脚本或运行时 jar 不可用，跳过")
+                return
+            }
+            def apiJars = project.configurations.compileClasspath.files.findAll {
+                it.name.startsWith('paper-api-') || it.name.startsWith('adventure-api-')
+            }
+            def cmd = ['python3', script.absolutePath, classesDir.absolutePath, repoRoot.absolutePath, '--jars']
+            cmd.addAll(arclight.collect { it.absolutePath })
+            cmd.add(spigotDeobf.absolutePath)
+            if (!apiJars.isEmpty()) {
+                cmd.add('--api-jars')
+                cmd.addAll(apiJars.collect { it.absolutePath })
+            }
+            def out = new ByteArrayOutputStream()
+            def result = project.exec {
+                commandLine cmd
+                ignoreExitValue = true
+                standardOutput = out
+                errorOutput = out
+            }
+            def text = out.toString()
+            if (result.exitValue == 2) {
+                logger.warn("checkRuntimeApiCalls(${project.name}): 运行时 jar 不可用，跳过\n${text}")
+            } else if (result.exitValue != 0) {
+                throw new GradleException("实现体调用了运行时不存在的 org.bukkit API:\n${text}")
+            } else {
+                logger.lifecycle("checkRuntimeApiCalls(${project.name}): ${text.trim()}")
+            }
+        }
+    }
+
     tasks.named('check') {
         dependsOn 'checkMixinRegistry'
         dependsOn 'checkNoSilentInjections'
+        dependsOn 'checkRuntimeApiCalls'
         if (project.name == 'common') {
             dependsOn 'checkIfaceImplPairing'
             dependsOn rootProject.tasks.named('checkLoaderMixinParity')
