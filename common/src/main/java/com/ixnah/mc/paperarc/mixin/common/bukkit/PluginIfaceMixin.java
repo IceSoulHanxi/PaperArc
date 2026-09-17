@@ -34,4 +34,7 @@ public interface PluginIfaceMixin {
         return org.apache.logging.log4j.LogManager.getLogger(
                 ((org.bukkit.plugin.Plugin) this).getLogger().getName());
     }
+
+    @Unique
+    public abstract io.papermc.paper.plugin.configuration.PluginMeta getPluginMeta();
 }

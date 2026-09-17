@@ -59,3 +59,15 @@ accessible field net/minecraft/world/entity/npc/WanderingTrader wanderTarget Lne
 # "@Shadow field xxx was not located in the target class"（实测）。改成 AW 放开后直接访问 ——
 # 直接的字段访问是普通字节码引用，由 remapJar 正常重映射，不走 refmap。
 accessible field net/minecraft/world/entity/ai/attributes/AttributeMap attributes Ljava/util/Map;
+
+# B7：从 1.20.1 搬运 api mixin 实现体时需要的 NMS 成员（同样由 aw-from-compile-errors.py 生成）
+accessible field net/minecraft/world/level/block/entity/BarrelBlockEntity openersCounter Lnet/minecraft/world/level/block/entity/ContainerOpenersCounter;
+accessible method net/minecraft/world/level/BaseSpawner delay (Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V
+accessible method net/minecraft/world/level/BaseSpawner isNearPlayer (Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)Z
+accessible field net/minecraft/world/entity/Entity ENTITY_COUNTER Ljava/util/concurrent/atomic/AtomicInteger;
+accessible field net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity openCount I
+accessible field net/minecraft/world/entity/monster/ZombieVillager DATA_CONVERTING_ID Lnet/minecraft/network/syncher/EntityDataAccessor;
+accessible field net/minecraft/world/entity/monster/ZombieVillager conversionStarter Ljava/util/UUID;
+accessible method net/minecraft/world/entity/monster/ZombieVillager startConverting (Ljava/util/UUID;I)V
+accessible field net/minecraft/world/entity/monster/ZombieVillager villagerConversionTime I
+accessible method net/minecraft/world/level/BaseSpawner setNextSpawnData (Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/SpawnData;)V
