@@ -5,24 +5,24 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.EmptyBlockGetter;
-import net.minecraft.world.level.block.Block;
-
-/**
- * Adds hasCollision missing from Arclight CraftBukkit.
- * Paper ref: patches/server/Add-hasCollision-methods-to-various-places.patch
- * (CraftBlockType#hasCollision reads protected BlockBehaviour.hasCollision field,
- *  not accessible here -> approximated via default state collision shape).
- */
+/** B2-6：{@code BlockType extends Translatable} 的终端方法。 */
 @Mixin(CraftBlockType.class)
 public abstract class CraftBlockTypeApiMixin {
 
     @Shadow
-    public abstract Block getHandle();
+    public abstract net.minecraft.world.level.block.Block getHandle();
 
     @Unique
+    public String translationKey() {
+        return this.getHandle().getDescriptionId();
+    }
+
+    /**
+     * B2-6 顺带补：{@code BlockTypeIfaceMixin} 从 B4 起就声明了 {@code hasCollision()}，
+     * 但一直没有实现体（PARTIAL_IMPL/NO_IMPL 门禁补上口径后才暴露）。
+     */
+    @Unique
     public boolean hasCollision() {
-        return !this.getHandle().defaultBlockState().getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).isEmpty();
+        return this.getHandle().hasCollision;
     }
 }

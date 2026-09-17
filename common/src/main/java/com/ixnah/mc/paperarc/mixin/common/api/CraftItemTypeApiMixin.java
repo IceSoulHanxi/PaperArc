@@ -1,71 +1,57 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
-import java.util.Locale;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.item.component.ItemAttributeModifiers;
-import org.bukkit.NamespacedKey;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeModifier;
-import org.bukkit.craftbukkit.v.attribute.CraftAttribute;
 import org.bukkit.craftbukkit.v.inventory.CraftItemType;
-import org.bukkit.craftbukkit.v.util.CraftNamespacedKey;
-import org.bukkit.inventory.EquipmentSlotGroup;
-import org.bukkit.inventory.ItemRarity;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
-/**
- * Adds Paper's ItemType default-attribute and rarity API.
- *
- * Paper builds the multimap from DataComponents.ATTRIBUTE_MODIFIERS (falling
- * back to Item#getDefaultAttributeModifiers) and converts each entry with a
- * CraftAttributeInstance.convert overload that takes an EquipmentSlotGroup;
- * Arclight's CB lacks both that overload and CraftEquipmentSlotGroup, so the
- * modifier conversion (id/amount/operation/slot-group) is inlined here.
- */
+/** B2-6：{@code ItemType extends Translatable} 的终端方法。 */
 @Mixin(CraftItemType.class)
 public abstract class CraftItemTypeApiMixin {
 
     @Shadow
-    @Final
-    private net.minecraft.world.item.Item item;
+    public abstract net.minecraft.world.item.Item getHandle();
 
     @Unique
-    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers() {
-        ImmutableMultimap.Builder<Attribute, AttributeModifier> defaultAttributes = ImmutableMultimap.builder();
+    public String translationKey() {
+        return this.getHandle().getDescriptionId();
+    }
 
-        ItemAttributeModifiers nmsDefaultAttributes =
-                item.components().getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
-        if (nmsDefaultAttributes.modifiers().isEmpty()) {
-            nmsDefaultAttributes = item.getDefaultAttributeModifiers();
+    /**
+     * B2-6 顺带补：{@code ItemTypeIfaceMixin} 从 B4 起就声明了下面两个方法，
+     * 但一直没有实现体。1.21.1 里这两样都在物品的默认数据组件上。
+     */
+    @Unique
+    public com.google.common.collect.Multimap getDefaultAttributeModifiers() {
+        com.google.common.collect.ImmutableMultimap.Builder<org.bukkit.attribute.Attribute, org.bukkit.attribute.AttributeModifier> out = com.google.common.collect.ImmutableMultimap.builder();
+        net.minecraft.world.item.component.ItemAttributeModifiers modifiers =
+                this.getHandle().components().get(
+                        net.minecraft.core.component.DataComponents.ATTRIBUTE_MODIFIERS);
+        if (modifiers != null) {
+            for (net.minecraft.world.item.component.ItemAttributeModifiers.Entry entry : modifiers.modifiers()) {
+                org.bukkit.attribute.Attribute attribute =
+                        org.bukkit.craftbukkit.v.attribute.CraftAttribute.minecraftHolderToBukkit(entry.attribute());
+                if (attribute != null) {
+                    out.put(attribute, org.bukkit.craftbukkit.v.attribute.CraftAttributeInstance
+                            .convert(entry.modifier()));
+                }
+            }
         }
-
-        // Paper predicate is sg -> true (no-arg overload): every entry passes.
-        for (ItemAttributeModifiers.Entry entry : nmsDefaultAttributes.modifiers()) {
-            Attribute attribute = CraftAttribute.minecraftHolderToBukkit(entry.attribute());
-            AttributeModifier modifier = paperarc$convert(entry.modifier(), entry.slot());
-            defaultAttributes.put(attribute, modifier);
-        }
-
-        return defaultAttributes.build();
+        return out.build();
     }
 
     @Unique
-    private static AttributeModifier paperarc$convert(net.minecraft.world.entity.ai.attributes.AttributeModifier nms,
-                                                      net.minecraft.world.entity.EquipmentSlotGroup slotGroup) {
-        NamespacedKey key = CraftNamespacedKey.fromMinecraft(nms.id());
-        AttributeModifier.Operation operation = AttributeModifier.Operation.values()[nms.operation().ordinal()];
-        EquipmentSlotGroup group = EquipmentSlotGroup.getByName(slotGroup.getSerializedName());
-        return new AttributeModifier(key, nms.amount(), operation, group);
-    }
-
-    @Unique
-    public ItemRarity getItemRarity() {
-        net.minecraft.world.item.Rarity rarity = item.components().get(DataComponents.RARITY);
-        return rarity == null ? null : ItemRarity.valueOf(rarity.name());
+    public org.bukkit.inventory.ItemRarity getItemRarity() {
+        net.minecraft.world.item.Rarity rarity = this.getHandle().components().get(
+                net.minecraft.core.component.DataComponents.RARITY);
+        if (rarity == null) {
+            return org.bukkit.inventory.ItemRarity.COMMON;
+        }
+        return switch (rarity) {
+            case UNCOMMON -> org.bukkit.inventory.ItemRarity.UNCOMMON;
+            case RARE -> org.bukkit.inventory.ItemRarity.RARE;
+            case EPIC -> org.bukkit.inventory.ItemRarity.EPIC;
+            default -> org.bukkit.inventory.ItemRarity.COMMON;
+        };
     }
 }

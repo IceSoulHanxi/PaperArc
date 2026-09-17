@@ -445,7 +445,17 @@
     "api.CraftOfflinePlayerPdcApiMixin",
     "api.CraftEnchantmentApiMixin",
     "bukkit.EnchantmentIfaceMixin",
-    "entity.WitherBossPortalMixin"
+    "entity.WitherBossPortalMixin",
+    "bukkit.BlockDecoratedPotIfaceMixin",
+    "bukkit.ChiseledBookshelfIfaceMixin",
+    "bukkit.ContainerSuperIfaceMixin",
+    "bukkit.JukeboxIfaceMixin",
+    "bukkit.KeyedIfaceMixin",
+    "bukkit.LecternIfaceMixin",
+    "bukkit.LlamaInventoryIfaceMixin",
+    "bukkit.VillagerProfessionIfaceMixin",
+    "api.CraftBlockTranslatableApiMixin",
+    "api.CraftVillagerProfessionApiMixin"
   ],
   "server": [],
   "injectors": {
