@@ -4,11 +4,6 @@
   "package": "com.ixnah.mc.paperarc.mixin.fabric",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "api.CraftExperienceOrbSpawnReasonMixin",
-    "api.CraftHumanEntityCloseInventoryMixin",
-    "bukkit.ExperienceOrbSpawnReasonIfaceMixin",
-    "bukkit.HumanEntityCloseInventoryIfaceMixin",
-    "bukkit.PlayerKickCauseIfaceMixin",
     "block.AnvilMenuAnvilDamagedMixin",
     "block.FireBlockPrimeMixin",
     "block.PistonBaseBlockMixin",
