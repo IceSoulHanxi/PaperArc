@@ -401,7 +401,16 @@ public final class RuntimeClassInjector {
                                 return embedded;
                             }
                         }
-                        return method.invoke(original, args);
+                        try {
+                            return method.invoke(original, args);
+                        } catch (java.lang.reflect.InvocationTargetException e) {
+                            // 必须解包：Mixin 用 ClassNotFoundException 表示"这个类不归我管"，
+                            // 原样抛 InvocationTargetException 会被代理转成 UndeclaredThrowableException，
+                            // 于是一次良性的未命中变成致命的 ClassMetadataNotFoundException
+                            // （main/mixin 0.8.7 实测 Arclight 的 CraftBlockTypeMixin 直接 apply 失败；
+                            //  1.20.1 的 mixin 0.8.5 暂未暴露，同一份代码先行加固）。
+                            throw e.getCause() == null ? e : e.getCause();
+                        }
                     });
             field.set(provider, proxy);
             trace("[PaperArc] RuntimeClassInjector: hooked transformerLoader; "
