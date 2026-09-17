@@ -1,0 +1,228 @@
+# check-iface-impl-pairing.py 的基线（Phase A4-1 建立，分支 1.20.1）。
+# 每行一条已知问题；门禁只对**新增**条目失败。修掉一条就从这里删一行。
+# 跑法见 common/build.gradle 的 checkIfaceImplPairing 任务（./gradlew :common:check）。
+#
+# ---- NO_DECL (115) ----
+NO_DECL org/bukkit/craftbukkit/v/CraftChunk#getChunkSnapshot/4
+NO_DECL org/bukkit/craftbukkit/v/CraftRaid#getBossBar/0
+NO_DECL org/bukkit/craftbukkit/v/CraftRaid#getId/0
+NO_DECL org/bukkit/craftbukkit/v/CraftServer#createProfileExact/1
+NO_DECL org/bukkit/craftbukkit/v/CraftWorld#getRaid/1
+NO_DECL org/bukkit/craftbukkit/v/CraftWorld#getVoidDamageAmount/0
+NO_DECL org/bukkit/craftbukkit/v/CraftWorld#getVoidDamageMinBuildHeightOffset/0
+NO_DECL org/bukkit/craftbukkit/v/CraftWorld#hasStructureAt/2
+NO_DECL org/bukkit/craftbukkit/v/CraftWorld#isVoidDamageEnabled/0
+NO_DECL org/bukkit/craftbukkit/v/CraftWorld#rayTrace/8
+NO_DECL org/bukkit/craftbukkit/v/CraftWorld#rayTraceBlocks/6
+NO_DECL org/bukkit/craftbukkit/v/CraftWorld#setVoidDamageAmount/1
+NO_DECL org/bukkit/craftbukkit/v/CraftWorld#setVoidDamageEnabled/1
+NO_DECL org/bukkit/craftbukkit/v/CraftWorld#setVoidDamageMinBuildHeightOffset/1
+NO_DECL org/bukkit/craftbukkit/v/block/CraftBed#getPart/0
+NO_DECL org/bukkit/craftbukkit/v/block/CraftBed#isOccupied/0
+NO_DECL org/bukkit/craftbukkit/v/block/CraftBed#setOccupied/1
+NO_DECL org/bukkit/craftbukkit/v/block/CraftBed#setPart/1
+NO_DECL org/bukkit/craftbukkit/v/block/CraftBell#getAttachment/0
+NO_DECL org/bukkit/craftbukkit/v/block/CraftBell#setAttachment/1
+NO_DECL org/bukkit/craftbukkit/v/block/CraftBlock#fluidTick/0
+NO_DECL org/bukkit/craftbukkit/v/block/CraftBlockState#isSnapshot/0
+NO_DECL org/bukkit/craftbukkit/v/block/CraftChiseledBookshelf#getMaximumOccupiedSlots/0
+NO_DECL org/bukkit/craftbukkit/v/block/CraftChiseledBookshelf#getOccupiedSlots/0
+NO_DECL org/bukkit/craftbukkit/v/block/CraftChiseledBookshelf#isSlotOccupied/1
+NO_DECL org/bukkit/craftbukkit/v/block/CraftChiseledBookshelf#setSlotOccupied/2
+NO_DECL org/bukkit/craftbukkit/v/block/CraftCommandBlock#isConditional/0
+NO_DECL org/bukkit/craftbukkit/v/block/CraftCommandBlock#setConditional/1
+NO_DECL org/bukkit/craftbukkit/v/block/CraftComparator#getMode/0
+NO_DECL org/bukkit/craftbukkit/v/block/CraftComparator#setMode/1
+NO_DECL org/bukkit/craftbukkit/v/block/CraftDaylightDetector#isInverted/0
+NO_DECL org/bukkit/craftbukkit/v/block/CraftDaylightDetector#setInverted/1
+NO_DECL org/bukkit/craftbukkit/v/block/CraftDispenser#isTriggered/0
+NO_DECL org/bukkit/craftbukkit/v/block/CraftDispenser#setTriggered/1
+NO_DECL org/bukkit/craftbukkit/v/block/CraftHopper#getTransferCooldown/0
+NO_DECL org/bukkit/craftbukkit/v/block/CraftHopper#isEnabled/0
+NO_DECL org/bukkit/craftbukkit/v/block/CraftHopper#setEnabled/1
+NO_DECL org/bukkit/craftbukkit/v/block/CraftHopper#setTransferCooldown/1
+NO_DECL org/bukkit/craftbukkit/v/block/CraftJigsaw#getOrientation/0
+NO_DECL org/bukkit/craftbukkit/v/block/CraftJigsaw#setOrientation/1
+NO_DECL org/bukkit/craftbukkit/v/block/CraftLectern#hasBook/0
+NO_DECL org/bukkit/craftbukkit/v/block/CraftSculkCatalyst#isBloom/0
+NO_DECL org/bukkit/craftbukkit/v/block/CraftSculkCatalyst#setBloom/1
+NO_DECL org/bukkit/craftbukkit/v/block/CraftSculkSensor#getPhase/0
+NO_DECL org/bukkit/craftbukkit/v/block/CraftSculkSensor#setPhase/1
+NO_DECL org/bukkit/craftbukkit/v/block/CraftSculkShrieker#isCanSummon/0
+NO_DECL org/bukkit/craftbukkit/v/block/CraftSculkShrieker#isShrieking/0
+NO_DECL org/bukkit/craftbukkit/v/block/CraftSculkShrieker#setCanSummon/1
+NO_DECL org/bukkit/craftbukkit/v/block/CraftSculkShrieker#setShrieking/1
+NO_DECL org/bukkit/craftbukkit/v/block/CraftSign#getAllowedEditorUniqueId/0
+NO_DECL org/bukkit/craftbukkit/v/block/CraftSign#line/1
+NO_DECL org/bukkit/craftbukkit/v/block/CraftSign#line/2
+NO_DECL org/bukkit/craftbukkit/v/block/CraftSign#setAllowedEditorUniqueId/1
+NO_DECL org/bukkit/craftbukkit/v/block/CraftStructureBlock#getMode/0
+NO_DECL org/bukkit/craftbukkit/v/block/CraftStructureBlock#setMode/1
+NO_DECL org/bukkit/craftbukkit/v/block/data/CraftBlockData#getCollisionShape/1
+NO_DECL org/bukkit/craftbukkit/v/block/impl/CraftPinkPetals#getMinimumFlowerAmount/0
+NO_DECL org/bukkit/craftbukkit/v/block/sign/CraftSignSide#line/1
+NO_DECL org/bukkit/craftbukkit/v/block/sign/CraftSignSide#line/2
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftEntity#broadcastHurtAnimation/1
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftEntity#hasNoPhysics/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftEntity#isInvisible/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftEntity#setInvisible/1
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftEntity#setNoPhysics/1
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftEntity#teleportAsync/3
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftExperienceOrb#getCount/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftExperienceOrb#setCount/1
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftFallingBlock#getBlockState/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftFallingBlock#setBlockData/1
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftFallingBlock#setBlockState/1
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftFireball#getPower/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftFireball#setPower/1
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftFishHook#getTimeUntilBite/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftFishHook#resetFishingState/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftFishHook#setTimeUntilBite/1
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftLivingEntity#canUseEquipmentSlot/1
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftLivingEntity#completeUsingActiveItem/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftLivingEntity#getActiveItemHand/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftLivingEntity#getActiveItemRemainingTime/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftLivingEntity#getActiveItemUsedTime/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftLivingEntity#getForwardsMovement/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftLivingEntity#getNextArrowRemoval/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftLivingEntity#getNextBeeStingerRemoval/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftLivingEntity#getSidewaysMovement/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftLivingEntity#getUpwardsMovement/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftLivingEntity#hasActiveItem/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftLivingEntity#setActiveItemRemainingTime/1
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftLivingEntity#setNextArrowRemoval/1
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftLivingEntity#setNextBeeStingerRemoval/1
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftLivingEntity#startUsingItem/1
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftMob#isAggressive/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftMob#setAggressive/1
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftPanda#getCombinedGene/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftPlayer#calculateTotalExperiencePoints/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftPlayer#getExperiencePointsNeededForNextLevel/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftPlayer#getHAProxyAddress/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftPlayer#getIdleDuration/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftPlayer#getSentChunkKeys/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftPlayer#getSentChunks/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftPlayer#resetIdleDuration/0
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftPlayer#setExperienceLevelAndProgress/1
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftPlayer#setResourcePack/5
+NO_DECL org/bukkit/craftbukkit/v/entity/CraftWither#canChangeDimensions/0
+NO_DECL org/bukkit/craftbukkit/v/inventory/trim/CraftTrimMaterial#description/0
+NO_DECL org/bukkit/craftbukkit/v/inventory/trim/CraftTrimPattern#description/0
+NO_DECL org/bukkit/craftbukkit/v/persistence/CraftPersistentDataContainer#readFromBytes/2
+NO_DECL org/bukkit/craftbukkit/v/scoreboard/CraftScoreboard#getEntityTeam/1
+NO_DECL org/bukkit/craftbukkit/v/scoreboard/CraftScoreboard#getScoresFor/1
+NO_DECL org/bukkit/craftbukkit/v/scoreboard/CraftScoreboard#resetScoresFor/1
+NO_DECL org/bukkit/craftbukkit/v/scoreboard/CraftTeam#addEntity/1
+NO_DECL org/bukkit/craftbukkit/v/scoreboard/CraftTeam#addEntries/1
+NO_DECL org/bukkit/craftbukkit/v/scoreboard/CraftTeam#hasEntity/1
+NO_DECL org/bukkit/craftbukkit/v/scoreboard/CraftTeam#removeEntities/1
+NO_DECL org/bukkit/craftbukkit/v/scoreboard/CraftTeam#removeEntity/1
+NO_DECL org/bukkit/craftbukkit/v/scoreboard/CraftTeam#removeEntries/1
+
+# ---- NO_IMPL (32) ----
+NO_IMPL org/bukkit/Server#getRegionScheduler/0
+NO_IMPL org/bukkit/Server#reloadCommandAliases/0
+NO_IMPL org/bukkit/Server#removeRecipe/2
+NO_IMPL org/bukkit/Server#updateRecipes/0
+NO_IMPL org/bukkit/Server#updateResources/0
+NO_IMPL org/bukkit/block/Beacon#getEffectRange/0
+NO_IMPL org/bukkit/block/Beacon#resetEffectRange/0
+NO_IMPL org/bukkit/block/Beacon#setEffectRange/1
+NO_IMPL org/bukkit/block/Campfire#startCooking/0
+NO_IMPL org/bukkit/block/Campfire#stopCooking/0
+NO_IMPL org/bukkit/block/data/Levelled#getMinimumLevel/0
+NO_IMPL org/bukkit/entity/Entity#asHoverEvent/1
+NO_IMPL org/bukkit/entity/Player#getWardenTimeSinceLastWarning/0
+NO_IMPL org/bukkit/entity/Player#getWardenWarningCooldown/0
+NO_IMPL org/bukkit/entity/Player#getWardenWarningLevel/0
+NO_IMPL org/bukkit/entity/Player#giveExp/2
+NO_IMPL org/bukkit/entity/Player#hasFlyingFallDamage/0
+NO_IMPL org/bukkit/entity/Player#hasSeenWinScreen/0
+NO_IMPL org/bukkit/entity/Player#hideTitle/0
+NO_IMPL org/bukkit/entity/Player#increaseWardenWarningLevel/0
+NO_IMPL org/bukkit/entity/Player#isListed/1
+NO_IMPL org/bukkit/entity/Player#listPlayer/1
+NO_IMPL org/bukkit/entity/Player#locale/0
+NO_IMPL org/bukkit/entity/Player#lookAt/3
+NO_IMPL org/bukkit/entity/Player#lookAt/4
+NO_IMPL org/bukkit/entity/Player#playerListFooter/0
+NO_IMPL org/bukkit/entity/Tameable#getOwnerUniqueId/0
+NO_IMPL org/bukkit/inventory/meta/SkullMeta#getPlayerProfile/0
+NO_IMPL org/bukkit/inventory/meta/SkullMeta#setPlayerProfile/1
+NO_IMPL org/bukkit/scoreboard/Objective#displayName/0
+NO_IMPL org/bukkit/scoreboard/Objective#displayName/1
+NO_IMPL org/bukkit/util/CachedServerIcon#getData/0
+
+# ---- NO_RUNTIME_IMPLCLASS (1) ----
+NO_RUNTIME_IMPLCLASS org/bukkit/plugin/Plugin#getPluginMeta/0
+
+# ---- PARTIAL_IMPL (68) ----
+PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftBarrel
+PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftBeacon
+PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftBlastFurnace
+PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftBrewingStand
+PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftChest
+PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftDispenser
+PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftDropper
+PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftEnchantingTable
+PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftFurnaceFurnace
+PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftHopper
+PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftShulkerBox
+PARTIAL_IMPL org/bukkit/Nameable#customName/0 缺 org/bukkit/craftbukkit/v/block/CraftSmoker
+PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftBarrel
+PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftBeacon
+PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftBlastFurnace
+PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftBrewingStand
+PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftChest
+PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftDispenser
+PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftDropper
+PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftEnchantingTable
+PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftFurnaceFurnace
+PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftHopper
+PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftShulkerBox
+PARTIAL_IMPL org/bukkit/Nameable#customName/1 缺 org/bukkit/craftbukkit/v/block/CraftSmoker
+PARTIAL_IMPL org/bukkit/OfflinePlayer#getLastLogin/0 缺 org/bukkit/craftbukkit/v/entity/CraftPlayer
+PARTIAL_IMPL org/bukkit/OfflinePlayer#getLastSeen/0 缺 org/bukkit/craftbukkit/v/entity/CraftPlayer
+PARTIAL_IMPL org/bukkit/OfflinePlayer#isConnected/0 缺 org/bukkit/craftbukkit/v/entity/CraftPlayer
+PARTIAL_IMPL org/bukkit/attribute/Attributable#registerAttribute/1 缺 org/bukkit/craftbukkit/v/attribute/CraftAttributeMap
+PARTIAL_IMPL org/bukkit/block/data/type/Leaves#getMaximumDistance/0 缺 org/bukkit/craftbukkit/v/block/impl/CraftCherryLeaves
+PARTIAL_IMPL org/bukkit/block/data/type/Leaves#getMaximumDistance/0 缺 org/bukkit/craftbukkit/v/block/impl/CraftMangroveLeaves
+PARTIAL_IMPL org/bukkit/block/data/type/Leaves#getMinimumDistance/0 缺 org/bukkit/craftbukkit/v/block/impl/CraftCherryLeaves
+PARTIAL_IMPL org/bukkit/block/data/type/Leaves#getMinimumDistance/0 缺 org/bukkit/craftbukkit/v/block/impl/CraftMangroveLeaves
+PARTIAL_IMPL org/bukkit/entity/Projectile#canHitEntity/1 缺 org/bukkit/craftbukkit/v/entity/CraftArrow
+PARTIAL_IMPL org/bukkit/entity/Projectile#canHitEntity/1 缺 org/bukkit/craftbukkit/v/entity/CraftFireball
+PARTIAL_IMPL org/bukkit/entity/Projectile#canHitEntity/1 缺 org/bukkit/craftbukkit/v/entity/CraftLlamaSpit
+PARTIAL_IMPL org/bukkit/entity/Projectile#canHitEntity/1 缺 org/bukkit/craftbukkit/v/entity/CraftShulkerBullet
+PARTIAL_IMPL org/bukkit/entity/Projectile#getOwnerUniqueId/0 缺 org/bukkit/craftbukkit/v/entity/CraftArrow
+PARTIAL_IMPL org/bukkit/entity/Projectile#getOwnerUniqueId/0 缺 org/bukkit/craftbukkit/v/entity/CraftFireball
+PARTIAL_IMPL org/bukkit/entity/Projectile#getOwnerUniqueId/0 缺 org/bukkit/craftbukkit/v/entity/CraftLlamaSpit
+PARTIAL_IMPL org/bukkit/entity/Projectile#getOwnerUniqueId/0 缺 org/bukkit/craftbukkit/v/entity/CraftShulkerBullet
+PARTIAL_IMPL org/bukkit/entity/Projectile#hasBeenShot/0 缺 org/bukkit/craftbukkit/v/entity/CraftArrow
+PARTIAL_IMPL org/bukkit/entity/Projectile#hasBeenShot/0 缺 org/bukkit/craftbukkit/v/entity/CraftFireball
+PARTIAL_IMPL org/bukkit/entity/Projectile#hasBeenShot/0 缺 org/bukkit/craftbukkit/v/entity/CraftLlamaSpit
+PARTIAL_IMPL org/bukkit/entity/Projectile#hasBeenShot/0 缺 org/bukkit/craftbukkit/v/entity/CraftShulkerBullet
+PARTIAL_IMPL org/bukkit/entity/Projectile#hasLeftShooter/0 缺 org/bukkit/craftbukkit/v/entity/CraftArrow
+PARTIAL_IMPL org/bukkit/entity/Projectile#hasLeftShooter/0 缺 org/bukkit/craftbukkit/v/entity/CraftFireball
+PARTIAL_IMPL org/bukkit/entity/Projectile#hasLeftShooter/0 缺 org/bukkit/craftbukkit/v/entity/CraftLlamaSpit
+PARTIAL_IMPL org/bukkit/entity/Projectile#hasLeftShooter/0 缺 org/bukkit/craftbukkit/v/entity/CraftShulkerBullet
+PARTIAL_IMPL org/bukkit/entity/Projectile#hitEntity/1 缺 org/bukkit/craftbukkit/v/entity/CraftArrow
+PARTIAL_IMPL org/bukkit/entity/Projectile#hitEntity/1 缺 org/bukkit/craftbukkit/v/entity/CraftFireball
+PARTIAL_IMPL org/bukkit/entity/Projectile#hitEntity/1 缺 org/bukkit/craftbukkit/v/entity/CraftLlamaSpit
+PARTIAL_IMPL org/bukkit/entity/Projectile#hitEntity/1 缺 org/bukkit/craftbukkit/v/entity/CraftShulkerBullet
+PARTIAL_IMPL org/bukkit/entity/Projectile#hitEntity/2 缺 org/bukkit/craftbukkit/v/entity/CraftArrow
+PARTIAL_IMPL org/bukkit/entity/Projectile#hitEntity/2 缺 org/bukkit/craftbukkit/v/entity/CraftFireball
+PARTIAL_IMPL org/bukkit/entity/Projectile#hitEntity/2 缺 org/bukkit/craftbukkit/v/entity/CraftLlamaSpit
+PARTIAL_IMPL org/bukkit/entity/Projectile#hitEntity/2 缺 org/bukkit/craftbukkit/v/entity/CraftShulkerBullet
+PARTIAL_IMPL org/bukkit/entity/Projectile#setHasBeenShot/1 缺 org/bukkit/craftbukkit/v/entity/CraftArrow
+PARTIAL_IMPL org/bukkit/entity/Projectile#setHasBeenShot/1 缺 org/bukkit/craftbukkit/v/entity/CraftFireball
+PARTIAL_IMPL org/bukkit/entity/Projectile#setHasBeenShot/1 缺 org/bukkit/craftbukkit/v/entity/CraftLlamaSpit
+PARTIAL_IMPL org/bukkit/entity/Projectile#setHasBeenShot/1 缺 org/bukkit/craftbukkit/v/entity/CraftShulkerBullet
+PARTIAL_IMPL org/bukkit/entity/Projectile#setHasLeftShooter/1 缺 org/bukkit/craftbukkit/v/entity/CraftArrow
+PARTIAL_IMPL org/bukkit/entity/Projectile#setHasLeftShooter/1 缺 org/bukkit/craftbukkit/v/entity/CraftFireball
+PARTIAL_IMPL org/bukkit/entity/Projectile#setHasLeftShooter/1 缺 org/bukkit/craftbukkit/v/entity/CraftLlamaSpit
+PARTIAL_IMPL org/bukkit/entity/Projectile#setHasLeftShooter/1 缺 org/bukkit/craftbukkit/v/entity/CraftShulkerBullet
+PARTIAL_IMPL org/bukkit/generator/WorldInfo#vanillaBiomeProvider/0 缺 org/bukkit/craftbukkit/v/CraftWorld
+PARTIAL_IMPL org/bukkit/inventory/EntityEquipment#getDropChance/1 缺 org/bukkit/craftbukkit/v/inventory/CraftInventoryPlayer
+PARTIAL_IMPL org/bukkit/inventory/EntityEquipment#setDropChance/2 缺 org/bukkit/craftbukkit/v/inventory/CraftInventoryPlayer
+PARTIAL_IMPL org/bukkit/projectiles/ProjectileSource#launchProjectile/3 缺 org/bukkit/craftbukkit/v/projectiles/CraftBlockProjectileSource
+

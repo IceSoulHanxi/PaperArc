@@ -319,6 +319,70 @@ tasks.register('checkMixinRegistry') {
     }
 }
 
+// IfaceMixin 声明 <-> ApiMixin 实现 两侧配套核对（A4-1，与 main 的 checkIfaceImplPairing 同源）。
+// 规则见 tools/scripts/check-iface-impl-pairing.py：
+//   NO_DECL   —— 有实现体但接口上没声明，插件经接口调用即 NoSuchMethodError；
+//   NO_IMPL   —— 有声明但任何运行时实现类都没有实现体，调用即 AbstractMethodError；
+//   PARTIAL_IMPL —— 同一接口多个互不继承的实现类只覆盖了一个，走到另一个同样 AbstractMethodError。
+// 判定需要运行时 jar（Arclight / spigot-deobf / paper-api / adventure），这些都在仓库之外，
+// 所以脚本或 jar 不可用时只警告不失败（CI 里退化为 no-op）。
+tasks.register('checkIfaceImplPairing') {
+    def script = rootProject.file('../tools/scripts/check-iface-impl-pairing.py')
+    def repoRoot = rootProject.projectDir
+    def ws = rootProject.file('..')
+    def baseline = rootProject.file('gradle/iface-impl-pairing-baseline.txt')
+    inputs.dir(file('src/main/java'))
+    inputs.file(baseline).optional()
+    outputs.upToDateWhen { false }
+    doLast {
+        if (!script.isFile()) {
+            logger.warn("checkIfaceImplPairing: 找不到 ${script}，跳过")
+            return
+        }
+        def runtimeJars = [
+            new File(ws, 'Arclight/testserver-forge/.arclight/mod_file').listFiles()
+                ?.find { it.name.startsWith('arclight-1.20.1-') && it.name.endsWith('.jar') },
+            new File(ws, 'Arclight/.gradle/arclight/arclight_repo/io/izzel/arclight/generated/spigot/1.20.1/spigot-1.20.1-deobf.jar'),
+        ]
+        // paper-api / adventure 只用来解析 IfaceMixin 的 `extends 父接口`，不能混进运行时索引
+        def apiJars = [
+            fileTree(new File(System.getProperty('user.home'),
+                '.gradle/caches/modules-2/files-2.1/io.papermc.paper/paper-api/1.20.1-R0.1-SNAPSHOT')) {
+                include '**/paper-api-1.20.1-R0.1-SNAPSHOT.jar'
+            }.files.find { true },
+            fileTree(new File(System.getProperty('user.home'),
+                ".gradle/caches/modules-2/files-2.1/net.kyori/adventure-api/${rootProject.adventure_version}")) {
+                include "**/adventure-api-${rootProject.adventure_version}.jar"
+            }.files.find { true },
+        ]
+        if (runtimeJars.any { it == null || !it.isFile() } || apiJars.any { it == null || !it.isFile() }) {
+            logger.warn('checkIfaceImplPairing: 运行时/API jar 不可用，跳过')
+            return
+        }
+        def cmd = ['python3', script.absolutePath, repoRoot.absolutePath, '--jars']
+        cmd.addAll(runtimeJars*.absolutePath)
+        cmd << '--api-jars'
+        cmd.addAll(apiJars*.absolutePath)
+        cmd << '--baseline' << baseline.absolutePath
+        def out = new ByteArrayOutputStream()
+        def result = project.exec {
+            commandLine cmd
+            ignoreExitValue = true
+            standardOutput = out
+            errorOutput = out
+        }
+        def text = out.toString()
+        if (result.exitValue == 2) {
+            logger.warn("checkIfaceImplPairing: 运行时 jar 不可用，跳过\n${text}")
+        } else if (result.exitValue != 0) {
+            throw new GradleException("IfaceMixin 声明与实现不配套:\n${text}")
+        } else {
+            logger.lifecycle("checkIfaceImplPairing: ${text.trim()}")
+        }
+    }
+}
+
 tasks.named('check') {
     dependsOn 'checkMixinRegistry'
+    dependsOn 'checkIfaceImplPairing'
 }
