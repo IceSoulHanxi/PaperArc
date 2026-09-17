@@ -59,4 +59,9 @@ public interface PluginIfaceMixin extends io.papermc.paper.plugin.lifecycle.even
         Plugin self = (Plugin) this;
         return self.getDataFolder().toPath();
     }
+
+    /** B3-4：实现体在 api/JavaPluginApiMixin（占位，抛 UnsupportedOperationException）。 */
+    @Unique
+    public abstract io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager<org.bukkit.plugin.Plugin>
+            getLifecycleManager();
 }

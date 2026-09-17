@@ -68,4 +68,16 @@ public abstract class CraftAdvancementApiMixin {
         return ((org.bukkit.craftbukkit.v.CraftServer) com.ixnah.mc.paperarc.bridge.PaperArcBridge.getServer())
             .getServer().getAdvancements().tree().get(this.getHandle());
     }
+
+    /**
+     * paper {@code Advancement#getDisplay()}（B3-4）。NMS 的 {@code display()} 是
+     * {@code Optional}，没有显示信息（隐藏的技术性进度）时按 paper 契约返回 null。
+     */
+    @Unique
+    public io.papermc.paper.advancement.AdvancementDisplay getDisplay() {
+        return this.getHandle().value().display()
+                .<io.papermc.paper.advancement.AdvancementDisplay>map(
+                        com.ixnah.mc.paperarc.bridge.api.PaperarcAdvancementDisplay::new)
+                .orElse(null);
+    }
 }

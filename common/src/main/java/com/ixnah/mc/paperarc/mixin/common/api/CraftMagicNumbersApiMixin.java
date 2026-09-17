@@ -282,4 +282,125 @@ public abstract class CraftMagicNumbersApiMixin {
         return ((org.bukkit.craftbukkit.v.CraftServer) org.bukkit.Bukkit.getServer())
                 .getServer().registryAccess();
     }
+
+    // ---------------------------------------------------------------- B3-4：最后 10 条抽象缺口
+
+    /** paper {@code UnsafeValues#createEmptyStack}：一个空 ItemStack。 */
+    @Unique
+    public org.bukkit.inventory.ItemStack createEmptyStack() {
+        return org.bukkit.craftbukkit.v.inventory.CraftItemStack.asCraftMirror(
+                net.minecraft.world.item.ItemStack.EMPTY);
+    }
+
+    /** paper {@code UnsafeValues#getSpawnEggLayerColor}：刷怪蛋两层颜色，直接问 NMS。 */
+    @Unique
+    public org.bukkit.Color getSpawnEggLayerColor(org.bukkit.entity.EntityType entityType, int layer) {
+        net.minecraft.world.entity.EntityType<?> nms =
+                org.bukkit.craftbukkit.v.entity.CraftEntityType.bukkitToMinecraft(entityType);
+        net.minecraft.world.item.SpawnEggItem egg = net.minecraft.world.item.SpawnEggItem.byId(nms);
+        return egg == null ? null : org.bukkit.Color.fromRGB(egg.getColor(layer) & 0xFFFFFF);
+    }
+
+    /** paper {@code UnsafeValues#serializeItemAsJson}：走 vanilla 的 ItemStack CODEC。 */
+    @Unique
+    public com.google.gson.JsonObject serializeItemAsJson(org.bukkit.inventory.ItemStack itemStack) {
+        net.minecraft.world.item.ItemStack nms =
+                org.bukkit.craftbukkit.v.inventory.CraftItemStack.asNMSCopy(itemStack);
+        com.mojang.serialization.DynamicOps<com.google.gson.JsonElement> ops =
+                paperarc$registries().createSerializationContext(com.mojang.serialization.JsonOps.INSTANCE);
+        return net.minecraft.world.item.ItemStack.CODEC.encodeStart(ops, nms)
+                .getOrThrow(IllegalArgumentException::new).getAsJsonObject();
+    }
+
+    /** paper {@code UnsafeValues#deserializeItemFromJson}：{@link #serializeItemAsJson} 的逆。 */
+    @Unique
+    public org.bukkit.inventory.ItemStack deserializeItemFromJson(com.google.gson.JsonObject data) {
+        com.mojang.serialization.DynamicOps<com.google.gson.JsonElement> ops =
+                paperarc$registries().createSerializationContext(com.mojang.serialization.JsonOps.INSTANCE);
+        net.minecraft.world.item.ItemStack nms = net.minecraft.world.item.ItemStack.CODEC
+                .parse(ops, data).getOrThrow(IllegalArgumentException::new);
+        return org.bukkit.craftbukkit.v.inventory.CraftItemStack.asCraftMirror(nms);
+    }
+
+    /**
+     * paper {@code UnsafeValues#computeTooltipLines}：转调 vanilla 的
+     * {@code ItemStack#getTooltipLines}。
+     *
+     * <p>偏差：paper 的 {@code TooltipContext} 还带 {@code isCreative()}/{@code isAdvanced()}
+     * 之外的上下文，这里只映射到 vanilla 的 {@code TooltipFlag}；{@code player} 为 null 时
+     * 按"无玩家"渲染（vanilla 允许）。
+     */
+    @Unique
+    public java.util.List<net.kyori.adventure.text.Component> computeTooltipLines(
+            org.bukkit.inventory.ItemStack itemStack,
+            io.papermc.paper.inventory.tooltip.TooltipContext tooltipContext,
+            org.bukkit.entity.Player player) {
+        net.minecraft.world.item.ItemStack nms =
+                org.bukkit.craftbukkit.v.inventory.CraftItemStack.asNMSCopy(itemStack);
+        net.minecraft.world.item.TooltipFlag.Default flag =
+                tooltipContext != null && tooltipContext.isAdvanced()
+                        ? net.minecraft.world.item.TooltipFlag.ADVANCED
+                        : net.minecraft.world.item.TooltipFlag.NORMAL;
+        if (tooltipContext != null && tooltipContext.isCreative()) {
+            flag = flag.asCreative();
+        }
+        net.minecraft.server.level.ServerPlayer handle = player == null ? null
+                : ((org.bukkit.craftbukkit.v.entity.CraftPlayer) player).getHandle();
+        net.minecraft.world.item.Item.TooltipContext ctx =
+                net.minecraft.world.item.Item.TooltipContext.of(paperarc$registries());
+        java.util.List<net.kyori.adventure.text.Component> out = new java.util.ArrayList<>();
+        for (net.minecraft.network.chat.Component line : nms.getTooltipLines(ctx, handle, flag)) {
+            out.add(net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson()
+                    .deserialize(net.minecraft.network.chat.Component.Serializer
+                            .toJson(line, paperarc$registries())));
+        }
+        return out;
+    }
+
+    /**
+     * paper {@code UnsafeValues#resolveWithContext}：把组件里的选择器/记分板占位解析成实际内容。
+     *
+     * <p><b>占位实现</b>：原样返回。vanilla 的解析走 {@code ComponentUtils.updateForEntity}，
+     * 需要一个完整的 {@code CommandSourceStack}（含权限级别与实体/世界上下文）；Arclight 侧
+     * 没有把 Bukkit 的 CommandSender 反向映射成 CommandSourceStack 的通道。
+     * 语义差异记 `docs/gaps.md`：带选择器的组件不会被展开，但至少不再 NoSuchMethodError。
+     */
+    @Unique
+    public net.kyori.adventure.text.Component resolveWithContext(
+            net.kyori.adventure.text.Component component, org.bukkit.command.CommandSender context,
+            org.bukkit.entity.Entity scoreboardSubject, boolean bypassPermissions) {
+        return component;
+    }
+
+    /**
+     * paper {@code UnsafeValues#getTag}：按 {@code TagKey} 取注册表标签。
+     *
+     * <p><b>占位实现</b>：返回 {@code null}（paper 的契约是"没有就 null"）。
+     * paper 的 {@code io.papermc.paper.registry.tag.Tag} 依赖它自己那套
+     * {@code RegistryAccess}/{@code RegistryKey} 体系，Arclight 完全没有，
+     * 造一个假的反而会让插件拿到空标签当成"标签为空"。记 `docs/gaps.md`。
+     */
+    @Unique
+    public <A extends org.bukkit.Keyed, M> io.papermc.paper.registry.tag.Tag<A> getTag(
+            io.papermc.paper.registry.tag.TagKey<A> tagKey) {
+        return null;
+    }
+
+    /**
+     * paper {@code UnsafeValues#createPluginLifecycleEventManager}：插件生命周期事件管理器。
+     *
+     * <p><b>占位实现</b>：抛 {@code UnsupportedOperationException}。这套 API 要求 paper 的
+     * 插件引导（{@code PluginBootstrap}）与 Brigadier 命令注册管线，Arclight 的插件加载器
+     * 两样都没有；返回一个空管理器会让插件以为注册成功、实际回调永不触发，比直接报错更坏。
+     * 记 `docs/gaps.md`。
+     */
+    @Unique
+    public <T extends io.papermc.paper.plugin.lifecycle.event.registrar.RegistrarEvent>
+            io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager<org.bukkit.plugin.Plugin>
+            createPluginLifecycleEventManager(org.bukkit.plugin.java.JavaPlugin plugin,
+                    java.util.function.BooleanSupplier registrationCheck) {
+        throw new UnsupportedOperationException(
+                "PaperArc: Arclight 没有 paper 的插件生命周期/Brigadier 管线，"
+                        + "getLifecycleManager() 不可用（docs/gaps.md）");
+    }
 }

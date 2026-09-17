@@ -125,4 +125,38 @@ public interface UnsafeValuesIfaceMixin {
         UnsafeValues self = (UnsafeValues) this;
         return self.deserializeEntity(data, world, false);
     }
+
+    // B3-4：最后 8 条 UnsafeValues 抽象缺口的声明，实现体在 api/CraftMagicNumbersApiMixin。
+
+    @Unique
+    public abstract org.bukkit.inventory.ItemStack createEmptyStack();
+
+    @Unique
+    public abstract org.bukkit.Color getSpawnEggLayerColor(org.bukkit.entity.EntityType p0, int p1);
+
+    @Unique
+    public abstract com.google.gson.JsonObject serializeItemAsJson(org.bukkit.inventory.ItemStack p0);
+
+    @Unique
+    public abstract org.bukkit.inventory.ItemStack deserializeItemFromJson(com.google.gson.JsonObject p0);
+
+    @Unique
+    public abstract java.util.List<net.kyori.adventure.text.Component> computeTooltipLines(
+            org.bukkit.inventory.ItemStack p0, io.papermc.paper.inventory.tooltip.TooltipContext p1,
+            org.bukkit.entity.Player p2);
+
+    @Unique
+    public abstract net.kyori.adventure.text.Component resolveWithContext(
+            net.kyori.adventure.text.Component p0, org.bukkit.command.CommandSender p1,
+            org.bukkit.entity.Entity p2, boolean p3);
+
+    @Unique
+    public abstract <A extends org.bukkit.Keyed, M> io.papermc.paper.registry.tag.Tag<A> getTag(
+            io.papermc.paper.registry.tag.TagKey<A> p0);
+
+    @Unique
+    public abstract <T extends io.papermc.paper.plugin.lifecycle.event.registrar.RegistrarEvent>
+            io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager<org.bukkit.plugin.Plugin>
+            createPluginLifecycleEventManager(org.bukkit.plugin.java.JavaPlugin p0,
+                    java.util.function.BooleanSupplier p1);
 }

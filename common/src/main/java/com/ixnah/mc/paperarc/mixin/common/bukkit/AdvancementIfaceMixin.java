@@ -22,4 +22,8 @@ public interface AdvancementIfaceMixin {
 
     @Unique
     public abstract org.bukkit.advancement.Advancement getRoot();
+
+    /** B3-4：实现体在 api/CraftAdvancementApiMixin。 */
+    @Unique
+    public abstract io.papermc.paper.advancement.AdvancementDisplay getDisplay();
 }
