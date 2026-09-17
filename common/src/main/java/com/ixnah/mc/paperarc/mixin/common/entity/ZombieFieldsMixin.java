@@ -1,4 +1,4 @@
-package com.ixnah.mc.paperarc.mixin.mojmap.entity;
+package com.ixnah.mc.paperarc.mixin.common.entity;
 
 import com.ixnah.mc.paperarc.bridge.ZombieBridge;
 import net.minecraft.world.entity.monster.Zombie;

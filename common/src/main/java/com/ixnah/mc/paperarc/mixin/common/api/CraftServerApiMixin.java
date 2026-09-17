@@ -1,7 +1,6 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.google.common.base.Preconditions;
-import com.ixnah.mc.paperarc.bridge.ApiState;
 import com.ixnah.mc.paperarc.bridge.CraftPlayerProfile;
 import com.ixnah.mc.paperarc.bridge.api.SimpleMobGoals;
 import com.ixnah.mc.paperarc.bridge.scheduler.SimpleAsyncScheduler;
@@ -76,6 +75,42 @@ import java.util.Optional;
  */
 @Mixin(CraftServer.class)
 public abstract class CraftServerApiMixin {
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "paperarc:permissionMessage"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private String paperarc$permissionMessage;
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "paperarc:pluginsFolder"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private File paperarc$pluginsFolder;
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "paperarc:asyncScheduler"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private io.papermc.paper.threadedregions.scheduler.AsyncScheduler paperarc$asyncScheduler;
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "paperarc:globalRegionScheduler"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private io.papermc.paper.threadedregions.scheduler.GlobalRegionScheduler paperarc$globalRegionScheduler;
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "paperarc:mobGoals"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private com.destroystokyo.paper.entity.ai.MobGoals paperarc$mobGoals;
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "paperarc:shutdownMessage"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private Component paperarc$shutdownMessage;
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "paperarc:suggestPlayerNamesWhenNullTabCompletions"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private Boolean paperarc$suggestPlayerNamesWhenNullTabCompletions;
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "paperarc:isStopping"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private Boolean paperarc$isStopping;
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "paperarc:potionBrewer"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private PotionBrewer paperarc$potionBrewer;
 
     @Unique
     private static final String PAPERARC_PERMISSION_MSG_KEY = "paperarc:permissionMessage";
@@ -208,7 +243,7 @@ public abstract class CraftServerApiMixin {
 
     @Unique
     public String getPermissionMessage() {
-        return ApiState.get(this, PAPERARC_PERMISSION_MSG_KEY, PAPERARC_DEFAULT_PERMISSION_MESSAGE);
+        return (this.paperarc$permissionMessage != null ? this.paperarc$permissionMessage : (PAPERARC_DEFAULT_PERMISSION_MESSAGE));
     }
 
     @Unique
@@ -228,7 +263,7 @@ public abstract class CraftServerApiMixin {
      */
     @Unique
     public File getPluginsFolder() {
-        return ApiState.get(this, PAPERARC_PLUGINS_FOLDER_KEY, new File("plugins"));
+        return (this.paperarc$pluginsFolder != null ? this.paperarc$pluginsFolder : (new File("plugins")));
     }
 
     // ===== batch blocked-1 additions (scheduler / command-sender / explorer-map / mob-goals) =====
@@ -249,10 +284,10 @@ public abstract class CraftServerApiMixin {
     @Unique
     public io.papermc.paper.threadedregions.scheduler.AsyncScheduler getAsyncScheduler() {
         io.papermc.paper.threadedregions.scheduler.AsyncScheduler scheduler =
-                ApiState.get(this, PAPERARC_ASYNC_SCHEDULER_KEY, null);
+                (this.paperarc$asyncScheduler != null ? this.paperarc$asyncScheduler : (null));
         if (scheduler == null) {
             scheduler = new SimpleAsyncScheduler();
-            ApiState.put(this, PAPERARC_ASYNC_SCHEDULER_KEY, scheduler);
+            this.paperarc$asyncScheduler = scheduler;
         }
         return scheduler;
     }
@@ -264,10 +299,10 @@ public abstract class CraftServerApiMixin {
     @Unique
     public io.papermc.paper.threadedregions.scheduler.GlobalRegionScheduler getGlobalRegionScheduler() {
         io.papermc.paper.threadedregions.scheduler.GlobalRegionScheduler scheduler =
-                ApiState.get(this, PAPERARC_GLOBAL_SCHEDULER_KEY, null);
+                (this.paperarc$globalRegionScheduler != null ? this.paperarc$globalRegionScheduler : (null));
         if (scheduler == null) {
             scheduler = new SimpleGlobalRegionScheduler();
-            ApiState.put(this, PAPERARC_GLOBAL_SCHEDULER_KEY, scheduler);
+            this.paperarc$globalRegionScheduler = scheduler;
         }
         return scheduler;
     }
@@ -364,10 +399,10 @@ public abstract class CraftServerApiMixin {
     @Unique
     public com.destroystokyo.paper.entity.ai.MobGoals getMobGoals() {
         com.destroystokyo.paper.entity.ai.MobGoals goals =
-                ApiState.get(this, PAPERARC_MOB_GOALS_KEY, null);
+                (this.paperarc$mobGoals != null ? this.paperarc$mobGoals : (null));
         if (goals == null) {
             goals = new SimpleMobGoals();
-            ApiState.put(this, PAPERARC_MOB_GOALS_KEY, goals);
+            this.paperarc$mobGoals = goals;
         }
         return goals;
     }
@@ -410,7 +445,6 @@ public abstract class CraftServerApiMixin {
     public com.destroystokyo.paper.profile.PlayerProfile createProfileExact(java.util.UUID uniqueId, String name) {
         return new CraftPlayerProfile(new GameProfile(uniqueId, name));
     }
-
 
     @Unique
     private static final String PAPERARC_POTION_BREWER_KEY = "paperarc:potionBrewer";
@@ -505,28 +539,27 @@ public abstract class CraftServerApiMixin {
 
     @Unique
     public Component permissionMessage() {
-        String legacy = ApiState.get(this, PAPERARC_PERMISSION_MSG_KEY,
-                PAPERARC_DEFAULT_PERMISSION_MESSAGE);
+        String legacy = (this.paperarc$permissionMessage != null ? this.paperarc$permissionMessage : (PAPERARC_DEFAULT_PERMISSION_MESSAGE));
         return LegacyComponentSerializer.legacySection().deserialize(legacy);
     }
 
     @Unique
     public Component shutdownMessage() {
         // Paper keeps an optional shutdown broadcast; nullable by design.
-        return ApiState.get(this, PAPERARC_SHUTDOWN_MESSAGE_KEY, null);
+        return (this.paperarc$shutdownMessage != null ? this.paperarc$shutdownMessage : (null));
     }
 
     @Unique
     public boolean suggestPlayerNamesWhenNullTabCompletions() {
         // Paper config option; vanilla behaviour (suggest names) as default.
-        return ApiState.get(this, PAPERARC_SUGGEST_PLAYER_NAMES_KEY, Boolean.TRUE);
+        return (this.paperarc$suggestPlayerNamesWhenNullTabCompletions != null ? this.paperarc$suggestPlayerNamesWhenNullTabCompletions : (Boolean.TRUE));
     }
 
     @Unique
     public boolean isStopping() {
         // Paper flips this flag at the start of stopServer(); we expose the
         // side-map flag (default false) for a bootstrap layer to set.
-        return ApiState.get(this, PAPERARC_IS_STOPPING_KEY, Boolean.FALSE);
+        return (this.paperarc$isStopping != null ? this.paperarc$isStopping : (Boolean.FALSE));
     }
 
     @Unique
@@ -603,10 +636,10 @@ public abstract class CraftServerApiMixin {
 
     @Unique
     public PotionBrewer getPotionBrewer() {
-        PotionBrewer brewer = ApiState.get(this, PAPERARC_POTION_BREWER_KEY, null);
+        PotionBrewer brewer = (this.paperarc$potionBrewer != null ? this.paperarc$potionBrewer : (null));
         if (brewer == null) {
             brewer = new com.ixnah.mc.paperarc.bridge.PaperarcPotionBrewer();
-            ApiState.put(this, PAPERARC_POTION_BREWER_KEY, brewer);
+            this.paperarc$potionBrewer = brewer;
         }
         return brewer;
     }

@@ -23,6 +23,10 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(CraftEvoker.class)
 public abstract class CraftEvokerApiMixin {
 
+    /** Paper 的 {@code Evoker.wololoTarget}（bukkit 侧 Sheep）；null = 未设置。 */
+    @Unique
+    private org.bukkit.entity.Sheep paperarc$wololoTarget;
+
     @Unique
     private static final String PAPERARC$WOLOLO_KEY = "paperarc.wololoTarget";
 
@@ -32,13 +36,13 @@ public abstract class CraftEvokerApiMixin {
     @Unique
     @Nullable
     private Sheep paperarc$nmsWololoTarget() {
-        Object custom = com.ixnah.mc.paperarc.bridge.ApiState.get(this, PAPERARC$WOLOLO_KEY, null);
+        Object custom = (this.paperarc$wololoTarget != null ? this.paperarc$wololoTarget : (null));
         if (custom instanceof CraftSheep craftSheep) {
             Sheep sheep = craftSheep.getHandle();
             if (!sheep.isRemoved()) {
                 return sheep;
             }
-            com.ixnah.mc.paperarc.bridge.ApiState.remove(this, PAPERARC$WOLOLO_KEY);
+            this.paperarc$wololoTarget = null;
         }
         return null;
     }
@@ -67,12 +71,12 @@ public abstract class CraftEvokerApiMixin {
     @Unique
     public void setWololoTarget(@Nullable org.bukkit.entity.Sheep sheep) {
         if (sheep == null) {
-            com.ixnah.mc.paperarc.bridge.ApiState.remove(this, PAPERARC$WOLOLO_KEY);
+            this.paperarc$wololoTarget = null;
             getHandle().setTarget(null);
             return;
         }
         Sheep nms = ((CraftSheep) sheep).getHandle();
-        com.ixnah.mc.paperarc.bridge.ApiState.put(this, PAPERARC$WOLOLO_KEY, sheep);
+        this.paperarc$wololoTarget = sheep;
         getHandle().setTarget(nms);
     }
 }

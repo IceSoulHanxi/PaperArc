@@ -23,6 +23,10 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(CraftEnderDragon.class)
 public abstract class CraftEnderDragonApiMixin {
 
+    /** Paper 的 {@code EnderDragon.podium}（NMS BlockPos）；null = 未设置，读取时回落到出生台原点。 */
+    @Unique
+    private BlockPos paperarc$podium;
+
     @Unique
     private static final String PAPERARC$PODIUM_KEY = "paperarc.podium";
 
@@ -36,7 +40,7 @@ public abstract class CraftEnderDragonApiMixin {
 
     @Unique
     public Location getPodium() {
-        Object custom = com.ixnah.mc.paperarc.bridge.ApiState.get(this, PAPERARC$PODIUM_KEY, null);
+        Object custom = (this.paperarc$podium != null ? this.paperarc$podium : (null));
         BlockPos pos = custom != null
             ? (BlockPos) custom
             : EndPodiumFeature.getLocation(getHandle().getFightOrigin());
@@ -46,13 +50,12 @@ public abstract class CraftEnderDragonApiMixin {
     @Unique
     public void setPodium(@Nullable Location location) {
         if (location == null) {
-            com.ixnah.mc.paperarc.bridge.ApiState.remove(this, PAPERARC$PODIUM_KEY);
+            this.paperarc$podium = null;
             return;
         }
         if (location.getWorld() != null && !location.getWorld().equals(paperarc$world())) {
             throw new IllegalArgumentException("You cannot set a podium in a different world to where the dragon is");
         }
-        com.ixnah.mc.paperarc.bridge.ApiState.put(this, PAPERARC$PODIUM_KEY,
-            new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ()));
+        this.paperarc$podium = new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
     }
 }

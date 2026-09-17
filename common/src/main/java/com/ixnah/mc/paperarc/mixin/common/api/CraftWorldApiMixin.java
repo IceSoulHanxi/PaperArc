@@ -54,7 +54,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
-import com.ixnah.mc.paperarc.bridge.ApiState;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 
 /**
@@ -63,6 +62,30 @@ import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
  */
 @Mixin(CraftWorld.class)
 public abstract class CraftWorldApiMixin {
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "sendViewDistance"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private Integer paperarc$sendViewDistance;
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "viewDistance"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private Integer paperarc$viewDistance;
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "simulationDistance"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private Integer paperarc$simulationDistance;
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "voidDamageEnabled"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private Boolean paperarc$voidDamageEnabled;
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "voidDamageAmount"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private Float paperarc$voidDamageAmount;
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "voidDamageMinBuildHeightOffset"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private Double paperarc$voidDamageMinBuildHeightOffset;
 
     @Shadow
     public abstract ServerLevel getHandle();
@@ -191,57 +214,57 @@ public abstract class CraftWorldApiMixin {
 
     @Unique
     public int getSendViewDistance() {
-        return ApiState.get(this, "sendViewDistance", this.getViewDistance() + 1);
+        return (this.paperarc$sendViewDistance != null ? this.paperarc$sendViewDistance : (this.getViewDistance() + 1));
     }
 
     @Unique
     public void setSendViewDistance(int sendViewDistance) {
         Preconditions.checkArgument(sendViewDistance >= -1, "sendViewDistance must be >= -1");
-        ApiState.put(this, "sendViewDistance", sendViewDistance);
+        this.paperarc$sendViewDistance = sendViewDistance;
     }
 
     @Unique
     public void setViewDistance(int viewDistance) {
         // vanilla 视距是服务器全局的；这里仅记录每世界覆写值
         Preconditions.checkArgument(viewDistance >= -1, "viewDistance must be >= -1");
-        ApiState.put(this, "viewDistance", viewDistance);
+        this.paperarc$viewDistance = viewDistance;
     }
 
     @Unique
     public void setSimulationDistance(int simulationDistance) {
         Preconditions.checkArgument(simulationDistance >= -1, "simulationDistance must be >= -1");
-        ApiState.put(this, "simulationDistance", simulationDistance);
+        this.paperarc$simulationDistance = simulationDistance;
     }
 
     @Unique
     public boolean isVoidDamageEnabled() {
-        return ApiState.get(this, "voidDamageEnabled", Boolean.TRUE);
+        return (this.paperarc$voidDamageEnabled != null ? this.paperarc$voidDamageEnabled : (Boolean.TRUE));
     }
 
     @Unique
     public void setVoidDamageEnabled(boolean enabled) {
-        ApiState.put(this, "voidDamageEnabled", enabled);
+        this.paperarc$voidDamageEnabled = enabled;
     }
 
     @Unique
     public float getVoidDamageAmount() {
-        return ApiState.get(this, "voidDamageAmount", 4.0F);
+        return (this.paperarc$voidDamageAmount != null ? this.paperarc$voidDamageAmount : (4.0F));
     }
 
     @Unique
     public void setVoidDamageAmount(float amount) {
         Preconditions.checkArgument(amount >= 0.0F, "amount must be >= 0");
-        ApiState.put(this, "voidDamageAmount", amount);
+        this.paperarc$voidDamageAmount = amount;
     }
 
     @Unique
     public double getVoidDamageMinBuildHeightOffset() {
-        return ApiState.get(this, "voidDamageMinBuildHeightOffset", 0.0D);
+        return (this.paperarc$voidDamageMinBuildHeightOffset != null ? this.paperarc$voidDamageMinBuildHeightOffset : (0.0D));
     }
 
     @Unique
     public void setVoidDamageMinBuildHeightOffset(double offset) {
-        ApiState.put(this, "voidDamageMinBuildHeightOffset", offset);
+        this.paperarc$voidDamageMinBuildHeightOffset = offset;
     }
 
     @Unique

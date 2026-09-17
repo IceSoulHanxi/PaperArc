@@ -1,4 +1,4 @@
-package com.ixnah.mc.paperarc.mixin.mojmap.entity;
+package com.ixnah.mc.paperarc.mixin.common.entity;
 
 import com.ixnah.mc.paperarc.bridge.FallingBlockEntityBridge;
 import net.minecraft.world.entity.item.FallingBlockEntity;

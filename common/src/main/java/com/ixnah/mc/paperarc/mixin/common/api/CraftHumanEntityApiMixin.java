@@ -39,7 +39,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
-import com.ixnah.mc.paperarc.bridge.ApiState;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 
 /**
@@ -65,6 +64,10 @@ import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
  */
 @Mixin(org.bukkit.craftbukkit.v.entity.CraftHumanEntity.class)
 public abstract class CraftHumanEntityApiMixin {
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "hurtDirection"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private Float paperarc$hurtDirection;
 
     @Shadow
     public abstract Player getHandle();
@@ -238,7 +241,7 @@ public abstract class CraftHumanEntityApiMixin {
     public void setHurtDirection(float hurtDirection) {
         // side-map: 1.21.1 vanilla has no hurtDir storage field on LivingEntity and
         // Arclight does not carry Paper's re-added field; nothing reads it back yet
-        ApiState.put(this, "hurtDirection", hurtDirection);
+        this.paperarc$hurtDirection = hurtDirection;
     }
 
     // ------------------------------------------------------------------

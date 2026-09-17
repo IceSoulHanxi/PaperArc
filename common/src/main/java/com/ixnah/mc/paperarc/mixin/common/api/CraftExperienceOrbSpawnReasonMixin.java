@@ -1,6 +1,5 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
-import com.ixnah.mc.paperarc.bridge.ApiState;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import net.minecraft.world.entity.ExperienceOrb;
 import org.bukkit.craftbukkit.v.entity.CraftExperienceOrb;
@@ -16,15 +15,21 @@ import org.spongepowered.asm.mixin.Unique;
 public abstract class CraftExperienceOrbSpawnReasonMixin {
 
     @Unique
-    private static final String PAPERARC$KEY_REASON = "orb$spawnReason";
-
-    @Unique
     private ExperienceOrb paperarc$owner() {
         return (ExperienceOrb) ((org.bukkit.craftbukkit.v.entity.CraftEntity) (Object) this).getHandle();
     }
 
+    /**
+     * spawnReason 存在 NMS 侧补充字段里（{@code ExperienceOrbFieldsMixin} 注入），
+     * 以序数保存 —— 该枚举类型是运行时注入的（B5），字段类型写枚举会在
+     * FieldsMixin 加载时把它拖进来，时序上过早。
+     */
     @Unique
     public org.bukkit.entity.ExperienceOrb.SpawnReason getSpawnReason() {
-        return ApiState.get(paperarc$owner(), PAPERARC$KEY_REASON, null);
+        int ordinal = ((com.ixnah.mc.paperarc.bridge.ExperienceOrbBridge) paperarc$owner())
+                .paper$getSpawnReasonOrdinal();
+        org.bukkit.entity.ExperienceOrb.SpawnReason[] values =
+                org.bukkit.entity.ExperienceOrb.SpawnReason.values();
+        return ordinal < 0 || ordinal >= values.length ? null : values[ordinal];
     }
 }

@@ -3,7 +3,6 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 import com.destroystokyo.paper.ClientOption;
 import com.destroystokyo.paper.Title;
 import com.google.common.base.Preconditions;
-import com.ixnah.mc.paperarc.bridge.ApiState;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import com.mojang.authlib.GameProfile;
 import io.papermc.paper.math.Position;
@@ -81,6 +80,42 @@ import java.util.Set;
 @Mixin(CraftPlayer.class)
 public abstract class CraftPlayerApiMixin {
 
+    /** Paper 侧补充状态（原 ApiState 副表键 "displayName"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private Component paperarc$displayName;
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "affectsSpawning"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private Boolean paperarc$affectsSpawning;
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "clientBrandName"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private String paperarc$clientBrandName;
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "haProxyAddress"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private InetSocketAddress paperarc$haProxyAddress;
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "resourcePackStatus"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private PlayerResourcePackStatusEvent.Status paperarc$resourcePackStatus;
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "sendViewDistance"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private Integer paperarc$sendViewDistance;
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "playerListName"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private net.kyori.adventure.text.Component paperarc$playerListName;
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "flyingFallDamage"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private TriState paperarc$flyingFallDamage;
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "simulationDistance"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private Integer paperarc$simulationDistance;
+
     @Shadow
     public abstract ServerPlayer getHandle();
 
@@ -143,7 +178,7 @@ public abstract class CraftPlayerApiMixin {
     // ---- displayName getter/setter ----
     @Unique
     public Component displayName() {
-        Component stored = ApiState.get(this, "displayName", null);
+        Component stored = (this.paperarc$displayName != null ? this.paperarc$displayName : (null));
         if (stored != null) {
             return stored;
         }
@@ -154,7 +189,7 @@ public abstract class CraftPlayerApiMixin {
 
     @Unique
     public void displayName(Component component) {
-        ApiState.put(this, "displayName", component);
+        this.paperarc$displayName = component;
         this.setDisplayName(component == null ? null
             : LegacyComponentSerializer.legacySection().serialize(component));
     }
@@ -162,7 +197,7 @@ public abstract class CraftPlayerApiMixin {
     // ---- getAffectsSpawning ----
     @Unique
     public boolean getAffectsSpawning() {
-        Boolean flag = ApiState.get(this, "affectsSpawning", null);
+        Boolean flag = (this.paperarc$affectsSpawning != null ? this.paperarc$affectsSpawning : (null));
         return flag == null || flag;
     }
 
@@ -170,7 +205,7 @@ public abstract class CraftPlayerApiMixin {
     @Unique
     public String getClientBrandName() {
         // vanilla 服务端不持久化客户端 brand（MC|Brand 即弃），需上层注入 ApiState
-        return ApiState.get(this, "clientBrandName", null);
+        return (this.paperarc$clientBrandName != null ? this.paperarc$clientBrandName : (null));
     }
 
     // ---- getClientOption ----
@@ -227,7 +262,7 @@ public abstract class CraftPlayerApiMixin {
     @Unique
     public InetSocketAddress getHAProxyAddress() {
         // 需要 HAProxy proxy-protocol 基建在握手期保存真实地址，当前仅 side-map
-        return ApiState.get(this, "haProxyAddress", null);
+        return (this.paperarc$haProxyAddress != null ? this.paperarc$haProxyAddress : (null));
     }
 
     // ---- getIdleDuration ----
@@ -240,13 +275,13 @@ public abstract class CraftPlayerApiMixin {
     @Unique
     public PlayerResourcePackStatusEvent.Status getResourcePackStatus() {
         // spigot 收到资源包状态后只发事件不存储，需上层在事件里回填 ApiState
-        return ApiState.get(this, "resourcePackStatus", null);
+        return (this.paperarc$resourcePackStatus != null ? this.paperarc$resourcePackStatus : (null));
     }
 
     // ---- getSendViewDistance ----
     @Unique
     public int getSendViewDistance() {
-        Integer override = ApiState.get(this, "sendViewDistance", null);
+        Integer override = (this.paperarc$sendViewDistance != null ? this.paperarc$sendViewDistance : (null));
         if (override != null) {
             return override;
         }
@@ -282,7 +317,6 @@ public abstract class CraftPlayerApiMixin {
         // IllegalClassLoadError，且内嵌类的 InnerClasses 属性会与目标类互相矛盾。
         return new com.ixnah.mc.paperarc.bridge.PaperArcSkinParts(raw);
     }
-
 
     @Unique
     private static final String PAPERARC$KEY_PLAYER_LIST_NAME = "playerListName";
@@ -387,7 +421,7 @@ public abstract class CraftPlayerApiMixin {
 
     @Unique
     public net.kyori.adventure.text.Component playerListName() {
-        Component stored = ApiState.get(this, PAPERARC$KEY_PLAYER_LIST_NAME, null);
+        Component stored = (this.paperarc$playerListName != null ? this.paperarc$playerListName : (null));
         if (stored != null) {
             return stored;
         }
@@ -397,7 +431,7 @@ public abstract class CraftPlayerApiMixin {
 
     @Unique
     public void playerListName(net.kyori.adventure.text.Component playerListName) {
-        ApiState.put(this, PAPERARC$KEY_PLAYER_LIST_NAME, playerListName);
+        this.paperarc$playerListName = playerListName;
         // Best-effort: mirror into vanilla Player.listName (private) so future
         // tab-list packets carry the new name.
         try {
@@ -533,7 +567,7 @@ public abstract class CraftPlayerApiMixin {
 
     @Unique
     public void setAffectsSpawning(boolean affects) {
-        ApiState.put(this, PAPERARC$KEY_AFFECTS_SPAWNING, affects);
+        this.paperarc$affectsSpawning = affects;
     }
 
     @Unique
@@ -546,7 +580,7 @@ public abstract class CraftPlayerApiMixin {
 
     @Unique
     public void setFlyingFallDamage(TriState triState) {
-        ApiState.put(this, PAPERARC$KEY_FLYING_FALL_DAMAGE, triState);
+        this.paperarc$flyingFallDamage = triState;
     }
 
     @Unique
@@ -695,12 +729,12 @@ public abstract class CraftPlayerApiMixin {
 
     @Unique
     public void setSendViewDistance(int viewDistance) {
-        ApiState.put(this, PAPERARC$KEY_SEND_VIEW_DISTANCE, viewDistance);
+        this.paperarc$sendViewDistance = viewDistance;
     }
 
     @Unique
     public void setSimulationDistance(int simulationDistance) {
-        ApiState.put(this, PAPERARC$KEY_SIMULATION_DISTANCE, simulationDistance);
+        this.paperarc$simulationDistance = simulationDistance;
     }
 
     @Unique

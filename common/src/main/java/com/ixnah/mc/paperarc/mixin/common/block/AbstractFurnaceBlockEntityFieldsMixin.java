@@ -1,9 +1,8 @@
-package com.ixnah.mc.paperarc.mixin.mojmap.block;
+package com.ixnah.mc.paperarc.mixin.common.block;
 
 import com.ixnah.mc.paperarc.bridge.AbstractFurnaceBlockEntityBridge;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 /**
@@ -16,9 +15,6 @@ import org.spongepowered.asm.mixin.Unique;
  */
 @Mixin(AbstractFurnaceBlockEntity.class)
 public abstract class AbstractFurnaceBlockEntityFieldsMixin implements AbstractFurnaceBlockEntityBridge {
-
-    @Shadow
-    private net.minecraft.world.item.crafting.RecipeType<? extends net.minecraft.world.item.crafting.AbstractCookingRecipe> recipeType;
 
     @Unique
     public double cookSpeedMultiplier = 1.0D; // Paper
@@ -33,8 +29,4 @@ public abstract class AbstractFurnaceBlockEntityFieldsMixin implements AbstractF
         this.cookSpeedMultiplier = multiplier;
     }
 
-    @Override
-    public net.minecraft.world.item.crafting.RecipeType<? extends net.minecraft.world.item.crafting.AbstractCookingRecipe> paper$getRecipeType() {
-        return this.recipeType;
-    }
 }

@@ -19,17 +19,14 @@ import org.spongepowered.asm.mixin.Unique;
 public abstract class CraftAnvilViewApiMixin {
 
     @Unique
-    private static final String PAPERARC$BYPASS = "paperarc:bypassEnchantmentLevelRestriction";
-
-    @Unique
     public boolean bypassesEnchantmentLevelRestriction() {
-        return com.ixnah.mc.paperarc.bridge.ApiState.get(
-            ((CraftInventoryViewBridge) (Object) this).paperarc$menu(), PAPERARC$BYPASS, Boolean.FALSE);
+        return ((com.ixnah.mc.paperarc.bridge.MenuFieldsBridge) ((CraftInventoryViewBridge) (Object) this).paperarc$menu())
+            .paper$bypassEnchantmentLevelRestriction();
     }
 
     @Unique
     public void bypassEnchantmentLevelRestriction(boolean bypassEnchantmentLevelRestriction) {
-        com.ixnah.mc.paperarc.bridge.ApiState.put(
-            ((CraftInventoryViewBridge) (Object) this).paperarc$menu(), PAPERARC$BYPASS, bypassEnchantmentLevelRestriction);
+        ((com.ixnah.mc.paperarc.bridge.MenuFieldsBridge) ((CraftInventoryViewBridge) (Object) this).paperarc$menu())
+            .paper$setBypassEnchantmentLevelRestriction(bypassEnchantmentLevelRestriction);
     }
 }

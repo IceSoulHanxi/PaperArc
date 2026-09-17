@@ -1,4 +1,4 @@
-package com.ixnah.mc.paperarc.mixin.mojmap.network;
+package com.ixnah.mc.paperarc.mixin.common.network;
 
 import com.ixnah.mc.paperarc.bridge.ConnectionBridge;
 import java.net.InetSocketAddress;

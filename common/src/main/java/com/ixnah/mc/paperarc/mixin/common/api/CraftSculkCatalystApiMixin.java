@@ -1,7 +1,6 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.google.common.base.Preconditions;
-import com.ixnah.mc.paperarc.bridge.ApiState;
 import io.papermc.paper.math.Position;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -25,6 +24,10 @@ import java.lang.reflect.Method;
  */
 @Mixin(CraftSculkCatalyst.class)
 public abstract class CraftSculkCatalystApiMixin {
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "paperarc:bloom"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private Boolean paperarc$bloom;
 
     @Unique
     private static final String PAPERARC_BLOOM_KEY = "paperarc:bloom";
@@ -66,12 +69,12 @@ public abstract class CraftSculkCatalystApiMixin {
 
     @Unique
     public boolean isBloom() {
-        return ApiState.get(this, PAPERARC_BLOOM_KEY, Boolean.FALSE);
+        return (this.paperarc$bloom != null ? this.paperarc$bloom : (Boolean.FALSE));
     }
 
     @Unique
     public void setBloom(boolean bloom) {
-        ApiState.put(this, PAPERARC_BLOOM_KEY, bloom);
+        this.paperarc$bloom = bloom;
     }
 
     /**

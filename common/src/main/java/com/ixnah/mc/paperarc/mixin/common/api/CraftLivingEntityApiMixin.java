@@ -2,7 +2,6 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.destroystokyo.paper.block.TargetBlockInfo;
 import com.destroystokyo.paper.entity.TargetEntityInfo;
-import com.ixnah.mc.paperarc.bridge.ApiState;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
@@ -53,6 +52,10 @@ import java.lang.reflect.Method;
  */
 @Mixin(CraftLivingEntity.class)
 public abstract class CraftLivingEntityApiMixin {
+
+    /** Paper 侧补充状态（原 ApiState 副表键 "shieldBlockingDelay"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private Integer paperarc$shieldBlockingDelay;
 
     @Shadow
     public abstract LivingEntity getHandle();
@@ -213,7 +216,7 @@ public abstract class CraftLivingEntityApiMixin {
     @Unique
     public int getShieldBlockingDelay() {
         // Paper-added state; vanilla NMS has no field -> ApiState side map, default 5.
-        return com.ixnah.mc.paperarc.bridge.ApiState.get(this, "shieldBlockingDelay", 5);
+        return (this.paperarc$shieldBlockingDelay != null ? this.paperarc$shieldBlockingDelay : (5));
     }
 
     @Unique
@@ -252,7 +255,6 @@ public abstract class CraftLivingEntityApiMixin {
         }
         return CraftBlock.notchToBlockFace(hit.getDirection());
     }
-
 
     // region Shadows
 
@@ -402,7 +404,7 @@ public abstract class CraftLivingEntityApiMixin {
     @Unique
     public float getUpwardsMovement() {
         // vanilla 无对应存储字段，Paper 自有状态 → side-map，默认 0.0f
-        return (Float) ApiState.get(this.getHandle(), "paperarc:upwardsMovement", 0.0F);
+        return ((com.ixnah.mc.paperarc.bridge.LivingEntityFieldsBridge) this.getHandle()).paper$getUpwardsMovement();
     }
 
     /**
@@ -530,7 +532,7 @@ public abstract class CraftLivingEntityApiMixin {
     @Unique
     public void setHurtDirection(float direction) {
         // vanilla 1.21.1 已无 hurtDirection 存储（旧版字段被移除）→ side-map，默认 0.0f
-        ApiState.put(this.getHandle(), "paperarc:hurtDirection", direction);
+        ((com.ixnah.mc.paperarc.bridge.LivingEntityFieldsBridge) this.getHandle()).paper$setHurtDirection(direction);
     }
 
     /**
@@ -590,7 +592,7 @@ public abstract class CraftLivingEntityApiMixin {
     @Unique
     public void setShieldBlockingDelay(int delay) {
         // vanilla 无 shieldBlockingDelay 存储（Paper 自定义字段）→ side-map，默认 5
-        ApiState.put(this.getHandle(), "paperarc:shieldBlockingDelay", delay);
+        ((com.ixnah.mc.paperarc.bridge.LivingEntityFieldsBridge) this.getHandle()).paper$setShieldBlockingDelay(delay);
     }
 
     /**

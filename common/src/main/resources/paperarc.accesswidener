@@ -53,3 +53,9 @@ accessible field net/minecraft/world/entity/item/ItemEntity health I
 accessible field net/minecraft/world/entity/item/ItemEntity pickupDelay I
 accessible field net/minecraft/world/entity/monster/Phantom anchorPoint Lnet/minecraft/core/BlockPos;
 accessible field net/minecraft/world/entity/npc/WanderingTrader wanderTarget Lnet/minecraft/core/BlockPos;
+
+# B6：FieldsMixin 需要读 NMS 的 private 泛型字段。**不要用 @Shadow**：
+# mixin 注解处理器不给它们生成 refmap 条目，Fabric 上运行期报
+# "@Shadow field xxx was not located in the target class"（实测）。改成 AW 放开后直接访问 ——
+# 直接的字段访问是普通字节码引用，由 remapJar 正常重映射，不走 refmap。
+accessible field net/minecraft/world/entity/ai/attributes/AttributeMap attributes Ljava/util/Map;

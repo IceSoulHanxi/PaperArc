@@ -1,7 +1,6 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.google.common.base.Preconditions;
-import com.ixnah.mc.paperarc.bridge.ApiState;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -40,9 +39,6 @@ public abstract class CraftProjectileApiMixin {
     public abstract Projectile getHandle();
 
     @Unique
-    private static final String PAPERARC$KEY_HAS_BEEN_SHOT = "hasBeenShot";
-
-    @Unique
     public boolean canHitEntity(org.bukkit.entity.Entity entity) {
         return this.getHandle().canHitEntity(((CraftEntity) entity).getHandle());
     }
@@ -54,7 +50,7 @@ public abstract class CraftProjectileApiMixin {
 
     @Unique
     public boolean hasBeenShot() {
-        return ApiState.get(this.getHandle(), PAPERARC$KEY_HAS_BEEN_SHOT, Boolean.FALSE);
+        return ((com.ixnah.mc.paperarc.bridge.ProjectileBridge) this.getHandle()).paper$hasBeenShot();
     }
 
     @Unique
@@ -80,7 +76,7 @@ public abstract class CraftProjectileApiMixin {
 
     @Unique
     public void setHasBeenShot(boolean hasBeenShot) {
-        ApiState.put(this.getHandle(), PAPERARC$KEY_HAS_BEEN_SHOT, hasBeenShot);
+        ((com.ixnah.mc.paperarc.bridge.ProjectileBridge) this.getHandle()).paper$setHasBeenShot(hasBeenShot);
     }
 
     @Unique

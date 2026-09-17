@@ -1,4 +1,4 @@
-package com.ixnah.mc.paperarc.mixin.mojmap.entity;
+package com.ixnah.mc.paperarc.mixin.common.entity;
 
 import java.util.Map;
 
@@ -28,14 +28,11 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(AttributeMap.class)
 public abstract class AttributeMapFieldsMixin implements AttributeMapBridge {
 
-    @Shadow
-    @Final
-    private Map<Holder<Attribute>, AttributeInstance> attributes;
-
     @Unique
     @Override
     public void registerAttribute(Holder<Attribute> attributeBase) {
         AttributeInstance attributeModifiable = new AttributeInstance(attributeBase, AttributeInstance::getAttribute);
-        this.attributes.put(attributeBase, attributeModifiable);
+        // 同 AbstractFurnaceBlockEntityFieldsMixin：泛型字段不走 @Shadow，由 accesswidener 放开后直接访问
+        ((AttributeMap) (Object) this).attributes.put(attributeBase, attributeModifiable);
     }
 }

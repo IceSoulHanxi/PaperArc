@@ -1,7 +1,6 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.google.common.base.Preconditions;
-import com.ixnah.mc.paperarc.bridge.ApiState;
 import net.minecraft.world.level.block.entity.SculkSensorBlockEntity;
 import org.bukkit.block.data.type.SculkSensor;
 import org.bukkit.craftbukkit.v.block.CraftSculkSensor;
@@ -24,6 +23,10 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(CraftSculkSensor.class)
 public abstract class CraftSculkSensorApiMixin {
 
+    /** Paper 侧补充状态（原 ApiState 副表键 "paperarc:listenerRange"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private Integer paperarc$listenerRange;
+
     @Unique
     private static final String PAPERARC_LISTENER_RANGE_KEY = "paperarc:listenerRange";
 
@@ -45,7 +48,7 @@ public abstract class CraftSculkSensorApiMixin {
     // Paper start - Configurable sculk sensor listener range
     @Unique
     public int getListenerRange() {
-        Integer override = ApiState.get(this, PAPERARC_LISTENER_RANGE_KEY, null);
+        Integer override = (this.paperarc$listenerRange != null ? this.paperarc$listenerRange : (null));
         if (override != null) {
             return override;
         }
@@ -55,7 +58,7 @@ public abstract class CraftSculkSensorApiMixin {
     @Unique
     public void setListenerRange(int range) {
         Preconditions.checkArgument(range > 0, "Vibration listener range must be greater than 0");
-        ApiState.put(this, PAPERARC_LISTENER_RANGE_KEY, range);
+        this.paperarc$listenerRange = range;
     }
     // Paper end - Configurable sculk sensor listener range
 

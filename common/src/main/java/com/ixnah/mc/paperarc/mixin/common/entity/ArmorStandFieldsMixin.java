@@ -1,4 +1,4 @@
-package com.ixnah.mc.paperarc.mixin.mojmap.entity;
+package com.ixnah.mc.paperarc.mixin.common.entity;
 
 import com.ixnah.mc.paperarc.bridge.ArmorStandBridge;
 import net.minecraft.world.entity.decoration.ArmorStand;

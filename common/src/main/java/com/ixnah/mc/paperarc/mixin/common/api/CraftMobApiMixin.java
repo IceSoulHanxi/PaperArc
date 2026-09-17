@@ -13,6 +13,10 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(CraftMob.class)
 public abstract class CraftMobApiMixin {
 
+    /** Paper 侧补充状态（原 ApiState 副表键 "pathfinder"）；null = 未设置，读取时回落默认值。 */
+    @Unique
+    private com.destroystokyo.paper.entity.Pathfinder paperarc$pathfinder;
+
     @Shadow
     public abstract Mob getHandle();
 
@@ -124,10 +128,10 @@ public abstract class CraftMobApiMixin {
     @Unique
     public com.destroystokyo.paper.entity.Pathfinder getPathfinder() {
         com.destroystokyo.paper.entity.Pathfinder pathfinder =
-                com.ixnah.mc.paperarc.bridge.ApiState.get(this, "pathfinder", null);
+                (this.paperarc$pathfinder != null ? this.paperarc$pathfinder : (null));
         if (pathfinder == null) {
             pathfinder = new com.ixnah.mc.paperarc.bridge.PaperPathfinder(this.getHandle());
-            com.ixnah.mc.paperarc.bridge.ApiState.put(this, "pathfinder", pathfinder);
+            this.paperarc$pathfinder = pathfinder;
         }
         return pathfinder;
     }

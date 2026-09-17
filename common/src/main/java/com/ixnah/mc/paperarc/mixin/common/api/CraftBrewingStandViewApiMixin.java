@@ -19,21 +19,18 @@ import org.spongepowered.asm.mixin.Unique;
 public abstract class CraftBrewingStandViewApiMixin {
 
     @Unique
-    private static final String PAPERARC$RECIPE_BREW_TIME = "paperarc:recipeBrewTime";
-
-    @Unique
     private BrewingStandMenu paperarc$menu() {
         return (BrewingStandMenu) ((CraftInventoryViewBridge) (Object) this).paperarc$menu();
     }
 
     @Unique
     public int getRecipeBrewTime() {
-        return com.ixnah.mc.paperarc.bridge.ApiState.get(paperarc$menu(), PAPERARC$RECIPE_BREW_TIME, 400);
+        return ((com.ixnah.mc.paperarc.bridge.MenuFieldsBridge) paperarc$menu()).paper$getRecipeBrewTime();
     }
 
     @Unique
     public void setRecipeBrewTime(int recipeBrewTime) {
         com.google.common.base.Preconditions.checkArgument(recipeBrewTime > 0, "recipeBrewTime must be positive");
-        com.ixnah.mc.paperarc.bridge.ApiState.put(paperarc$menu(), PAPERARC$RECIPE_BREW_TIME, recipeBrewTime);
+        ((com.ixnah.mc.paperarc.bridge.MenuFieldsBridge) paperarc$menu()).paper$setRecipeBrewTime(recipeBrewTime);
     }
 }

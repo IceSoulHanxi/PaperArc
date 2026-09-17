@@ -1,4 +1,4 @@
-package com.ixnah.mc.paperarc.mixin.mojmap.block;
+package com.ixnah.mc.paperarc.mixin.common.block;
 
 import com.ixnah.mc.paperarc.bridge.CampfireBlockEntityBridge;
 import net.minecraft.world.level.block.entity.CampfireBlockEntity;
