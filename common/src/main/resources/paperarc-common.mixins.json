@@ -306,6 +306,7 @@
     "entity.ServerLevelHasEntityMoveEventMixin",
     "entity.TamableAnimalDeathMessageMixin",
     "entity.VillagerZapMixin",
+    "entity.WitherBossPortalMixin",
     "entity.WolfDyeMixin",
     "inventory.CartographyTableMenuSlotsChangedMixin",
     "inventory.MerchantResultSlotTradeMixin",
