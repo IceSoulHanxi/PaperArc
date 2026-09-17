@@ -4,6 +4,13 @@
     "org.bukkit.potion.PotionEffectType$Category",
     "org.bukkit.inventory.meta.BookMeta$BookMetaBuilder",
     "org.bukkit.event.inventory.InventoryCloseEvent$Reason",
-    "org.bukkit.event.player.PlayerKickEvent$Cause"
+    "org.bukkit.event.player.PlayerKickEvent$Cause",
+    "org.bukkit.entity.AbstractArrow$PickupRule",
+    "org.bukkit.event.player.PlayerGameModeChangeEvent$Cause",
+    "org.bukkit.event.player.PlayerQuitEvent$QuitReason",
+    "org.bukkit.event.player.PlayerRespawnEvent$RespawnFlag",
+    "org.bukkit.event.weather.ThunderChangeEvent$Cause",
+    "org.bukkit.event.weather.WeatherChangeEvent$Cause",
+    "org.bukkit.World$ChunkLoadCallback"
   ]
 }
