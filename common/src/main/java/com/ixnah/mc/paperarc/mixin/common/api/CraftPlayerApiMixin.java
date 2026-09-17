@@ -898,4 +898,146 @@ public abstract class CraftPlayerApiMixin {
             connection.disconnect(Serializer.fromJson(GsonComponentSerializer.gson().serialize(actual)));
         }
     }
+
+    // ===== Audience 落地（paper-api CommandSender extends Audience，见 A2-1）=====
+    //
+    // Audience 的方法体全是空 default：接口合并到运行时 CommandSender 之后，
+    // 不覆盖这些"终端方法"消息就会被静默丢弃。终端方法由 javap 反汇编 adventure
+    // Audience 确定（其余重载都转调它们）：
+    //   sendMessage(Identity, Component, MessageType) / sendActionBar(Component)
+    //   sendPlayerListHeaderAndFooter(Component, Component) / sendTitlePart(TitlePart, T)
+    //   clearTitle() / resetTitle() / playSound(...)×3 / stopSound(SoundStop)
+    // 未落地（保持 adventure 的空 default，行为=无操作）：
+    //   showBossBar/hideBossBar —— 需要把 adventure BossBar 的增量变更（名称/进度/
+    //     颜色/overlay/flags）桥到 ServerBossEvent 并做监听器登记，超出本阶段范围；
+    //     activeBossBars() 已按同样理由返回空集合。
+    //   openBook —— Paper 靠临时替换主手物品下发 ClientboundOpenBookPacket，
+    //     会与插件的背包状态互相干扰，暂不实现。
+    //   deleteMessage —— 1.20.1 的签名消息删除需要 MessageSignature 缓存，Arclight 无。
+
+    @Unique
+    public Component name() {
+        return Component.text(getHandle().getGameProfile().getName());
+    }
+
+    @Unique
+    public void sendMessage(net.kyori.adventure.identity.Identity source, Component message,
+            net.kyori.adventure.audience.MessageType type) {
+        net.minecraft.network.chat.Component vanilla = paperarc$vanilla(message);
+        if (vanilla != null) {
+            // 1.19+ 的未签名消息一律走系统聊天包，Paper 同样如此；overlay=false 表示聊天框
+            paperarc$send(new net.minecraft.network.protocol.game.ClientboundSystemChatPacket(vanilla, false));
+        }
+    }
+
+    @Unique
+    public void sendActionBar(Component message) {
+        net.minecraft.network.chat.Component vanilla = paperarc$vanilla(message);
+        if (vanilla != null) {
+            paperarc$send(new ClientboundSetActionBarTextPacket(vanilla));
+        }
+    }
+
+    @Unique
+    public void sendPlayerListHeaderAndFooter(Component header, Component footer) {
+        this.playerListHeader = paperarc$vanilla(header);
+        this.playerListFooter = paperarc$vanilla(footer);
+        updatePlayerListHeaderFooter();
+    }
+
+    @Unique
+    @SuppressWarnings("unchecked")
+    public <T> void sendTitlePart(net.kyori.adventure.title.TitlePart<T> part, T value) {
+        Preconditions.checkNotNull(part, "part");
+        Preconditions.checkNotNull(value, "value");
+        if (part == net.kyori.adventure.title.TitlePart.TITLE) {
+            paperarc$send(new ClientboundSetTitleTextPacket(paperarc$vanilla((Component) value)));
+        } else if (part == net.kyori.adventure.title.TitlePart.SUBTITLE) {
+            paperarc$send(new ClientboundSetSubtitleTextPacket(paperarc$vanilla((Component) value)));
+        } else if (part == net.kyori.adventure.title.TitlePart.TIMES) {
+            net.kyori.adventure.title.Title.Times times = (net.kyori.adventure.title.Title.Times) value;
+            paperarc$send(new ClientboundSetTitlesAnimationPacket(paperarc$ticks(times.fadeIn()),
+                    paperarc$ticks(times.stay()), paperarc$ticks(times.fadeOut())));
+        } else {
+            throw new IllegalArgumentException("Unknown TitlePart " + part);
+        }
+    }
+
+    @Unique
+    private static int paperarc$ticks(Duration duration) {
+        return duration == null ? 0 : (int) (duration.toMillis() / 50L);
+    }
+
+    @Unique
+    public void clearTitle() {
+        paperarc$send(new net.minecraft.network.protocol.game.ClientboundClearTitlesPacket(false));
+    }
+
+    @Unique
+    public void resetTitle() {
+        paperarc$send(new net.minecraft.network.protocol.game.ClientboundClearTitlesPacket(true));
+    }
+
+    @Unique
+    public void playSound(net.kyori.adventure.sound.Sound sound) {
+        ServerPlayer handle = getHandle();
+        paperarc$playSound(sound, handle.getX(), handle.getY(), handle.getZ());
+    }
+
+    @Unique
+    public void playSound(net.kyori.adventure.sound.Sound sound, double x, double y, double z) {
+        paperarc$playSound(sound, x, y, z);
+    }
+
+    @Unique
+    public void playSound(net.kyori.adventure.sound.Sound sound, net.kyori.adventure.sound.Sound.Emitter emitter) {
+        if (sound == null || emitter == null) {
+            return;
+        }
+        net.minecraft.world.entity.Entity target;
+        if (emitter == net.kyori.adventure.sound.Sound.Emitter.self()) {
+            target = getHandle();
+        } else if (emitter instanceof CraftEntity craft) {
+            target = craft.getHandle();
+        } else {
+            throw new IllegalArgumentException("Unknown Sound.Emitter " + emitter);
+        }
+        paperarc$playSound(sound, target.getX(), target.getY(), target.getZ());
+    }
+
+    /**
+     * adventure 的 {@code Sound.name()} 是任意 {@code Key}（允许资源包自定义音效，
+     * 不一定在 {@code BuiltInRegistries.SOUND_EVENT} 里），因此用
+     * {@code Holder.direct} 直接下发，与 Paper 的做法一致。
+     */
+    @Unique
+    private void paperarc$playSound(net.kyori.adventure.sound.Sound sound, double x, double y, double z) {
+        if (sound == null) {
+            return;
+        }
+        net.minecraft.resources.ResourceLocation id =
+                new net.minecraft.resources.ResourceLocation(sound.name().namespace(), sound.name().value());
+        long seed = sound.seed().isPresent() ? sound.seed().getAsLong() : getHandle().getRandom().nextLong();
+        paperarc$send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(
+                net.minecraft.core.Holder.direct(net.minecraft.sounds.SoundEvent.createVariableRangeEvent(id)),
+                paperarc$soundSource(sound.source()), x, y, z, sound.volume(), sound.pitch(), seed));
+    }
+
+    @Unique
+    public void stopSound(net.kyori.adventure.sound.SoundStop stop) {
+        if (stop == null) {
+            return;
+        }
+        net.kyori.adventure.key.Key key = stop.sound();
+        paperarc$send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(
+                key == null ? null : new net.minecraft.resources.ResourceLocation(key.namespace(), key.value()),
+                paperarc$soundSource(stop.source())));
+    }
+
+    /** adventure {@code Sound.Source} 与 NMS {@code SoundSource} 的常量顺序完全一致（javap 核对）。 */
+    @Unique
+    private static net.minecraft.sounds.SoundSource paperarc$soundSource(
+            net.kyori.adventure.sound.Sound.Source source) {
+        return source == null ? null : net.minecraft.sounds.SoundSource.values()[source.ordinal()];
+    }
 }

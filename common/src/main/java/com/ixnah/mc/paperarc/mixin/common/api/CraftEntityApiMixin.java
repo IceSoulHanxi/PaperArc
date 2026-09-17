@@ -407,6 +407,19 @@ public abstract class CraftEntityApiMixin {
         }
     }
 
+    /**
+     * paper-api 的 {@code CommandSender.name()}（{@code Entity extends CommandSender}）。
+     * Paper 返回 {@code Entity#getName()} 的 adventure 形态 —— 有自定义名用自定义名，
+     * 否则用实体类型的翻译名。
+     */
+    @Unique
+    public net.kyori.adventure.text.Component name() {
+        net.minecraft.network.chat.Component vanilla = this.getHandle().getName();
+        return vanilla == null ? net.kyori.adventure.text.Component.empty()
+                : net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson().deserialize(
+                        net.minecraft.network.chat.Component.Serializer.toJson(vanilla));
+    }
+
     @Unique
     public net.kyori.adventure.text.Component teamDisplayName() {
         try {

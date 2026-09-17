@@ -144,6 +144,8 @@
     "api.JavaPluginApiMixin",
     "api.LightningBoltAccessorMixin",
     "api.PaperEventApiMixin",
+    "api.ProxiedNativeCommandSenderApiMixin",
+    "api.ServerCommandSenderApiMixin",
     "api.SimpleCommandMapApiMixin",
     "api.SimplePluginManagerApiMixin",
     "api.SkeletonAccessorMixin",
