@@ -4,27 +4,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
 /**
- * Interface augmentation for {@link org.bukkit.entity.Piglin} (generated).
- * Adds 4 paper-api method declaration(s); implementations live in
- * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
+ * B3-2：给 {@link org.bukkit.entity.Illusioner} 补上 paper 声明的父接口
+ * {@code com.destroystokyo.paper.entity.RangedEntity}。
  */
-@Mixin(targets = "org.bukkit.entity.Piglin", remap = false)
-public interface PiglinIfaceMixin extends com.destroystokyo.paper.entity.RangedEntity {
-
-    @Unique
-    public abstract void setChargingCrossbow(boolean p0);
-
-    @Unique
-    public abstract boolean isChargingCrossbow();
-
-    @Unique
-    public abstract void setDancing(boolean p0);
-
-    @Unique
-    public abstract boolean isDancing();
-
-    @Unique
-    public abstract void setDancing(long p0);
+@Mixin(targets = "org.bukkit.entity.Illusioner", remap = false)
+public interface IllusionerIfaceMixin extends com.destroystokyo.paper.entity.RangedEntity {
 
     /**
      * paper {@code CraftRangedEntity} 的 default 方法体（B3-2）。实现体在

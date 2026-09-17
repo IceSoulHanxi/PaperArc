@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Unique;
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
  */
 @Mixin(targets = "org.bukkit.entity.Item", remap = false)
-public interface ItemIfaceMixin {
+public interface ItemIfaceMixin extends io.papermc.paper.entity.Frictional {
 
     @Unique
     public abstract boolean canMobPickup();
@@ -34,4 +34,19 @@ public interface ItemIfaceMixin {
 
     @Unique
     public abstract void setHealth(int p0);
+
+    /**
+     * paper {@code Frictional}（B3-2）：NOT_SET 时保持 vanilla 行为。
+     * 状态存 NMS 注入字段，生效点见 {@code entity.LivingEntityFrictionMixin} /
+     * {@code entity.ItemEntityFrictionMixin}。
+     */
+    @Unique
+    public default net.kyori.adventure.util.TriState getFrictionState() {
+        return com.ixnah.mc.paperarc.bridge.api.PaperarcEntityTraits.getFrictionState(this);
+    }
+
+    @Unique
+    public default void setFrictionState(net.kyori.adventure.util.TriState state) {
+        com.ixnah.mc.paperarc.bridge.api.PaperarcEntityTraits.setFrictionState(this, state);
+    }
 }

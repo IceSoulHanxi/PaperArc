@@ -15,6 +15,10 @@ public interface LivingEntityFieldsBridge {
 
     void paper$setHurtDirection(float hurtDirection);
 
+    net.kyori.adventure.util.TriState paper$getFrictionState();
+
+    void paper$setFrictionState(net.kyori.adventure.util.TriState frictionState);
+
     int paper$getShieldBlockingDelay();
 
     void paper$setShieldBlockingDelay(int shieldBlockingDelay);

@@ -14,4 +14,8 @@ public interface ItemEntityBridge {
     boolean paper$canMobPickup();
 
     void paper$setCanMobPickup(boolean canMobPickup);
+
+    net.kyori.adventure.util.TriState paper$getFrictionState();
+
+    void paper$setFrictionState(net.kyori.adventure.util.TriState frictionState);
 }

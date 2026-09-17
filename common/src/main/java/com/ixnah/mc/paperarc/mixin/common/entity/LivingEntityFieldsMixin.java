@@ -23,6 +23,9 @@ public abstract class LivingEntityFieldsMixin implements LivingEntityFieldsBridg
     @Unique
     public int shieldBlockingDelay = 5; // Paper
 
+    @Unique
+    public net.kyori.adventure.util.TriState frictionState = net.kyori.adventure.util.TriState.NOT_SET; // Paper
+
     @Override
     public float paper$getUpwardsMovement() {
         return this.upwardsMovement;
@@ -41,6 +44,16 @@ public abstract class LivingEntityFieldsMixin implements LivingEntityFieldsBridg
     @Override
     public void paper$setHurtDirection(float hurtDirection) {
         this.hurtDirection = hurtDirection;
+    }
+
+    @Override
+    public net.kyori.adventure.util.TriState paper$getFrictionState() {
+        return this.frictionState;
+    }
+
+    @Override
+    public void paper$setFrictionState(net.kyori.adventure.util.TriState frictionState) {
+        this.frictionState = frictionState;
     }
 
     @Override

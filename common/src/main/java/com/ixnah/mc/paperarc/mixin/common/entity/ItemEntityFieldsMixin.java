@@ -18,6 +18,9 @@ public abstract class ItemEntityFieldsMixin implements ItemEntityBridge {
     @Unique
     public boolean canMobPickup = true; // Paper
 
+    @Unique
+    public net.kyori.adventure.util.TriState frictionState = net.kyori.adventure.util.TriState.NOT_SET; // Paper
+
     @Override
     public boolean paper$canMobPickup() {
         return this.canMobPickup;
@@ -26,5 +29,15 @@ public abstract class ItemEntityFieldsMixin implements ItemEntityBridge {
     @Override
     public void paper$setCanMobPickup(boolean canMobPickup) {
         this.canMobPickup = canMobPickup;
+    }
+
+    @Override
+    public net.kyori.adventure.util.TriState paper$getFrictionState() {
+        return this.frictionState;
+    }
+
+    @Override
+    public void paper$setFrictionState(net.kyori.adventure.util.TriState frictionState) {
+        this.frictionState = frictionState;
     }
 }
