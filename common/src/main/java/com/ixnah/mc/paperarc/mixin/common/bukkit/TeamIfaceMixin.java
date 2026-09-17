@@ -40,4 +40,23 @@ public interface TeamIfaceMixin {
 
     @Unique
     public abstract void addEntities(java.util.Collection p0);
+    // 同上：实现体在 CraftTeamApiMixin，接口上缺声明（A4-1 NO_DECL）。
+    @Unique
+    public abstract void addEntity(org.bukkit.entity.Entity p0);
+
+    @Unique
+    public abstract void addEntries(java.util.Collection p0);
+
+    @Unique
+    public abstract boolean hasEntity(org.bukkit.entity.Entity p0);
+
+    @Unique
+    public abstract boolean removeEntity(org.bukkit.entity.Entity p0);
+
+    @Unique
+    public abstract boolean removeEntities(java.util.Collection p0);
+
+    @Unique
+    public abstract boolean removeEntries(java.util.Collection p0);
+
 }

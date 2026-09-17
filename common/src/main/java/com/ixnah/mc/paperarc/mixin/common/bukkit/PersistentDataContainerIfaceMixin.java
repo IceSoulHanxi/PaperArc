@@ -14,4 +14,8 @@ public interface PersistentDataContainerIfaceMixin {
     @Unique
     public abstract boolean has(org.bukkit.NamespacedKey p0);
 
+    // 实现体在 CraftPersistentDataContainerApiMixin（A4-1 NO_DECL）。
+    @Unique
+    public abstract void readFromBytes(byte[] p0, boolean p1) throws java.io.IOException;
+
 }

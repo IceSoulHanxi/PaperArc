@@ -28,10 +28,6 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(CraftSculkCatalyst.class)
 public abstract class CraftSculkCatalystApiMixin {
 
-    // Paper 无 per-catalyst bloom 存储（side addition）；注入 Craft 字段。
-    @Unique
-    private boolean bloom;
-
     @Unique
     private boolean isPlaced() {
         return ((CraftBlockStateBridge) (Object) this).paperarc$isPlaced();
@@ -58,15 +54,5 @@ public abstract class CraftSculkCatalystApiMixin {
         // 降级为只播撒 sculk 光标（催化绽放的可见效果）。
         catalyst.getListener().getSculkSpreader().addCursors(
             BlockPos.containing(position.x(), position.y(), position.z()), charge);
-    }
-
-    @Unique
-    public boolean isBloom() {
-        return this.bloom;
-    }
-
-    @Unique
-    public void setBloom(boolean bloom) {
-        this.bloom = bloom;
     }
 }

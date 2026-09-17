@@ -2,7 +2,12 @@
 # 每行一条已知问题；门禁只对**新增**条目失败。修掉一条就从这里删一行。
 # 跑法见 common/build.gradle 的 checkIfaceImplPairing 任务（./gradlew :common:check）。
 #
-# ---- NO_DECL (113) ----
+# ---- NO_DECL (63) ----
+# 全部同一个原因：实现体写的是 **1.20.2+/1.21 才加进 paper-api 的方法**
+# （getVoidDamage*/getActiveItem*/isAggressive/getSentChunks/hasStructureAt…），
+# 1.20.1 的 paper-api 根本没有对应的接口声明，插件也就无从调用 —— 属"提前实现"，
+# 留在 Craft 类上不影响运行时，不删。真正挂错宿主（块状态 vs 块数据）的 40 条
+# 与缺声明的 12 条已在 A4-1 修掉。
 NO_DECL org/bukkit/craftbukkit/v/CraftChunk#getChunkSnapshot/4
 NO_DECL org/bukkit/craftbukkit/v/CraftRaid#getBossBar/0
 NO_DECL org/bukkit/craftbukkit/v/CraftRaid#getId/0
@@ -17,54 +22,14 @@ NO_DECL org/bukkit/craftbukkit/v/CraftWorld#rayTraceBlocks/6
 NO_DECL org/bukkit/craftbukkit/v/CraftWorld#setVoidDamageAmount/1
 NO_DECL org/bukkit/craftbukkit/v/CraftWorld#setVoidDamageEnabled/1
 NO_DECL org/bukkit/craftbukkit/v/CraftWorld#setVoidDamageMinBuildHeightOffset/1
-NO_DECL org/bukkit/craftbukkit/v/block/CraftBed#getPart/0
-NO_DECL org/bukkit/craftbukkit/v/block/CraftBed#isOccupied/0
-NO_DECL org/bukkit/craftbukkit/v/block/CraftBed#setOccupied/1
-NO_DECL org/bukkit/craftbukkit/v/block/CraftBed#setPart/1
-NO_DECL org/bukkit/craftbukkit/v/block/CraftBell#getAttachment/0
-NO_DECL org/bukkit/craftbukkit/v/block/CraftBell#setAttachment/1
 NO_DECL org/bukkit/craftbukkit/v/block/CraftBlock#fluidTick/0
-NO_DECL org/bukkit/craftbukkit/v/block/CraftBlockState#isSnapshot/0
-NO_DECL org/bukkit/craftbukkit/v/block/CraftChiseledBookshelf#getMaximumOccupiedSlots/0
-NO_DECL org/bukkit/craftbukkit/v/block/CraftChiseledBookshelf#getOccupiedSlots/0
-NO_DECL org/bukkit/craftbukkit/v/block/CraftChiseledBookshelf#isSlotOccupied/1
-NO_DECL org/bukkit/craftbukkit/v/block/CraftChiseledBookshelf#setSlotOccupied/2
-NO_DECL org/bukkit/craftbukkit/v/block/CraftCommandBlock#isConditional/0
-NO_DECL org/bukkit/craftbukkit/v/block/CraftCommandBlock#setConditional/1
-NO_DECL org/bukkit/craftbukkit/v/block/CraftComparator#getMode/0
-NO_DECL org/bukkit/craftbukkit/v/block/CraftComparator#setMode/1
-NO_DECL org/bukkit/craftbukkit/v/block/CraftDaylightDetector#isInverted/0
-NO_DECL org/bukkit/craftbukkit/v/block/CraftDaylightDetector#setInverted/1
-NO_DECL org/bukkit/craftbukkit/v/block/CraftDispenser#isTriggered/0
-NO_DECL org/bukkit/craftbukkit/v/block/CraftDispenser#setTriggered/1
 NO_DECL org/bukkit/craftbukkit/v/block/CraftHopper#getTransferCooldown/0
-NO_DECL org/bukkit/craftbukkit/v/block/CraftHopper#isEnabled/0
-NO_DECL org/bukkit/craftbukkit/v/block/CraftHopper#setEnabled/1
 NO_DECL org/bukkit/craftbukkit/v/block/CraftHopper#setTransferCooldown/1
-NO_DECL org/bukkit/craftbukkit/v/block/CraftJigsaw#getOrientation/0
-NO_DECL org/bukkit/craftbukkit/v/block/CraftJigsaw#setOrientation/1
-NO_DECL org/bukkit/craftbukkit/v/block/CraftLectern#hasBook/0
-NO_DECL org/bukkit/craftbukkit/v/block/CraftSculkCatalyst#isBloom/0
-NO_DECL org/bukkit/craftbukkit/v/block/CraftSculkCatalyst#setBloom/1
-NO_DECL org/bukkit/craftbukkit/v/block/CraftSculkSensor#getPhase/0
-NO_DECL org/bukkit/craftbukkit/v/block/CraftSculkSensor#setPhase/1
-NO_DECL org/bukkit/craftbukkit/v/block/CraftSculkShrieker#isCanSummon/0
-NO_DECL org/bukkit/craftbukkit/v/block/CraftSculkShrieker#isShrieking/0
-NO_DECL org/bukkit/craftbukkit/v/block/CraftSculkShrieker#setCanSummon/1
-NO_DECL org/bukkit/craftbukkit/v/block/CraftSculkShrieker#setShrieking/1
 NO_DECL org/bukkit/craftbukkit/v/block/CraftSign#getAllowedEditorUniqueId/0
-NO_DECL org/bukkit/craftbukkit/v/block/CraftSign#line/1
-NO_DECL org/bukkit/craftbukkit/v/block/CraftSign#line/2
 NO_DECL org/bukkit/craftbukkit/v/block/CraftSign#setAllowedEditorUniqueId/1
-NO_DECL org/bukkit/craftbukkit/v/block/CraftStructureBlock#getMode/0
-NO_DECL org/bukkit/craftbukkit/v/block/CraftStructureBlock#setMode/1
 NO_DECL org/bukkit/craftbukkit/v/block/data/CraftBlockData#getCollisionShape/1
 NO_DECL org/bukkit/craftbukkit/v/block/impl/CraftPinkPetals#getMinimumFlowerAmount/0
 NO_DECL org/bukkit/craftbukkit/v/entity/CraftEntity#broadcastHurtAnimation/1
-NO_DECL org/bukkit/craftbukkit/v/entity/CraftEntity#hasNoPhysics/0
-NO_DECL org/bukkit/craftbukkit/v/entity/CraftEntity#isInvisible/0
-NO_DECL org/bukkit/craftbukkit/v/entity/CraftEntity#setInvisible/1
-NO_DECL org/bukkit/craftbukkit/v/entity/CraftEntity#setNoPhysics/1
 NO_DECL org/bukkit/craftbukkit/v/entity/CraftEntity#teleportAsync/3
 NO_DECL org/bukkit/craftbukkit/v/entity/CraftExperienceOrb#getCount/0
 NO_DECL org/bukkit/craftbukkit/v/entity/CraftExperienceOrb#setCount/1
@@ -106,16 +71,6 @@ NO_DECL org/bukkit/craftbukkit/v/entity/CraftPlayer#setResourcePack/5
 NO_DECL org/bukkit/craftbukkit/v/entity/CraftWither#canChangeDimensions/0
 NO_DECL org/bukkit/craftbukkit/v/inventory/trim/CraftTrimMaterial#description/0
 NO_DECL org/bukkit/craftbukkit/v/inventory/trim/CraftTrimPattern#description/0
-NO_DECL org/bukkit/craftbukkit/v/persistence/CraftPersistentDataContainer#readFromBytes/2
-NO_DECL org/bukkit/craftbukkit/v/scoreboard/CraftScoreboard#getEntityTeam/1
-NO_DECL org/bukkit/craftbukkit/v/scoreboard/CraftScoreboard#getScoresFor/1
-NO_DECL org/bukkit/craftbukkit/v/scoreboard/CraftScoreboard#resetScoresFor/1
-NO_DECL org/bukkit/craftbukkit/v/scoreboard/CraftTeam#addEntity/1
-NO_DECL org/bukkit/craftbukkit/v/scoreboard/CraftTeam#addEntries/1
-NO_DECL org/bukkit/craftbukkit/v/scoreboard/CraftTeam#hasEntity/1
-NO_DECL org/bukkit/craftbukkit/v/scoreboard/CraftTeam#removeEntities/1
-NO_DECL org/bukkit/craftbukkit/v/scoreboard/CraftTeam#removeEntity/1
-NO_DECL org/bukkit/craftbukkit/v/scoreboard/CraftTeam#removeEntries/1
 
 # ---- NO_IMPL (32) ----
 NO_IMPL org/bukkit/Server#getRegionScheduler/0

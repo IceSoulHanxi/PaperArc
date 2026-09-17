@@ -16,4 +16,11 @@ public interface SignIfaceMixin {
 
     @Unique
     public abstract org.bukkit.block.sign.Side getInteractableSideFor(double p0, double p1);
+    // 实现体在 CraftSignApiMixin（转调 getSide(FRONT).line(...)），接口上缺声明（A4-1 NO_DECL）。
+    @Unique
+    public abstract net.kyori.adventure.text.Component line(int p0);
+
+    @Unique
+    public abstract void line(int p0, net.kyori.adventure.text.Component p1);
+
 }
