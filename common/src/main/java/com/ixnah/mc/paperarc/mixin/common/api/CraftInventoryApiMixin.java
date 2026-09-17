@@ -111,6 +111,14 @@ public abstract class CraftInventoryApiMixin {
                     this.setItem(first, itemStack);
                     toDelete = 0;
                 }
+
+                // CraftInventory#removeItem 的循环终止条件，移植时漏掉了：
+                // 少了这一行，扣完最后一个（toDelete 归 0）后 firstAnySlot 仍能找到
+                // 同类物品，amount <= 0 恒不成立，else 分支把数量原样写回 → 死循环，
+                // 主线程卡死直到 watchdog "A single server tick took 60.00 seconds" 杀进程。
+                if (toDelete <= 0) {
+                    break;
+                }
             }
         }
 
