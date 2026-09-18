@@ -55,4 +55,13 @@ public abstract class CraftPotionEffectTypeApiMixin {
             default -> PotionEffectType.Category.NEUTRAL;
         };
     }
+
+    /**
+     * paper 的 {@code Translatable#translationKey()}；运行时 CraftPotionEffectType
+     * 只有 spigot 名字的 {@code getTranslationKey()}，两边取的都是 NMS 的 descriptionId。
+     */
+    @Unique
+    public String translationKey() {
+        return this.getHandle().getDescriptionId();
+    }
 }

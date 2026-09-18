@@ -60,4 +60,25 @@ public abstract class EnchantmentIfaceMixin {
 
     @Unique
     public abstract java.lang.String translationKey();
+
+    /**
+     * paper 把它写成了具体方法（按 {@code getActiveSlotGroups()} 过滤
+     * {@code EquipmentSlot.values()}），这里同样写具体实现，不需要再落一层 Craft 实现。
+     */
+    @Unique
+    public java.util.Set<org.bukkit.inventory.EquipmentSlot> getActiveSlots() {
+        java.util.Set<org.bukkit.inventory.EquipmentSlotGroup> groups =
+                ((org.bukkit.enchantments.Enchantment) (Object) this).getActiveSlotGroups();
+        java.util.Set<org.bukkit.inventory.EquipmentSlot> out =
+                new java.util.LinkedHashSet<>();
+        for (org.bukkit.inventory.EquipmentSlot slot : org.bukkit.inventory.EquipmentSlot.values()) {
+            for (org.bukkit.inventory.EquipmentSlotGroup group : groups) {
+                if (group.test(slot)) {
+                    out.add(slot);
+                    break;
+                }
+            }
+        }
+        return out;
+    }
 }

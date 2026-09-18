@@ -19,4 +19,8 @@ public abstract class PotionEffectTypeIfaceMixin {
 
     @Unique
     public abstract org.bukkit.potion.PotionEffectType.Category getEffectCategory();
+
+    /** paper 的 Translatable 抽象方法名（运行时 spigot-api 叫 getTranslationKey）。 */
+    @Unique
+    public abstract java.lang.String translationKey();
 }
