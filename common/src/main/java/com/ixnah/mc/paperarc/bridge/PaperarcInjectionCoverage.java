@@ -49,6 +49,10 @@ public final class PaperarcInjectionCoverage {
             net.minecraft.world.level.block.entity.CampfireBlockEntity.class,
             net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity.class,
             net.minecraft.server.PlayerAdvancements.class,
+            // B8 批 3c：事件字段 + 触发点消费
+            net.minecraft.world.entity.item.ItemEntity.class,
+            net.minecraft.world.entity.Leashable.class,
+            net.minecraft.network.protocol.game.ClientboundOpenScreenPacket.class,
     };
 
     /** CraftBukkit 侧：包名里的 {@code v} 段由构建期任务改成 {@code v1_21_R1}。 */
@@ -101,6 +105,13 @@ public final class PaperarcInjectionCoverage {
             org.bukkit.event.vehicle.VehicleBlockCollisionEvent.class,
             org.bukkit.event.player.PlayerAdvancementDoneEvent.class,
             org.bukkit.event.entity.EntityDamageByEntityEvent.class,
+            // B8 批 3c
+            org.bukkit.event.inventory.FurnaceBurnEvent.class,
+            org.bukkit.event.player.PlayerItemConsumeEvent.class,
+            org.bukkit.event.player.PlayerPickupItemEvent.class,
+            org.bukkit.event.inventory.InventoryOpenEvent.class,
+            org.bukkit.event.entity.EntityUnleashEvent.class,
+            org.bukkit.event.entity.EntityShootBowEvent.class,
             // Y-5 补了枚举常量的目标枚举（<clinit> TAIL 注入；不显式加载就验不到）
             org.bukkit.PortalType.class,
             org.bukkit.Fluid.class,

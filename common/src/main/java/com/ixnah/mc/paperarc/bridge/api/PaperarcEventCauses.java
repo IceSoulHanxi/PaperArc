@@ -326,4 +326,111 @@ public final class PaperarcEventCauses {
     public static void closeAdvancementBroadcast() {
         ADVANCEMENT_BROADCASTING.remove();
     }
+
+    // ---- Y-2 批 3c：事件字段 + 触发点消费（"最近一次事件"通道）----
+    //
+    // 这一批的方向与上面相反：不是把上下文压给事件，而是把**事件对象**留给触发点，
+    // 让触发点读回插件可能改过的值。事件都由 Arclight 在它自己的注入器 handler 里构造
+    // （方法名带加载器相关随机段，选不了），只能靠事件构造器自己登记。
+
+    private static final ThreadLocal<org.bukkit.event.inventory.FurnaceBurnEvent> LAST_FURNACE_BURN =
+            new ThreadLocal<>();
+    private static final ThreadLocal<org.bukkit.event.player.PlayerItemConsumeEvent> LAST_ITEM_CONSUME =
+            new ThreadLocal<>();
+    private static final ThreadLocal<org.bukkit.event.player.PlayerPickupItemEvent> LAST_PICKUP =
+            new ThreadLocal<>();
+    private static final ThreadLocal<org.bukkit.event.inventory.InventoryOpenEvent> LAST_INVENTORY_OPEN =
+            new ThreadLocal<>();
+    private static final ThreadLocal<org.bukkit.event.entity.EntityUnleashEvent> LAST_UNLEASH =
+            new ThreadLocal<>();
+    private static final ThreadLocal<Boolean> UNLEASH_DROP_LEASH = new ThreadLocal<>();
+    private static final ThreadLocal<Integer> PICKUP_ORIGINAL_COUNT = new ThreadLocal<>();
+
+    public static void rememberFurnaceBurnEvent(org.bukkit.event.inventory.FurnaceBurnEvent event) {
+        LAST_FURNACE_BURN.set(event);
+    }
+
+    public static org.bukkit.event.inventory.FurnaceBurnEvent takeFurnaceBurnEvent() {
+        org.bukkit.event.inventory.FurnaceBurnEvent event = LAST_FURNACE_BURN.get();
+        LAST_FURNACE_BURN.remove();
+        return event;
+    }
+
+    public static void popFurnaceBurnEvent() {
+        LAST_FURNACE_BURN.remove();
+    }
+
+    public static void rememberItemConsumeEvent(org.bukkit.event.player.PlayerItemConsumeEvent event) {
+        LAST_ITEM_CONSUME.set(event);
+    }
+
+    public static org.bukkit.event.player.PlayerItemConsumeEvent takeItemConsumeEvent() {
+        org.bukkit.event.player.PlayerItemConsumeEvent event = LAST_ITEM_CONSUME.get();
+        LAST_ITEM_CONSUME.remove();
+        return event;
+    }
+
+    public static void popItemConsumeEvent() {
+        LAST_ITEM_CONSUME.remove();
+    }
+
+    public static void rememberPickupEvent(org.bukkit.event.player.PlayerPickupItemEvent event) {
+        LAST_PICKUP.set(event);
+    }
+
+    public static org.bukkit.event.player.PlayerPickupItemEvent pickupEvent() {
+        return LAST_PICKUP.get();
+    }
+
+    public static void popPickupEvent() {
+        LAST_PICKUP.remove();
+        PICKUP_ORIGINAL_COUNT.remove();
+    }
+
+    /** 拾取前的原始堆叠数：paper 传给 {@code Player#take} 的那个数，在 HEAD 取。 */
+    public static void pushPickupOriginalCount(int count) {
+        PICKUP_ORIGINAL_COUNT.set(count);
+    }
+
+    public static int pickupOriginalCount() {
+        Integer count = PICKUP_ORIGINAL_COUNT.get();
+        return count == null ? 1 : count;
+    }
+
+    public static void rememberInventoryOpenEvent(org.bukkit.event.inventory.InventoryOpenEvent event) {
+        LAST_INVENTORY_OPEN.set(event);
+    }
+
+    public static org.bukkit.event.inventory.InventoryOpenEvent takeInventoryOpenEvent() {
+        org.bukkit.event.inventory.InventoryOpenEvent event = LAST_INVENTORY_OPEN.get();
+        LAST_INVENTORY_OPEN.remove();
+        return event;
+    }
+
+    public static void rememberUnleashEvent(org.bukkit.event.entity.EntityUnleashEvent event) {
+        LAST_UNLEASH.set(event);
+    }
+
+    public static org.bukkit.event.entity.EntityUnleashEvent unleashEvent() {
+        return LAST_UNLEASH.get();
+    }
+
+    public static void popUnleashEvent() {
+        LAST_UNLEASH.remove();
+    }
+
+    /**
+     * {@code EntityUnleashEvent#isDropLeash()} 的默认值。paper 在各调用点传字面量：
+     * 多数是 {@code true}，换维度是 {@code false}，玩家解绳是 {@code !instabuild}。
+     * 默认按多数取 {@code true}。
+     */
+    public static void pushUnleashDropLeash(boolean dropLeash) {
+        UNLEASH_DROP_LEASH.set(dropLeash);
+    }
+
+    public static boolean takeUnleashDropLeash() {
+        Boolean dropLeash = UNLEASH_DROP_LEASH.get();
+        UNLEASH_DROP_LEASH.remove();
+        return dropLeash == null || dropLeash;
+    }
 }
