@@ -1,9 +1,13 @@
 package com.ixnah.mc.paperarc.mixin.common.network;
 
 import com.ixnah.mc.paperarc.bridge.ConnectionBridge;
+import io.netty.channel.Channel;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import net.minecraft.network.Connection;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 /**
@@ -16,6 +20,9 @@ import org.spongepowered.asm.mixin.Unique;
  */
 @Mixin(Connection.class)
 public abstract class ConnectionFieldsMixin implements ConnectionBridge {
+
+    @Shadow
+    private Channel channel;
 
     @Unique
     public int protocolVersion; // Paper
@@ -41,5 +48,15 @@ public abstract class ConnectionFieldsMixin implements ConnectionBridge {
     @Override
     public void paper$setVirtualHost(InetSocketAddress virtualHost) {
         this.virtualHost = virtualHost;
+    }
+
+    @Override
+    public InetAddress paper$getRawAddress() {
+        Channel ch = this.channel;
+        if (ch != null && ch.remoteAddress() instanceof InetSocketAddress remote) {
+            return remote.getAddress();
+        }
+        SocketAddress fallback = ((Connection) (Object) this).getRemoteAddress();
+        return fallback instanceof InetSocketAddress inet ? inet.getAddress() : null;
     }
 }

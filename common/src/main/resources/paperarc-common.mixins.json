@@ -52,6 +52,7 @@
     "entity.ItemEntityFlyAtPlayerMixin",
     "entity.LeashableUnleashMixin",
     "player.ClientboundOpenScreenTitleMixin",
+    "server.ServerLoginPreLoginContextMixin",
     "player.ServerPlayerGameModeBlockFaceMixin",
     "entity.ExperienceOrbExpSourceMixin",
     "item.BlockItemCanBuildHandMixin",

@@ -433,4 +433,42 @@ public final class PaperarcEventCauses {
         UNLEASH_DROP_LEASH.remove();
         return dropLeash == null || dropLeash;
     }
+
+    // ---- Y-2 批 3d：AsyncPlayerPreLoginEvent 的三样附加上下文 ----
+
+    private static final ThreadLocal<String> PRE_LOGIN_HOSTNAME = new ThreadLocal<>();
+    private static final ThreadLocal<java.net.InetAddress> PRE_LOGIN_RAW_ADDRESS = new ThreadLocal<>();
+    private static final ThreadLocal<com.destroystokyo.paper.profile.PlayerProfile> PRE_LOGIN_PROFILE =
+            new ThreadLocal<>();
+
+    public static void pushPreLoginContext(String hostname, java.net.InetAddress rawAddress,
+                                           com.destroystokyo.paper.profile.PlayerProfile profile) {
+        PRE_LOGIN_HOSTNAME.set(hostname);
+        PRE_LOGIN_RAW_ADDRESS.set(rawAddress);
+        PRE_LOGIN_PROFILE.set(profile);
+    }
+
+    public static String takePreLoginHostname() {
+        String hostname = PRE_LOGIN_HOSTNAME.get();
+        PRE_LOGIN_HOSTNAME.remove();
+        return hostname;
+    }
+
+    public static java.net.InetAddress takePreLoginRawAddress() {
+        java.net.InetAddress address = PRE_LOGIN_RAW_ADDRESS.get();
+        PRE_LOGIN_RAW_ADDRESS.remove();
+        return address;
+    }
+
+    public static com.destroystokyo.paper.profile.PlayerProfile takePreLoginProfile() {
+        com.destroystokyo.paper.profile.PlayerProfile profile = PRE_LOGIN_PROFILE.get();
+        PRE_LOGIN_PROFILE.remove();
+        return profile;
+    }
+
+    public static void popPreLoginContext() {
+        PRE_LOGIN_HOSTNAME.remove();
+        PRE_LOGIN_RAW_ADDRESS.remove();
+        PRE_LOGIN_PROFILE.remove();
+    }
 }

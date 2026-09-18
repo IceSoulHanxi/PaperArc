@@ -53,6 +53,8 @@ public final class PaperarcInjectionCoverage {
             net.minecraft.world.entity.item.ItemEntity.class,
             net.minecraft.world.entity.Leashable.class,
             net.minecraft.network.protocol.game.ClientboundOpenScreenPacket.class,
+            // B8 批 3d：登录路径（只在玩家登录时才加载，不显式拉起就验不到锚点）
+            net.minecraft.server.network.ServerLoginPacketListenerImpl.class,
     };
 
     /** CraftBukkit 侧：包名里的 {@code v} 段由构建期任务改成 {@code v1_21_R1}。 */
@@ -112,6 +114,7 @@ public final class PaperarcInjectionCoverage {
             org.bukkit.event.inventory.InventoryOpenEvent.class,
             org.bukkit.event.entity.EntityUnleashEvent.class,
             org.bukkit.event.entity.EntityShootBowEvent.class,
+            org.bukkit.event.player.AsyncPlayerPreLoginEvent.class,
             // Y-5 补了枚举常量的目标枚举（<clinit> TAIL 注入；不显式加载就验不到）
             org.bukkit.PortalType.class,
             org.bukkit.Fluid.class,
