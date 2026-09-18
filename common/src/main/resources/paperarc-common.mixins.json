@@ -7,6 +7,7 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "api.AbstractProjectileApiMixin",
+    "api.EffectEnumMixin",
     "api.BedEnterResultEnumMixin",
     "api.BoatStatusEnumMixin",
     "api.EntityRemoveCauseEnumMixin",

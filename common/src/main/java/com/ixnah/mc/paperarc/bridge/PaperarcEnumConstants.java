@@ -43,7 +43,17 @@ public final class PaperarcEnumConstants {
      * （插件读到 null 比 {@code NoSuchFieldError} 更难查）。</p>
      */
     public static <T> T add(Class<T> type, String name) {
-        T added = EnumHelper.addEnum(type, name, Collections.emptyList(), Collections.emptyList());
+        return add(type, name, Collections.emptyList(), Collections.emptyList());
+    }
+
+    /**
+     * 带构造形参的版本：运行时枚举的构造器不是无参时用（{@code Effect(int, Effect.Type)}、
+     * {@code EntityEffect(int, Class)}…）。形参类型必须按**运行时那个枚举**的构造器写，
+     * 不是 paper-api 的 —— 两边可能不一样（如 `DisplaySlot` 运行时是无参、paper-api 带 `String`）。
+     */
+    public static <T> T add(Class<T> type, String name,
+                            java.util.List<Class<?>> paramTypes, java.util.List<Object> paramValues) {
+        T added = EnumHelper.addEnum(type, name, paramTypes, paramValues);
         if (added == null) {
             throw new IllegalStateException("补枚举常量失败：" + type.getName() + "." + name);
         }

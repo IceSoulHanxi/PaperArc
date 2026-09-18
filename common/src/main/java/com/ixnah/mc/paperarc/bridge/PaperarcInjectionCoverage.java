@@ -82,6 +82,7 @@ public final class PaperarcInjectionCoverage {
             org.bukkit.event.player.PlayerFishEvent.State.class,
             org.bukkit.MinecraftExperimental.Requires.class,
             org.bukkit.scoreboard.DisplaySlot.class,
+            org.bukkit.Effect.class,
     };
 
     /** Arclight 自己的类：编译期只有 {@code src/arclightStub} 的桩，运行时解析到 Arclight 的实现。 */
