@@ -233,4 +233,30 @@ public interface ServerIfaceMixin extends net.kyori.adventure.audience.Forwardin
         Server self = (Server) this;
         return self.createExplorerMap(world, location, structureType, mapIcon, 100, true);
     }
+
+    /**
+     * 下面四条是 paper 在 {@code Server} 上写成 default 的重载，运行时一条都没有
+     * （B6-1 的 {@code checkApiDescriptors} 抓出来的：{@code Bukkit} 的同名静态门面
+     * 一直在转发到不存在的方法，插件一调就 NoSuchMethodError）。方法体照抄 paper 的
+     * default 实现（javap -c org/bukkit/Server.class）。
+     */
+    @Unique
+    public default void broadcast(BaseComponent component) {
+        ((Server) this).spigot().broadcast(component);
+    }
+
+    @Unique
+    public default void broadcast(BaseComponent... components) {
+        ((Server) this).spigot().broadcast(components);
+    }
+
+    @Unique
+    public default World getWorld(org.bukkit.NamespacedKey worldKey) {
+        return ((Server) this).getWorld((Key) worldKey);
+    }
+
+    @Unique
+    public default boolean isOwnedByCurrentRegion(Block block) {
+        return ((Server) this).isOwnedByCurrentRegion(block.getLocation());
+    }
 }
