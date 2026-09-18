@@ -141,6 +141,7 @@
     "api.CraftWorldInfoApiMixin",
     "api.CraftZombieApiMixin",
     "api.EnchantmentMenuAccessorMixin",
+    "api.EquipmentSlotApiMixin",
     "api.EyeOfEnderAccessorMixin",
     "api.HopperBlockEntityInvokerMixin",
     "api.JavaPluginApiMixin",
