@@ -159,6 +159,7 @@
     "api.DifficultyApiMixin",
     "api.DisplaySlotApiMixin",
     "api.DoubleChestApiMixin",
+    "api.DisplaySlotEnumMixin",
     "api.EffectApiMixin",
     "api.EnchantmentApiMixin",
     "api.EnchantmentMenuAccessorMixin",
