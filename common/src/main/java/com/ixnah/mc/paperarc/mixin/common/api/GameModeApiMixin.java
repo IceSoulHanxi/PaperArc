@@ -12,7 +12,7 @@ import java.util.Locale;
  * mixin 不改构造器，直接现算，取值完全一致。
  */
 @Mixin(GameMode.class)
-public abstract class GameModeApiMixin {
+public abstract class GameModeApiMixin implements net.kyori.adventure.translation.Translatable {
 
     @Unique
     private GameMode paperarc$self() {

@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.Unique;
  * paper 读的是私有字段 {@code key}，这里换成公开的 {@code getKey()}。
  */
 @Mixin(EntityType.class)
-public abstract class EntityTypeApiMixin {
+public abstract class EntityTypeApiMixin implements net.kyori.adventure.translation.Translatable {
 
     @Unique
     private EntityType paperarc$self() {

@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.Unique;
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).
  */
 @Mixin(targets = "org.bukkit.enchantments.Enchantment", remap = false)
-public abstract class EnchantmentIfaceMixin {
+public abstract class EnchantmentIfaceMixin implements net.kyori.adventure.translation.Translatable {
 
     @Unique
     public abstract net.kyori.adventure.text.Component description();

@@ -49,7 +49,7 @@ import java.util.function.UnaryOperator;
  * 阶段做（B5，见 docs/mixin-conventions.md 的「@Widen」一节）。</p>
  */
 @Mixin(ItemStack.class)
-public abstract class ItemStackApiMixin {
+public abstract class ItemStackApiMixin implements net.kyori.adventure.translation.Translatable {
 
     @Unique
     @Widen(because = "paper-api: public static ItemStack of(...)")

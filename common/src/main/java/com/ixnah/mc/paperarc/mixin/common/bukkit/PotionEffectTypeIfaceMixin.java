@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Unique;
  * （唯一的运行时子类 CraftPotionEffectType）。
  */
 @Mixin(targets = "org.bukkit.potion.PotionEffectType", remap = false)
-public abstract class PotionEffectTypeIfaceMixin {
+public abstract class PotionEffectTypeIfaceMixin implements net.kyori.adventure.translation.Translatable {
 
     @Unique
     public abstract java.util.Map<org.bukkit.attribute.Attribute, org.bukkit.attribute.AttributeModifier> getEffectAttributes();

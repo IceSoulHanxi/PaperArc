@@ -23,7 +23,7 @@ import java.util.Objects;
  * 三个常量比较（AIR / CAVE_AIR / VOID_AIR，与 paper 的三个 case 一一对应）。</p>
  */
 @Mixin(Material.class)
-public abstract class MaterialApiMixin {
+public abstract class MaterialApiMixin implements net.kyori.adventure.translation.Translatable {
 
     @Unique
     private Material paperarc$self() {

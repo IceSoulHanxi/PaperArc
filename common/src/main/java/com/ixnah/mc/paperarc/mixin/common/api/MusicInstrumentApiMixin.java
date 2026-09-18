@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.Unique;
 
 /** paper 加在 {@code MusicInstrument} 上的 {@code translationKey()}（checklist §1.10 am）。 */
 @Mixin(MusicInstrument.class)
-public abstract class MusicInstrumentApiMixin {
+public abstract class MusicInstrumentApiMixin implements net.kyori.adventure.translation.Translatable {
 
     @Unique
     public String translationKey() {
