@@ -1,8 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
+import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import net.minecraft.world.entity.animal.horse.Llama;
-import org.bukkit.craftbukkit.v.CraftServer;
-import org.bukkit.craftbukkit.v.entity.CraftEntity;
 import org.bukkit.craftbukkit.v.entity.CraftLlama;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -22,11 +21,6 @@ public abstract class CraftLlamaApiMixin {
     @Shadow
     public abstract Llama getHandle();
 
-    @Unique
-    private CraftServer paperarc$server() {
-        return (CraftServer) ((CraftEntity) (Object) this).getServer();
-    }
-
     // Paper start - Missing Entity API
     @Unique
     public boolean inCaravan() {
@@ -36,7 +30,7 @@ public abstract class CraftLlamaApiMixin {
     @Unique
     public org.bukkit.entity.Llama getCaravanHead() {
         Llama head = this.getHandle().getCaravanHead();
-        return head == null ? null : (org.bukkit.entity.Llama) CraftEntity.getEntity(paperarc$server(), head);
+        return head == null ? null : PaperArcBridge.bukkitEntity(head);
     }
 
     @Unique
@@ -47,7 +41,7 @@ public abstract class CraftLlamaApiMixin {
     @Unique
     public org.bukkit.entity.Llama getCaravanTail() {
         Llama tail = this.getHandle().caravanTail;
-        return tail == null ? null : (org.bukkit.entity.Llama) CraftEntity.getEntity(paperarc$server(), tail);
+        return tail == null ? null : PaperArcBridge.bukkitEntity(tail);
     }
 
     @Unique

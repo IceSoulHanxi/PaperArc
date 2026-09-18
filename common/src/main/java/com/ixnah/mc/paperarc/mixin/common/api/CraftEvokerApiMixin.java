@@ -1,9 +1,8 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
+import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.entity.monster.Evoker;
-import org.bukkit.craftbukkit.v.CraftServer;
-import org.bukkit.craftbukkit.v.entity.CraftEntity;
 import org.bukkit.craftbukkit.v.entity.CraftEvoker;
 import org.bukkit.craftbukkit.v.entity.CraftSheep;
 import org.jetbrains.annotations.Nullable;
@@ -46,11 +45,7 @@ public abstract class CraftEvokerApiMixin {
     @Unique
     @Nullable
     private org.bukkit.entity.Sheep paperarc$wrap(Sheep sheep) {
-        if (sheep == null) {
-            return null;
-        }
-        CraftServer server = (CraftServer) ((CraftEntity) (Object) this).getServer();
-        return (org.bukkit.entity.Sheep) CraftEntity.getEntity(server, sheep);
+        return sheep == null ? null : PaperArcBridge.<org.bukkit.entity.Sheep>bukkitEntity(sheep);
     }
 
     @Unique
