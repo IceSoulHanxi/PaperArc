@@ -133,6 +133,19 @@ public final class PaperarcDeathEvents {
         return kept;
     }
 
+    /**
+     * B8 复核（第二条路，仍不通，但原因比 B7 更硬）：任务书建议改锚
+     * {@code CraftEventFactory#callPlayerDeathEvent} 的 RETURN。Arclight 根本不走
+     * CraftBukkit 的那个方法，等价位置是 {@code ArclightEventFactory#callPlayerDeathEvent}
+     * —— 我们**早就锚在那里**（{@code server.ArclightEventFactoryDeathMixin}），
+     * 掉落列表与经验都够得着。真正的障碍换成了**时序**：`javap -c` 1.21.1 的
+     * {@code ServerPlayer#die} 显示 {@code ClientboundPlayerCombatKillPacket}（offset 59）
+     * 与死亡消息广播（offset 93）都在 {@code dropAllDeathLoot}（offset 209）之前，
+     * 而事件是 {@code dropAllDeathLoot} 里的 LivingDropsEvent 才派发的。
+     * 在那一刻"取消"，能做到的只有"清掉落 + 回血"，客户端照样停在死亡屏、
+     * 死亡消息也已经播出去 —— 那是"人没死但东西没了、还卡着死亡屏"，比不做更坏。
+     * 所以维持 B7 的选择：只打一次 WARNING，掉落与经验按未取消处理。
+     */
     private static volatile boolean warnedPlayerDeathCancel;
 
     private static void warnPlayerDeathCancel() {
@@ -141,9 +154,11 @@ public final class PaperarcDeathEvents {
         }
         warnedPlayerDeathCancel = true;
         com.ixnah.mc.paperarc.PaperArcPlatform.logger().warning(
-                "PlayerDeathEvent#setCancelled(true) 在 Arclight 上无效：ServerPlayer#die 的后半段由 Arclight 的 "
-                        + "@Decorate 接管，注入锚不住（见 docs/gaps.md §3.1 死亡一族）。本次取消被忽略，"
-                        + "掉落与经验按未取消处理。");
+                "PlayerDeathEvent#setCancelled(true) 在 Arclight 上无效：事件是由 LivingDropsEvent → "
+                        + "ArclightEventFactory#callPlayerDeathEvent 派发的，而 ServerPlayer#die 里的死亡包与 "
+                        + "死亡广播（offset 59 / 93）远早于 dropAllDeathLoot（offset 209）—— 到派发时人已经"
+                        + "\"死给客户端看过了\"，此时回血只会让玩家卡在死亡屏。本次取消被忽略，"
+                        + "掉落与经验按未取消处理（见 docs/gaps.md §3.3）。");
     }
 
     /** Paper {@code CraftEventFactory#playDeathSound}：音效从触发点挪进事件之后，才允许插件改。 */
