@@ -197,3 +197,8 @@ accessible field net/minecraft/world/entity/player/Player hurtDir F
 # SculkSensor 的 VibrationUser 内部类是 protected：listener-range 覆盖要挂 mixin
 accessible class net/minecraft/world/level/block/entity/SculkSensorBlockEntity$VibrationUser
 accessible class net/minecraft/world/level/block/entity/CalibratedSculkSensorBlockEntity$VibrationUser
+
+# LivingEntity: 可取消死亡事件（Paper Improve-death-events）要读的死亡音效三件套与 dead 标志
+accessible method net/minecraft/world/entity/LivingEntity getDeathSound ()Lnet/minecraft/sounds/SoundEvent;
+accessible method net/minecraft/world/entity/LivingEntity getSoundVolume ()F
+accessible field net/minecraft/world/entity/LivingEntity dead Z

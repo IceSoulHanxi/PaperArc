@@ -11,9 +11,10 @@ import org.spongepowered.asm.mixin.Unique;
  * paper 加在 {@code PlayerDeathEvent} 上的 {@code getPlayer()} 与 adventure 版
  * {@code deathMessage()}（checklist §1.10 am，第 ④ 批）。
  *
- * <p>没补 {@code getItemsToKeep()} 与 {@code shouldDropExperience()} 一对：
- * 它们要 NMS 侧的掉落流程真的读这份状态才有意义，只加字段等于静默失效，
- * 见 docs/gaps.md。</p>
+ * <p>B7/Y-2 批 1 补上 {@code getItemsToKeep()} 与 {@code shouldDropExperience()} 一对，
+ * 两者都有真正的消费方：{@code bridge/api/PaperarcDeathEvents#afterFired} 在事件派发之后
+ * 把不掉的物品从掉落列表里摘出来（重生时由 {@code player.ServerPlayerKeptItemsMixin} 还回去）、
+ * 把 {@code shouldDropExperience()==false} 落成 {@code setDroppedExp(0)}。</p>
  */
 @Mixin(PlayerDeathEvent.class)
 public abstract class PlayerDeathEventApiMixin {
@@ -38,5 +39,26 @@ public abstract class PlayerDeathEventApiMixin {
     public void deathMessage(Component deathMessage) {
         this.paperarc$self().setDeathMessage(
                 deathMessage == null ? null : LegacyComponentSerializer.legacySection().serialize(deathMessage));
+    }
+
+    @Unique
+    private final java.util.List<org.bukkit.inventory.ItemStack> paperarc$itemsToKeep = new java.util.ArrayList<>();
+
+    @Unique
+    private boolean paperarc$shouldDropExperience = true;
+
+    @Unique
+    public java.util.List<org.bukkit.inventory.ItemStack> getItemsToKeep() {
+        return this.paperarc$itemsToKeep;
+    }
+
+    @Unique
+    public boolean shouldDropExperience() {
+        return this.paperarc$shouldDropExperience;
+    }
+
+    @Unique
+    public void setShouldDropExperience(boolean dropExperience) {
+        this.paperarc$shouldDropExperience = dropExperience;
     }
 }
