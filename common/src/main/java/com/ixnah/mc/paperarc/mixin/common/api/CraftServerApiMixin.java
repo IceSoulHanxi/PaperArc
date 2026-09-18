@@ -532,13 +532,11 @@ public abstract class CraftServerApiMixin {
      */
     @Unique
     public World getWorld(org.bukkit.NamespacedKey worldKey) {
-        // Vanilla worlds live under the minecraft namespace; non-minecraft
-        // namespaces fall back to a case-insensitive name scan.
-        if ("minecraft".equals(worldKey.getNamespace())) {
-            return ((CraftServer) (Object) this).getWorld(worldKey.getKey());
-        }
+        // 与 Paper 一致：逐个比 World#getKey()。注意那是**维度的 ResourceKey**
+        // （主世界是 minecraft:overworld），不是世界文件夹名 —— 原来按名字查恒返回 null
+        // （A6/X-2 探针 P15a 实测 Bukkit.getWorld(world.getKey()) == null）。
         for (World world : ((org.bukkit.Server) (Object) this).getWorlds()) {
-            if (world.getName().equalsIgnoreCase(worldKey.getKey())) {
+            if (worldKey.equals(world.getKey())) {
                 return world;
             }
         }

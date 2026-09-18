@@ -356,6 +356,20 @@ public abstract class CraftWorldApiMixin {
                 new Vec3(position.getX(), position.getY(), position.getZ()), context);
     }
 
+    /**
+     * paper-api 1.20.1 的抽象版本（5 个形参）。委托运行时自带的
+     * {@code createExplosion(Location, float, boolean, boolean, Entity)}，语义与 Paper 一致。
+     * 原先只补了 6 参的下版本重载，插件走 5 参就是 {@code AbstractMethodError}
+     * （A6/X-2 探针 P15b 实测）。
+     */
+    @Unique
+    public boolean createExplosion(org.bukkit.entity.Entity source, Location loc, float power,
+            boolean setFire, boolean breakBlocks) {
+        Preconditions.checkArgument(loc != null, "location cannot be null");
+        return ((org.bukkit.World) (Object) this)
+                .createExplosion(loc, power, setFire, breakBlocks, source);
+    }
+
     @Unique
     public boolean createExplosion(org.bukkit.entity.Entity source, Location loc, float power,
             boolean setFire, boolean breakBlocks, boolean excludeSourceFromDamage) {
