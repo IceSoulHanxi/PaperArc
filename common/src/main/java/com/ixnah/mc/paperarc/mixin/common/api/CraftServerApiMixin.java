@@ -522,15 +522,23 @@ public abstract class CraftServerApiMixin {
         return !this.getServer().isStopped();
     }
 
+    /**
+     * 形参必须是 {@code NamespacedKey}：paper-api 的 {@code Server#getWorld} 只有
+     * {@code (String)}/{@code (UUID)}/{@code (NamespacedKey)} 三个重载，原先按
+     * adventure 的 {@code Key} 声明，描述符不一致 —— 插件照 paper-api 编译出的
+     * {@code invokeinterface Server.getWorld(Lorg/bukkit/NamespacedKey;)} 直接
+     * {@code NoSuchMethodError}（A6/X-2 探针 P15a 实测）。两个门禁都按"名字+形参个数"
+     * 匹配，照不到这种同名同元、类型不同的错声明，详见 checklist §1.11。
+     */
     @Unique
-    public World getWorld(net.kyori.adventure.key.Key worldKey) {
+    public World getWorld(org.bukkit.NamespacedKey worldKey) {
         // Vanilla worlds live under the minecraft namespace; non-minecraft
         // namespaces fall back to a case-insensitive name scan.
-        if ("minecraft".equals(worldKey.namespace())) {
-            return ((CraftServer) (Object) this).getWorld(worldKey.value());
+        if ("minecraft".equals(worldKey.getNamespace())) {
+            return ((CraftServer) (Object) this).getWorld(worldKey.getKey());
         }
         for (World world : ((org.bukkit.Server) (Object) this).getWorlds()) {
-            if (world.getName().equalsIgnoreCase(worldKey.value())) {
+            if (world.getName().equalsIgnoreCase(worldKey.getKey())) {
                 return world;
             }
         }

@@ -108,6 +108,10 @@ public interface WorldIfaceMixin extends net.kyori.adventure.audience.Forwarding
     @Unique
     public abstract boolean createExplosion(org.bukkit.entity.Entity p0, org.bukkit.Location p1, float p2, boolean p3, boolean p4, boolean p5);
 
+    /** paper-api 1.20.1 的抽象版本（5 个形参），实现体在 CraftWorldApiMixin。 */
+    @Unique
+    public abstract boolean createExplosion(org.bukkit.entity.Entity p0, org.bukkit.Location p1, float p2, boolean p3, boolean p4);
+
     @Unique
     public abstract void spawnParticle(org.bukkit.Particle p0, java.util.List p1, org.bukkit.entity.Player p2, double p3, double p4, double p5, int p6, double p7, double p8, double p9, double p10, java.lang.Object p11, boolean p12);
 

@@ -27,6 +27,16 @@ public interface RegionAccessorIfaceMixin extends org.bukkit.Keyed {
 
     @Unique
     public abstract boolean hasCollisionsIn(org.bukkit.util.BoundingBox p0);
+    /**
+     * 运行时 {@code CraftRegionAccessor} 上已有这个实现（javap 核对），但
+     * {@code RegionAccessor} 接口上没有 —— 下面那个 default 方法体正是经接口调它的，
+     * 不声明就是 {@code NoSuchMethodError}（A6/X-2 的 check-api-descriptors 抓出）。
+     */
+    @Unique
+    public abstract <T extends org.bukkit.entity.Entity> T spawn(org.bukkit.Location p0, Class<T> p1,
+            org.bukkit.util.Consumer<T> p2,
+            org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason p3) throws IllegalArgumentException;
+
     // ===== A4-4：paper-api 的 default 方法体照搬（运行时接口里一个都没有）=====
 
     @Unique

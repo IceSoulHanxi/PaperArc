@@ -29,7 +29,7 @@ public interface ServerIfaceMixin extends net.kyori.adventure.audience.Forwardin
     public abstract boolean isTickingWorlds();
 
     @Unique
-    public abstract org.bukkit.World getWorld(net.kyori.adventure.key.Key p0);
+    public abstract org.bukkit.World getWorld(org.bukkit.NamespacedKey p0);
 
     @Unique
     public abstract org.bukkit.inventory.ItemStack createExplorerMap(org.bukkit.World p0, org.bukkit.Location p1, org.bukkit.generator.structure.StructureType p2, org.bukkit.map.MapCursor.Type p3, int p4, boolean p5);
@@ -57,6 +57,9 @@ public interface ServerIfaceMixin extends net.kyori.adventure.audience.Forwardin
 
     @Unique
     public abstract org.bukkit.inventory.Inventory createInventory(org.bukkit.inventory.InventoryHolder p0, int p1, net.kyori.adventure.text.Component p2);
+
+    @Unique
+    public abstract org.bukkit.inventory.Inventory createInventory(org.bukkit.inventory.InventoryHolder p0, org.bukkit.event.inventory.InventoryType p1, net.kyori.adventure.text.Component p2);
 
     @Unique
     public abstract org.bukkit.inventory.Merchant createMerchant(net.kyori.adventure.text.Component p0);
@@ -138,6 +141,21 @@ public interface ServerIfaceMixin extends net.kyori.adventure.audience.Forwardin
 
     @Unique
     public abstract boolean isOwnedByCurrentRegion(org.bukkit.entity.Entity p0);
+
+    @Unique
+    public abstract boolean isOwnedByCurrentRegion(org.bukkit.Location p0);
+
+    @Unique
+    public abstract boolean isOwnedByCurrentRegion(org.bukkit.Location p0, int p1);
+
+    @Unique
+    public abstract boolean isOwnedByCurrentRegion(org.bukkit.World p0, int p1, int p2);
+
+    /** paper-api 里就是 default，照搬。 */
+    @Unique
+    public default boolean isOwnedByCurrentRegion(org.bukkit.block.Block block) {
+        return ((org.bukkit.Server) this).isOwnedByCurrentRegion(block.getLocation());
+    }
 
     @Unique
     public abstract boolean isOwnedByCurrentRegion(org.bukkit.World p0, int p1, int p2, int p3);
