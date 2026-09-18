@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Unique;
 
 /**
  * Injects Paper's {@code LivingEntity} supplementary API fields
- * （upwardsMovement / hurtDirection / shieldBlockingDelay）。字段名对齐 Paper，
+ * （upwardsMovement / shieldBlockingDelay / frictionState）。字段名对齐 Paper，
  * 默认值同 Paper：shieldBlockingDelay 取 {@code 5}（vanilla 的
  * {@code getShieldBlockDelay} 常量），其余为 0。
  */
@@ -16,9 +16,6 @@ public abstract class LivingEntityFieldsMixin implements LivingEntityFieldsBridg
 
     @Unique
     public float upwardsMovement; // Paper
-
-    @Unique
-    public float hurtDirection; // Paper
 
     @Unique
     public int shieldBlockingDelay = 5; // Paper
@@ -34,16 +31,6 @@ public abstract class LivingEntityFieldsMixin implements LivingEntityFieldsBridg
     @Override
     public void paper$setUpwardsMovement(float upwardsMovement) {
         this.upwardsMovement = upwardsMovement;
-    }
-
-    @Override
-    public float paper$getHurtDirection() {
-        return this.hurtDirection;
-    }
-
-    @Override
-    public void paper$setHurtDirection(float hurtDirection) {
-        this.hurtDirection = hurtDirection;
     }
 
     @Override

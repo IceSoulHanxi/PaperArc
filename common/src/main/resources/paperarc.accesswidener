@@ -190,3 +190,6 @@ accessible field net/minecraft/world/entity/animal/AbstractSchoolingFish schoolS
 # BannerBlockEntity: private 自定义名（org.bukkit.Nameable on Banner，B3-2）
 accessible field net/minecraft/world/level/block/entity/BannerBlockEntity name Lnet/minecraft/network/chat/Component;
 mutable field net/minecraft/world/level/block/entity/BannerBlockEntity name Lnet/minecraft/network/chat/Component;
+
+# Player.hurtDir: Paper 的 CraftHumanEntity#setHurtDirection 写的就是这个 protected 字段
+accessible field net/minecraft/world/entity/player/Player hurtDir F

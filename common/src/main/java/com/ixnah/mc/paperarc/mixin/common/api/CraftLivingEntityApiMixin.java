@@ -53,10 +53,6 @@ import java.lang.reflect.Method;
 @Mixin(CraftLivingEntity.class)
 public abstract class CraftLivingEntityApiMixin {
 
-    /** Paper 侧补充状态（原 ApiState 副表键 "shieldBlockingDelay"）；null = 未设置，读取时回落默认值。 */
-    @Unique
-    private Integer paperarc$shieldBlockingDelay;
-
     @Shadow
     public abstract LivingEntity getHandle();
 
@@ -176,8 +172,10 @@ public abstract class CraftLivingEntityApiMixin {
 
     @Unique
     public int getShieldBlockingDelay() {
-        // Paper-added state; vanilla NMS has no field -> ApiState side map, default 5.
-        return (this.paperarc$shieldBlockingDelay != null ? this.paperarc$shieldBlockingDelay : (5));
+        // Paper 把这个状态放在 NMS LivingEntity 上（LivingEntityFieldsMixin，默认 5）；
+        // Craft 包装对象不保证唯一，读写都必须走 NMS 侧，否则 set 完再 get 拿不回来。
+        return ((com.ixnah.mc.paperarc.bridge.LivingEntityFieldsBridge) this.getHandle())
+                .paper$getShieldBlockingDelay();
     }
 
     @Unique
@@ -427,8 +425,9 @@ public abstract class CraftLivingEntityApiMixin {
      */
     @Unique
     public void setHurtDirection(float direction) {
-        // vanilla 1.21.1 已无 hurtDirection 存储（旧版字段被移除）→ side-map，默认 0.0f
-        ((com.ixnah.mc.paperarc.bridge.LivingEntityFieldsBridge) this.getHandle()).paper$setHurtDirection(direction);
+        // Paper：非玩家实体没有 hurtDir 存储，CraftLivingEntity 直接抛
+        // （Expose-LivingEntity-hurt-direction.patch）；实现体在 CraftHumanEntity 上。
+        throw new UnsupportedOperationException("Cannot set the hurt direction on a non player");
     }
 
     /**

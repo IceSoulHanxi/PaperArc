@@ -65,10 +65,6 @@ import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 @Mixin(org.bukkit.craftbukkit.v.entity.CraftHumanEntity.class)
 public abstract class CraftHumanEntityApiMixin {
 
-    /** Paper 侧补充状态（原 ApiState 副表键 "hurtDirection"）；null = 未设置，读取时回落默认值。 */
-    @Unique
-    private Float paperarc$hurtDirection;
-
     @Shadow
     public abstract Player getHandle();
 
@@ -208,9 +204,10 @@ public abstract class CraftHumanEntityApiMixin {
 
     @Unique
     public void setHurtDirection(float hurtDirection) {
-        // side-map: 1.21.1 vanilla has no hurtDir storage field on LivingEntity and
-        // Arclight does not carry Paper's re-added field; nothing reads it back yet
-        this.paperarc$hurtDirection = hurtDirection;
+        // Paper 写的是 vanilla 的 Player#hurtDir（protected，由 accesswidener 放开），
+        // CraftLivingEntity#getHurtDirection 读的 getHurtDir() 正是这个字段。
+        // 放在 Craft 包装对象上的字段既读不回来、也会随包装对象丢失。
+        this.getHandle().hurtDir = hurtDirection;
     }
 
     // ------------------------------------------------------------------
