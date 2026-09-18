@@ -23,6 +23,7 @@
     "entity.FallingBlockEntityFieldsMixin",
     "entity.FrogFertilizeMixin",
     "entity.ItemEntityFieldsMixin",
+    "entity.LivingEntityDeathFieldsMixin",
     "entity.LivingEntityShieldBlockingDelayMixin",
     "entity.PandaJumpMixin",
     "entity.PhantomFieldsMixin",

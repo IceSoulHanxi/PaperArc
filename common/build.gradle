@@ -83,11 +83,19 @@ sourceSets {
     arclightStub
 }
 
+// 桩里需要 NMS 类型：直接继承 ForgeGradle 的 minecraft 配置（它不依赖本源码集，不成环）
+configurations {
+    arclightStubCompileOnly.extendsFrom minecraft
+}
+
 dependencies {
     // 桩里的 bridge 接口签名引用 CraftEntity/CraftWorld（v/ 形态），只需 spigot deobf。
     // 不要把 main 的 compileClasspath 整体加进来：main 的 compileOnly 含本源码集的
     // output，会形成任务环。
     arclightStubCompileOnly "io.izzel.arclight.generated:spigot:${rootProject.minecraft_version}:deobf"
+    // A7/Y-2：ArclightEventFactory 的桩签名要用 NMS LivingEntity 与 Bukkit Event/ItemStack。
+    // 只加这两个来源，不要整体引用 sourceSets.main.compileClasspath（它含本源码集的 output，成环）。
+    arclightStubCompileOnly "io.papermc.paper:paper-api:${rootProject.paper_api_version}"
 
     // Minecraft + Forge（1.20.1-47.4.18）
     minecraft "net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}"
