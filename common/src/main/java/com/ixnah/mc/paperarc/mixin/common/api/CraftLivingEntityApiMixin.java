@@ -40,13 +40,7 @@ public abstract class CraftLivingEntityApiMixin {
     // ---- Paper 补充字段（注入 CraftLivingEntity，字段名对齐 Paper patch 无前缀）----
 
     @Unique
-    private int shieldBlockingDelay = 5;
-
-    @Unique
     private float upwardsMovement;
-
-    @Unique
-    private float hurtDirection;
 
 
     @Shadow
@@ -174,8 +168,9 @@ public abstract class CraftLivingEntityApiMixin {
 
     @Unique
     public int getShieldBlockingDelay() {
-        // Paper-added state; vanilla NMS has no field -> injected Craft field, default 5.
-        return this.shieldBlockingDelay;
+        // 状态在 NMS 侧（ShieldBlockingDelayBridge），这样 isBlocking() 才真的用上它
+        return ((com.ixnah.mc.paperarc.bridge.ShieldBlockingDelayBridge) this.getHandle())
+                .paperarc$getShieldBlockingDelay();
     }
 
     @Unique
@@ -440,11 +435,16 @@ public abstract class CraftLivingEntityApiMixin {
 
     /**
      * 17. void setHurtDirection(float)
+     *
+     * <p>Paper 的 {@code CraftLivingEntity#setHurtDirection} 就是抛
+     * {@code UnsupportedOperationException} —— {@code hurtDir} 只存在于 NMS
+     * {@code Player} 上，非玩家实体压根没有这个状态。原先写进一个从没被读过的
+     * Craft 注入字段（getter 读的是 NMS 的 {@code getHurtDir()}），setter 等于空转
+     * （A6/X-1 探针 P14a 实测 set 42 后 get 回 0.0）。
      */
     @Unique
     public void setHurtDirection(float direction) {
-        // vanilla 1.20.1 无公开 hurtDir setter（仅公有 getHurtDir()），Paper 自有状态 → 注入 Craft 字段
-        this.hurtDirection = direction;
+        throw new UnsupportedOperationException("Cannot set the hurt direction on a non player");
     }
 
     /**
@@ -490,8 +490,9 @@ public abstract class CraftLivingEntityApiMixin {
      */
     @Unique
     public void setShieldBlockingDelay(int delay) {
-        // vanilla 无 shieldBlockingDelay 存储（Paper 自定义字段）→ 注入 Craft 字段，默认 5
-        this.shieldBlockingDelay = delay;
+        // 状态在 NMS 侧（ShieldBlockingDelayBridge），见 LivingEntityShieldBlockingDelayMixin
+        ((com.ixnah.mc.paperarc.bridge.ShieldBlockingDelayBridge) this.getHandle())
+                .paperarc$setShieldBlockingDelay(delay);
     }
 
     /**

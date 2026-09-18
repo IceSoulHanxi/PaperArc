@@ -68,9 +68,6 @@ public abstract class CraftHumanEntityApiMixin {
     @Shadow
     public abstract Player getHandle();
 
-    // Paper 在 NMS LivingEntity 上重新添加 hurtDirection 字段；Arclight 无，注入 Craft 字段。
-    @Unique
-    private float hurtDirection;
 
     /**
      * Spigot-patched {@code AbstractContainerMenu.checkReachable}: a CraftBukkit-added
@@ -211,8 +208,9 @@ public abstract class CraftHumanEntityApiMixin {
 
     @Unique
     public void setHurtDirection(float hurtDirection) {
-        // 注入字段：1.20.1 vanilla 无 hurtDir 存储字段且 Arclight 无 Paper 补丁字段
-        this.hurtDirection = hurtDirection;
+        // 与 Paper 一致：直写 NMS Player.hurtDir（vanilla protected，AT f_263750_ 放开），
+        // getHurtDirection() 读的就是这同一个字段（LivingEntity#getHurtDir）。
+        this.getHandle().hurtDir = hurtDirection;
     }
 
     // ------------------------------------------------------------------
