@@ -55,6 +55,12 @@ public final class PaperarcInjectionCoverage {
             net.minecraft.network.protocol.game.ClientboundOpenScreenPacket.class,
             // B8 批 3d：登录路径（只在玩家登录时才加载，不显式拉起就验不到锚点）
             net.minecraft.server.network.ServerLoginPacketListenerImpl.class,
+            // B8/Y-3：持久化一批的注入宿主
+            net.minecraft.world.level.block.entity.BlockEntity.class,
+            net.minecraft.world.level.block.entity.BeaconBlockEntity.class,
+            net.minecraft.world.entity.raid.Raid.class,
+            net.minecraft.world.entity.boss.enderdragon.EnderDragon.class,
+            net.minecraft.world.entity.monster.Evoker.class,
     };
 
     /** CraftBukkit 侧：包名里的 {@code v} 段由构建期任务改成 {@code v1_21_R1}。 */

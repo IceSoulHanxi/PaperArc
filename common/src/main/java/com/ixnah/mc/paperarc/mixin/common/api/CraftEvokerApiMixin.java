@@ -14,17 +14,13 @@ import org.spongepowered.asm.mixin.Unique;
  *
  * Paper stores the wololo target on NMS Evoker (getWololoTarget/setWololoTarget,
  * publicized by an AT). Arclight's spigot NMS has neither method nor field, so the
- * explicit setter value lives in com.ixnah.mc.paperarc.bridge.ApiState and is pushed into
- * the vanilla mechanism the wololo goal uses (the evoker's attack target). The
- * getter prefers the side-map value and otherwise reports a Sheep attack target.
+ * B8/Y-3：不再自己存一份 —— vanilla {@code Evoker} 本来就有 {@code wololoTarget}
+ * 字段与包私有的 {@code get/setWololoTarget}（`javap -p` 核对，Paper 只是把它们 publicize），
+ * 由 {@code entity.EvokerFieldsMixin} 转发过去，所以设进去的目标就是施法逻辑真正在用的那个。
+ * 没显式设过时回落到"当前攻击目标恰好是绵羊"，与 vanilla 的观感一致。
  */
 @Mixin(CraftEvoker.class)
 public abstract class CraftEvokerApiMixin {
-
-    /** Paper 的 {@code Evoker.wololoTarget}（bukkit 侧 Sheep）；null = 未设置。 */
-    @Unique
-    private org.bukkit.entity.Sheep paperarc$wololoTarget;
-
 
     @Shadow
     public abstract Evoker getHandle();
@@ -32,13 +28,14 @@ public abstract class CraftEvokerApiMixin {
     @Unique
     @Nullable
     private Sheep paperarc$nmsWololoTarget() {
-        Object custom = (this.paperarc$wololoTarget != null ? this.paperarc$wololoTarget : (null));
-        if (custom instanceof CraftSheep craftSheep) {
-            Sheep sheep = craftSheep.getHandle();
-            if (!sheep.isRemoved()) {
-                return sheep;
+        com.ixnah.mc.paperarc.bridge.EvokerWololoBridge bridge =
+                (com.ixnah.mc.paperarc.bridge.EvokerWololoBridge) getHandle();
+        Sheep custom = bridge.paper$getWololoTarget();
+        if (custom != null) {
+            if (!custom.isRemoved()) {
+                return custom;
             }
-            this.paperarc$wololoTarget = null;
+            bridge.paper$setWololoTarget(null);
         }
         return null;
     }
@@ -65,13 +62,13 @@ public abstract class CraftEvokerApiMixin {
 
     @Unique
     public void setWololoTarget(@Nullable org.bukkit.entity.Sheep sheep) {
+        com.ixnah.mc.paperarc.bridge.EvokerWololoBridge bridge =
+                (com.ixnah.mc.paperarc.bridge.EvokerWololoBridge) getHandle();
         if (sheep == null) {
-            this.paperarc$wololoTarget = null;
-            getHandle().setTarget(null);
+            bridge.paper$setWololoTarget(null);
             return;
         }
         Sheep nms = ((CraftSheep) sheep).getHandle();
-        this.paperarc$wololoTarget = sheep;
-        getHandle().setTarget(nms);
+        bridge.paper$setWololoTarget(nms);
     }
 }

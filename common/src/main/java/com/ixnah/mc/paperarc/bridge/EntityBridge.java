@@ -24,4 +24,14 @@ public interface EntityBridge {
     org.bukkit.util.Vector getOriginVector();
 
     java.util.UUID getOriginWorld();
+
+    /** Paper 的 {@code Entity.spawnedViaMobSpawner}（{@code Entity#fromMobSpawner()}，gaps.md E6）。 */
+    boolean paper$spawnedViaMobSpawner();
+
+    void paper$setSpawnedViaMobSpawner(boolean spawnedViaMobSpawner);
+
+    /** Paper 的 {@code Entity.spawnReason}（{@code Entity#getEntitySpawnReason()}，gaps.md E6）。 */
+    org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason paper$spawnReason();
+
+    void paper$setSpawnReason(org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason reason);
 }

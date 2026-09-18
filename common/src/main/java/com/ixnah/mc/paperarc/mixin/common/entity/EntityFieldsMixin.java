@@ -31,6 +31,12 @@ public abstract class EntityFieldsMixin implements EntityBridge {
     @Unique
     public UUID originWorld; // Paper
 
+    @Unique
+    public boolean spawnedViaMobSpawner; // Paper
+
+    @Unique
+    public org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason spawnReason; // Spigot
+
     @Override
     public boolean paper$fixedPose() {
         return this.fixedPose;
@@ -65,5 +71,27 @@ public abstract class EntityFieldsMixin implements EntityBridge {
     @Override
     public UUID getOriginWorld() {
         return this.originWorld;
+    }
+
+    @Override
+    public boolean paper$spawnedViaMobSpawner() {
+        return this.spawnedViaMobSpawner;
+    }
+
+    @Override
+    public void paper$setSpawnedViaMobSpawner(boolean spawnedViaMobSpawner) {
+        this.spawnedViaMobSpawner = spawnedViaMobSpawner;
+    }
+
+    @Override
+    public org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason paper$spawnReason() {
+        return this.spawnReason == null
+                ? org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.DEFAULT
+                : this.spawnReason;
+    }
+
+    @Override
+    public void paper$setSpawnReason(org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason reason) {
+        this.spawnReason = reason;
     }
 }

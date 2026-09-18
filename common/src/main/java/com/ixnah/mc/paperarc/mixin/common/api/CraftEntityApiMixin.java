@@ -218,16 +218,14 @@ public abstract class CraftEntityApiMixin {
 
     @Unique
     public boolean fromMobSpawner() {
-        // Spigot 的 NMS 字段 spawnedViaMobSpawner 在 Arclight 1.21.1 上**不存在**
-        // （vanilla 没有、Arclight 也没注入，已逐个核对），原先的反射恒取不到值。
-        // 语义不变地返回默认值，登记在 docs/gaps.md。
-        return false;
+        // B8/Y-3（gaps.md E6）：字段由 EntityFieldsMixin 注入、ServerLevelSpawnReasonMixin
+        // 在 addEntity 时按 Arclight 已经算好的生成原因写入，并随实体 NBT 落盘。
+        return ((EntityBridge) this.getHandle()).paper$spawnedViaMobSpawner();
     }
 
     @Unique
     public CreatureSpawnEvent.SpawnReason getEntitySpawnReason() {
-        // 同 fromMobSpawner()：Spigot 的 NMS 字段 spawnReason 在 Arclight 1.21.1 上不存在。
-        return CreatureSpawnEvent.SpawnReason.DEFAULT;
+        return ((EntityBridge) this.getHandle()).paper$spawnReason();
     }
 
     @Unique
