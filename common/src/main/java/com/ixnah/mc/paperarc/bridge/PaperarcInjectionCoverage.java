@@ -115,6 +115,9 @@ public final class PaperarcInjectionCoverage {
             org.bukkit.event.entity.EntityUnleashEvent.class,
             org.bukkit.event.entity.EntityShootBowEvent.class,
             org.bukkit.event.player.AsyncPlayerPreLoginEvent.class,
+            // B8 批 3e
+            org.bukkit.event.block.BrewingStartEvent.class,
+            org.bukkit.event.player.PlayerLocaleChangeEvent.class,
             // Y-5 补了枚举常量的目标枚举（<clinit> TAIL 注入；不显式加载就验不到）
             org.bukkit.PortalType.class,
             org.bukkit.Fluid.class,

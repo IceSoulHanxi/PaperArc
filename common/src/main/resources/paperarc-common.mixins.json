@@ -53,6 +53,8 @@
     "entity.LeashableUnleashMixin",
     "player.ClientboundOpenScreenTitleMixin",
     "server.ServerLoginPreLoginContextMixin",
+    "api.BrewingStartEventApiMixin",
+    "api.PlayerLocaleChangeEventApiMixin",
     "player.ServerPlayerGameModeBlockFaceMixin",
     "entity.ExperienceOrbExpSourceMixin",
     "item.BlockItemCanBuildHandMixin",
