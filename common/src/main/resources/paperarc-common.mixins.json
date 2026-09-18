@@ -10,6 +10,7 @@
     "api.AbstractVillagerInvokerMixin",
     "api.AsyncPlayerPreLoginEventApiMixin",
     "api.BroadcastMessageEventApiMixin",
+    "api.BukkitApiMixin",
     "api.CatInvokerMixin",
     "api.CraftAbstractArrowApiMixin",
     "api.CraftAbstractHorseApiMixin",

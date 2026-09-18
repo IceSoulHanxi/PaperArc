@@ -52,7 +52,14 @@ public final class RuntimeClassConfigPlugin implements IMixinConfigPlugin {
     public void preApply(String targetClassName, org.objectweb.asm.tree.ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
     }
 
+    /**
+     * {@code @Widen}：把已经合并进目标类的 {@code @Unique private} 成员放宽到
+     * paper-api 的访问级别（见 {@link WidenPostProcessor}）。这是唯一能给目标类添加
+     * <b>public static</b> 方法的时机 —— Mixin 的 applicator 拒绝合并非 private 的
+     * static 方法，而 AT/AW 都在 Mixin 之前跑、只能改已存在的成员。
+     */
     @Override
     public void postApply(String targetClassName, org.objectweb.asm.tree.ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
+        WidenPostProcessor.postApply(targetClassName, targetClass, mixinInfo);
     }
 }
