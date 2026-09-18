@@ -47,6 +47,23 @@ public final class PaperarcEnumConstants {
     }
 
     /**
+     * paper 只是把运行时**已有**的常量改了个名时用这个：按运行时的旧名取回同一个实例，
+     * 不造新常量。比 {@link #add} 好在 {@code values()}/{@code switch}/CraftBukkit 的转换表
+     * 全都照旧 —— 新名字只是同一个对象的第二个入口（{@code DisplaySlot.SIDEBAR_TEAM_*} 即如此）。
+     *
+     * <p>这里用 {@code Enum.valueOf} 按名字取：目标是 Bukkit 自己的枚举，名字不参与任何重映射，
+     * 属 docs/mixin-conventions.md 里"可以保留的反射"那一类；取不到直接抛，不留 null 字段。
+     */
+    public static <T extends Enum<T>> T alias(Class<T> type, String runtimeName) {
+        try {
+            return Enum.valueOf(type, runtimeName);
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalStateException(
+                    "枚举别名失败：运行时没有 " + type.getName() + "." + runtimeName, ex);
+        }
+    }
+
+    /**
      * 带构造形参的版本：运行时枚举的构造器不是无参时用（{@code Effect(int, Effect.Type)}、
      * {@code EntityEffect(int, Class)}…）。形参类型必须按**运行时那个枚举**的构造器写，
      * 不是 paper-api 的 —— 两边可能不一样（如 `DisplaySlot` 运行时是无参、paper-api 带 `String`）。
