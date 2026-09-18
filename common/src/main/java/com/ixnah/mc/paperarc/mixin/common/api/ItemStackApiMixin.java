@@ -42,6 +42,12 @@ import java.util.function.UnaryOperator;
  * meta 转换）；{@code getPersistentDataContainer()} → 转调 ItemMeta 的同名方法
  * （{@code PersistentDataContainerIfaceMixin} 已让它返回 View）；
  * {@code getMaxItemUseDuration} → {@code CraftItemStack.asNMSCopy} 后问 NMS。</p>
+ *
+ * <p><b>7 个 static 方法（of ×2 / empty / deserializeBytes /
+ * serializeItemsAsBytes ×2 / deserializeItemsFromBytes）没补</b>：Mixin 的
+ * {@code MixinApplicatorStandard.checkMethodVisibility} 明确拒绝把**非 private 的
+ * static 方法**合并进目标类（真机实测 {@code InvalidMixinException: contains
+ * non-private static method}），这条路走不通，见 docs/mixin-conventions.md。</p>
  */
 @Mixin(ItemStack.class)
 public abstract class ItemStackApiMixin {
@@ -51,15 +57,7 @@ public abstract class ItemStackApiMixin {
         return (ItemStack) (Object) this;
     }
 
-    @Unique
-    public static ItemStack of(Material type) {
-        return new ItemStack(type);
-    }
 
-    @Unique
-    public static ItemStack of(Material type, int amount) {
-        return new ItemStack(type, amount);
-    }
 
     @Unique
     public PersistentDataContainerView getPersistentDataContainer() {
@@ -117,67 +115,14 @@ public abstract class ItemStackApiMixin {
         return Bukkit.getServer().getItemFactory().ensureServerConversions(this.paperarc$self());
     }
 
-    @Unique
-    public static ItemStack deserializeBytes(byte[] bytes) {
-        return Bukkit.getUnsafe().deserializeItem(bytes);
-    }
 
     @Unique
     public byte[] serializeAsBytes() {
         return Bukkit.getUnsafe().serializeItem(this.paperarc$self());
     }
 
-    @Unique
-    public static byte[] serializeItemsAsBytes(Collection<ItemStack> items) {
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            DataOutputStream output = new DataOutputStream(outputStream);
-            output.writeByte(1);
-            output.writeInt(items.size());
-            for (ItemStack item : items) {
-                if (item != null && !PaperarcItemStacks.isEmpty(item)) {
-                    byte[] itemBytes = item.serializeAsBytes();
-                    output.writeInt(itemBytes.length);
-                    output.write(itemBytes);
-                } else {
-                    output.writeInt(0);
-                }
-            }
-            return outputStream.toByteArray();
-        } catch (IOException e) {
-            throw new RuntimeException("Error while writing itemstack", e);
-        }
-    }
 
-    @Unique
-    public static byte[] serializeItemsAsBytes(ItemStack[] items) {
-        return serializeItemsAsBytes(Arrays.asList(items));
-    }
 
-    @Unique
-    public static ItemStack[] deserializeItemsFromBytes(byte[] bytes) {
-        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes)) {
-            DataInputStream input = new DataInputStream(inputStream);
-            byte version = input.readByte();
-            if (version != 1) {
-                throw new IllegalArgumentException("Unsupported version or bad data: " + version);
-            }
-            int count = input.readInt();
-            ItemStack[] items = new ItemStack[count];
-            for (int i = 0; i < count; i++) {
-                int length = input.readInt();
-                if (length == 0) {
-                    items[i] = ItemStack.empty();
-                } else {
-                    byte[] itemBytes = new byte[length];
-                    input.readFully(itemBytes);
-                    items[i] = ItemStack.deserializeBytes(itemBytes);
-                }
-            }
-            return items;
-        } catch (IOException e) {
-            throw new RuntimeException("Error while reading itemstack", e);
-        }
-    }
 
     @Unique
     public String getI18NDisplayName() {
@@ -316,10 +261,21 @@ public abstract class ItemStackApiMixin {
         return Bukkit.getUnsafe().getTranslationKey(this.paperarc$self());
     }
 
+    /**
+     * paper 直接 {@code getItemMeta().getRarity()}；Arclight 的 CraftMetaItem 只在
+     * 物品带 rarity 数据组件时才有值，没有就抛
+     * {@code IllegalStateException: We don't have rarity!}（探针 P23 实测）。
+     * 这里没设过就回落到 NMS 的物品默认稀有度，与 paper 的取值一致。
+     */
     @Unique
     public io.papermc.paper.inventory.ItemRarity getRarity() {
-        return io.papermc.paper.inventory.ItemRarity.valueOf(
-                this.paperarc$self().getItemMeta().getRarity().name());
+        ItemMeta meta = this.paperarc$self().getItemMeta();
+        if (meta != null && meta.hasRarity()) {
+            return io.papermc.paper.inventory.ItemRarity.valueOf(meta.getRarity().name());
+        }
+        net.minecraft.world.item.ItemStack nms =
+                org.bukkit.craftbukkit.v.inventory.CraftItemStack.asNMSCopy(this.paperarc$self());
+        return io.papermc.paper.inventory.ItemRarity.valueOf(nms.getRarity().name());
     }
 
     @Unique
@@ -337,10 +293,6 @@ public abstract class ItemStackApiMixin {
         return livingEntity.damageItemStack(this.paperarc$self(), amount);
     }
 
-    @Unique
-    public static ItemStack empty() {
-        return Bukkit.getUnsafe().createEmptyStack();
-    }
 
     @Unique
     public boolean isEmpty() {

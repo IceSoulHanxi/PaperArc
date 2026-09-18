@@ -146,6 +146,36 @@ subprojects {
         }
     }
 
+    // B4/X-2：Mixin 的 MixinApplicatorStandard.checkMethodVisibility 直接拒绝把
+    // **非 private 的 static 方法**合并进目标类，而且是运行时 APPLY 阶段才炸
+    // （InvalidMixinException: contains non-private static method），编译期与
+    // refmap 都发现不了。给 org.bukkit.Bukkit / ItemStack 补 paper 的 static 门面
+    // 方法时真机踩过一次，立门禁。
+    tasks.register('checkMixinStaticMethods') {
+        def script = rootProject.file('../tools/scripts/check-mixin-static-methods.py')
+        def srcDir = file('src/main/java')
+        inputs.dir(srcDir).optional()
+        outputs.upToDateWhen { false }
+        doLast {
+            if (!script.isFile() || !srcDir.isDirectory()) {
+                logger.warn("checkMixinStaticMethods: 找不到 ${script} 或源码目录，跳过")
+                return
+            }
+            def out = new ByteArrayOutputStream()
+            def result = project.exec {
+                commandLine 'python3', script.absolutePath, srcDir.absolutePath
+                ignoreExitValue = true
+                standardOutput = out
+                errorOutput = out
+            }
+            def text = out.toString()
+            if (result.exitValue != 0) {
+                throw new GradleException("mixin 里有非 private 的 static 方法:\n${text}")
+            }
+            logger.lifecycle("${text.trim()}")
+        }
+    }
+
     // B2-3：require = 0 会把"注入一个都没命中"变成静默降级，1.20.1 与 main 加起来
     // 已经藏了 5 个从未生效的注入。全仓清零后立门禁：新写的注入不许再用 require = 0，
     // 确实锚不住的要像 ThrownEggHatch / EntityTeleportEndGateway 那样删掉并记 docs/gaps.md。
@@ -232,6 +262,7 @@ subprojects {
         dependsOn 'checkMixinRegistry'
         dependsOn 'checkNoSilentInjections'
         dependsOn 'checkRuntimeApiCalls'
+        dependsOn 'checkMixinStaticMethods'
         if (project.name == 'common') {
             dependsOn 'checkIfaceImplPairing'
             dependsOn rootProject.tasks.named('checkLoaderMixinParity')
