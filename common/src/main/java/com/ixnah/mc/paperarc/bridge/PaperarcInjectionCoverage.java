@@ -71,6 +71,14 @@ public final class PaperarcInjectionCoverage {
             org.bukkit.Sound.class,
             org.bukkit.SoundCategory.class,
             org.bukkit.inventory.ItemStack.class,
+            // B8 批 3a：由事件自身状态即可得出的一组
+            org.bukkit.event.server.TabCompleteEvent.class,
+            org.bukkit.event.player.PlayerItemDamageEvent.class,
+            org.bukkit.event.vehicle.VehicleExitEvent.class,
+            org.bukkit.event.entity.EntityDismountEvent.class,
+            org.bukkit.event.player.PlayerResourcePackStatusEvent.class,
+            org.bukkit.event.block.BlockPhysicsEvent.class,
+            org.bukkit.entity.Player.Spigot.class,
             // Y-5 补了枚举常量的目标枚举（<clinit> TAIL 注入；不显式加载就验不到）
             org.bukkit.PortalType.class,
             org.bukkit.Fluid.class,
@@ -85,6 +93,14 @@ public final class PaperarcInjectionCoverage {
             org.bukkit.Effect.class,
     };
 
+    /**
+     * 匿名内部类：源码里写不出类字面量，只能按"外层类的运行时名 + $序号"拼。
+     * 外层用类字面量取名，所以 CraftBukkit 的 {@code v} 段仍由构建期任务改写，这里不写死版本。
+     */
+    private static final String[] NESTED = {
+            org.bukkit.craftbukkit.v.entity.CraftPlayer.class.getName() + "$2",
+    };
+
     /** Arclight 自己的类：编译期只有 {@code src/arclightStub} 的桩，运行时解析到 Arclight 的实现。 */
     private static final String[] ARCLIGHT = {
             "io.izzel.arclight.common.mod.server.event.ArclightEventFactory",
@@ -97,6 +113,14 @@ public final class PaperarcInjectionCoverage {
     public static String loadAll() {
         List<String> failed = new ArrayList<>();
         int loaded = MINECRAFT.length + CRAFTBUKKIT.length + BUKKIT.length;
+        for (String name : NESTED) {
+            try {
+                Class.forName(name, false, PaperarcInjectionCoverage.class.getClassLoader());
+                loaded++;
+            } catch (ClassNotFoundException ex) {
+                failed.add(name);
+            }
+        }
         for (String name : ARCLIGHT) {
             try {
                 Class.forName(name, false, PaperarcInjectionCoverage.class.getClassLoader());
@@ -109,7 +133,7 @@ public final class PaperarcInjectionCoverage {
             throw new IllegalStateException("注入覆盖清单里的类加载不出来：" + failed);
         }
         return "nms=" + MINECRAFT.length + " craftbukkit=" + CRAFTBUKKIT.length
-                + " bukkit=" + BUKKIT.length + " arclight=" + ARCLIGHT.length
-                + " total=" + loaded;
+                + " bukkit=" + BUKKIT.length + " nested=" + NESTED.length
+                + " arclight=" + ARCLIGHT.length + " total=" + loaded;
     }
 }
