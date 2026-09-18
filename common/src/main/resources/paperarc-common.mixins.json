@@ -411,6 +411,7 @@
     "entity.RavagerMixin",
     "entity.ServerLevelHasEntityMoveEventMixin",
     "entity.TamableAnimalDeathMessageMixin",
+    "entity.ThrownEggHatchMixin",
     "entity.VillagerZapMixin",
     "entity.WitherBossPortalMixin",
     "entity.WolfDyeMixin",
