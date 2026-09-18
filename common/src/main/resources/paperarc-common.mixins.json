@@ -7,6 +7,10 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "api.AbstractProjectileApiMixin",
+    "api.PlayerTeleportEventApiMixin",
+    "api.EntityPortalEnterEventApiMixin",
+    "api.EntityPortalEventApiMixin",
+    "api.PlayerRespawnEventApiMixin",
     "api.CraftHumanEntityGameModeCauseMixin",
     "api.CraftPlayerKickCauseMixin",
     "api.CraftWorldWeatherCauseMixin",
@@ -452,6 +456,7 @@
     "bukkit.ZombieIfaceMixin",
     "bukkit.ZombieVillagerIfaceMixin",
     "entity.AbstractArrowMixin",
+    "entity.PortalBlockEnterCancelMixin",
     "entity.AbstractSkeletonFieldsMixin",
     "entity.ArmorStandFieldsMixin",
     "entity.AttributeMapFieldsMixin",

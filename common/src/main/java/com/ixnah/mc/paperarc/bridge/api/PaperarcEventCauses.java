@@ -3,6 +3,7 @@ package com.ixnah.mc.paperarc.bridge.api;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.entity.EntityPortalEnterEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
@@ -27,6 +28,8 @@ public final class PaperarcEventCauses {
     private static final ThreadLocal<PlayerGameModeChangeEvent.Cause> GAME_MODE = new ThreadLocal<>();
     private static final ThreadLocal<PlayerGameModeChangeEvent> LAST_GAME_MODE_EVENT = new ThreadLocal<>();
     private static final ThreadLocal<PlayerKickEvent.Cause> KICK = new ThreadLocal<>();
+    private static final ThreadLocal<EntityPortalEnterEvent> LAST_PORTAL_ENTER = new ThreadLocal<>();
+    private static final ThreadLocal<Boolean> TELEPORT_DISMOUNT = new ThreadLocal<>();
 
     private PaperarcEventCauses() {
     }
@@ -140,5 +143,29 @@ public final class PaperarcEventCauses {
         PlayerGameModeChangeEvent event = LAST_GAME_MODE_EVENT.get();
         LAST_GAME_MODE_EVENT.remove();
         return event;
+    }
+
+    public static void rememberPortalEnterEvent(EntityPortalEnterEvent event) {
+        LAST_PORTAL_ENTER.set(event);
+    }
+
+    public static EntityPortalEnterEvent takePortalEnterEvent() {
+        EntityPortalEnterEvent event = LAST_PORTAL_ENTER.get();
+        LAST_PORTAL_ENTER.remove();
+        return event;
+    }
+
+    public static void pushTeleportDismount(boolean dismount) {
+        TELEPORT_DISMOUNT.set(dismount);
+    }
+
+    public static void popTeleportDismount() {
+        TELEPORT_DISMOUNT.remove();
+    }
+
+    /** 默认 true：不带 {@code TeleportFlag} 的传送在 CraftBukkit 里本来就会把玩家从坐骑上弄下来。 */
+    public static boolean teleportDismount() {
+        Boolean dismount = TELEPORT_DISMOUNT.get();
+        return dismount == null || dismount;
     }
 }

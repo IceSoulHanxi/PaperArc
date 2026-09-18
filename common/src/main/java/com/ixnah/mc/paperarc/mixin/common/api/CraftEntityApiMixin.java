@@ -375,7 +375,13 @@ public abstract class CraftEntityApiMixin {
         if (!retainPassengers && handle.isVehicle()) {
             handle.ejectPassengers();
         }
-        return teleport(location, cause);
+        // PlayerTeleportEvent#willDismountPlayer() 要报的就是这个决定，事件在 teleport(...) 内部构造。
+        com.ixnah.mc.paperarc.bridge.api.PaperarcEventCauses.pushTeleportDismount(dismount);
+        try {
+            return teleport(location, cause);
+        } finally {
+            com.ixnah.mc.paperarc.bridge.api.PaperarcEventCauses.popTeleportDismount();
+        }
     }
 
     /**
