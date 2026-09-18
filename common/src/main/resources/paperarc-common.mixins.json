@@ -206,6 +206,7 @@
     "api.PlayerMoveEventApiMixin",
     "api.PlayerPreLoginEventApiMixin",
     "api.PlayerQuitEventApiMixin",
+    "api.PotionEffectApiMixin",
     "api.PotionEffectTypeWrapperApiMixin",
     "api.ProxiedNativeCommandSenderApiMixin",
     "api.ServerCommandSenderApiMixin",
