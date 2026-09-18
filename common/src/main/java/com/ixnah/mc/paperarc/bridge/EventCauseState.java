@@ -226,4 +226,243 @@ public final class EventCauseState {
         PRE_LOGIN_RAW_ADDRESS.remove();
         PRE_LOGIN_PROFILE.remove();
     }
+
+    // ---- 触发点上下文（A8 批 3c）----
+
+    private static final ThreadLocal<org.bukkit.inventory.EquipmentSlot> CAN_BUILD_HAND = new ThreadLocal<>();
+    private static final ThreadLocal<org.bukkit.inventory.CookingRecipe<?>> COOK_RECIPE = new ThreadLocal<>();
+    private static final ThreadLocal<Boolean> FAST_REGEN = new ThreadLocal<>();
+    private static final ThreadLocal<org.bukkit.util.Vector> VEHICLE_COLLISION_VELOCITY = new ThreadLocal<>();
+
+    /**
+     * {@code BlockCanBuildEvent#getHand()}。两个触发点（{@code BlockItem#canPlace} 与
+     * {@code StandingAndWallBlockItem#getPlacementState}）在 HEAD 压同一个值，
+     * 由事件构造器取走；不在触发点 RETURN 清，因为外层的
+     * {@code StandingAndWallBlockItem} 要等它自己的 RETURN 才构造事件，
+     * 内层 {@code canPlace} 一清就把值清没了。残留值会被下一次压入覆盖。
+     */
+    public static void setBlockCanBuildHand(org.bukkit.inventory.EquipmentSlot hand) {
+        CAN_BUILD_HAND.set(hand);
+    }
+
+    public static org.bukkit.inventory.EquipmentSlot takeBlockCanBuildHand() {
+        org.bukkit.inventory.EquipmentSlot hand = CAN_BUILD_HAND.get();
+        CAN_BUILD_HAND.remove();
+        return hand == null ? org.bukkit.inventory.EquipmentSlot.HAND : hand;
+    }
+
+    public static void setBlockCookRecipe(org.bukkit.inventory.CookingRecipe<?> recipe) {
+        COOK_RECIPE.set(recipe);
+    }
+
+    public static org.bukkit.inventory.CookingRecipe<?> takeBlockCookRecipe() {
+        org.bukkit.inventory.CookingRecipe<?> recipe = COOK_RECIPE.get();
+        COOK_RECIPE.remove();
+        return recipe;
+    }
+
+    public static void clearBlockCookRecipe() {
+        COOK_RECIPE.remove();
+    }
+
+    public static void setFastRegen(boolean fastRegen) {
+        FAST_REGEN.set(fastRegen);
+    }
+
+    public static boolean takeFastRegen() {
+        Boolean fastRegen = FAST_REGEN.get();
+        FAST_REGEN.remove();
+        return fastRegen != null && fastRegen;
+    }
+
+    public static void clearFastRegen() {
+        FAST_REGEN.remove();
+    }
+
+    public static void setVehicleCollisionVelocity(org.bukkit.util.Vector velocity) {
+        VEHICLE_COLLISION_VELOCITY.set(velocity);
+    }
+
+    public static org.bukkit.util.Vector takeVehicleCollisionVelocity() {
+        org.bukkit.util.Vector velocity = VEHICLE_COLLISION_VELOCITY.get();
+        VEHICLE_COLLISION_VELOCITY.remove();
+        return velocity;
+    }
+
+    public static void clearVehicleCollisionVelocity() {
+        VEHICLE_COLLISION_VELOCITY.remove();
+    }
+
+    // ---- 触发点上下文（A8 批 3d）----
+
+    private static final ThreadLocal<Boolean> DAMAGE_CRITICAL = new ThreadLocal<>();
+    private static final ThreadLocal<net.kyori.adventure.text.Component> ADVANCEMENT_MESSAGE = new ThreadLocal<>();
+    private static final ThreadLocal<org.bukkit.event.player.PlayerAdvancementDoneEvent> LAST_ADVANCEMENT_EVENT =
+            new ThreadLocal<>();
+
+    public static void setDamageCritical(boolean critical) {
+        DAMAGE_CRITICAL.set(critical);
+    }
+
+    public static boolean takeDamageCritical() {
+        Boolean critical = DAMAGE_CRITICAL.get();
+        DAMAGE_CRITICAL.remove();
+        return critical != null && critical;
+    }
+
+    public static void clearDamageCritical() {
+        DAMAGE_CRITICAL.remove();
+    }
+
+    public static void setAdvancementMessage(net.kyori.adventure.text.Component message) {
+        ADVANCEMENT_MESSAGE.set(message);
+    }
+
+    public static net.kyori.adventure.text.Component takeAdvancementMessage() {
+        net.kyori.adventure.text.Component message = ADVANCEMENT_MESSAGE.get();
+        ADVANCEMENT_MESSAGE.remove();
+        return message;
+    }
+
+    public static void clearAdvancementMessage() {
+        ADVANCEMENT_MESSAGE.remove();
+    }
+
+    /**
+     * 最近一次构造出来的 {@code PlayerAdvancementDoneEvent}：广播那一步在
+     * {@code PlayerAdvancements#award} 里、事件之后，要读回事件上的 {@code message()}。
+     */
+    public static void setLastAdvancementEvent(org.bukkit.event.player.PlayerAdvancementDoneEvent event) {
+        LAST_ADVANCEMENT_EVENT.set(event);
+    }
+
+    public static org.bukkit.event.player.PlayerAdvancementDoneEvent takeLastAdvancementEvent() {
+        org.bukkit.event.player.PlayerAdvancementDoneEvent event = LAST_ADVANCEMENT_EVENT.get();
+        LAST_ADVANCEMENT_EVENT.remove();
+        return event;
+    }
+
+    public static void clearLastAdvancementEvent() {
+        LAST_ADVANCEMENT_EVENT.remove();
+    }
+
+    // ---- 事件字段 + 触发点消费（A8 批 3e）----
+
+    private static final ThreadLocal<org.bukkit.event.inventory.FurnaceBurnEvent> LAST_FURNACE_BURN_EVENT =
+            new ThreadLocal<>();
+    private static final ThreadLocal<org.bukkit.event.player.PlayerPickupItemEvent> LAST_PICKUP_EVENT =
+            new ThreadLocal<>();
+    private static final ThreadLocal<org.bukkit.event.entity.EntityUnleashEvent> LAST_UNLEASH_EVENT =
+            new ThreadLocal<>();
+    private static final ThreadLocal<Boolean> UNLEASH_DROP_LEASH = new ThreadLocal<>();
+
+    public static void setLastFurnaceBurnEvent(org.bukkit.event.inventory.FurnaceBurnEvent event) {
+        LAST_FURNACE_BURN_EVENT.set(event);
+    }
+
+    public static org.bukkit.event.inventory.FurnaceBurnEvent takeLastFurnaceBurnEvent() {
+        org.bukkit.event.inventory.FurnaceBurnEvent event = LAST_FURNACE_BURN_EVENT.get();
+        LAST_FURNACE_BURN_EVENT.remove();
+        return event;
+    }
+
+    public static void clearLastFurnaceBurnEvent() {
+        LAST_FURNACE_BURN_EVENT.remove();
+    }
+
+    public static void setLastPickupEvent(org.bukkit.event.player.PlayerPickupItemEvent event) {
+        LAST_PICKUP_EVENT.set(event);
+    }
+
+    public static org.bukkit.event.player.PlayerPickupItemEvent getLastPickupEvent() {
+        return LAST_PICKUP_EVENT.get();
+    }
+
+    public static void clearLastPickupEvent() {
+        LAST_PICKUP_EVENT.remove();
+    }
+
+    public static void setLastUnleashEvent(org.bukkit.event.entity.EntityUnleashEvent event) {
+        LAST_UNLEASH_EVENT.set(event);
+    }
+
+    public static org.bukkit.event.entity.EntityUnleashEvent getLastUnleashEvent() {
+        return LAST_UNLEASH_EVENT.get();
+    }
+
+    public static void clearLastUnleashEvent() {
+        LAST_UNLEASH_EVENT.remove();
+    }
+
+    /**
+     * {@code EntityUnleashEvent#isDropLeash()} 的默认值。
+     * paper 在六个调用点各传一个字面量：四处是 {@code true}（tickLeash / startRiding），
+     * {@code removeAfterChangingDimensions} 是 {@code false}，
+     * 玩家解绳那两处是 {@code !instabuild}。默认按多数取 {@code true}，
+     * 另外三处在触发点 HEAD 压值。
+     */
+    public static void setUnleashDropLeash(boolean dropLeash) {
+        UNLEASH_DROP_LEASH.set(dropLeash);
+    }
+
+    public static boolean takeUnleashDropLeash() {
+        Boolean dropLeash = UNLEASH_DROP_LEASH.get();
+        UNLEASH_DROP_LEASH.remove();
+        return dropLeash == null || dropLeash;
+    }
+
+    public static void clearUnleashDropLeash() {
+        UNLEASH_DROP_LEASH.remove();
+    }
+
+    // ---- 事件字段 + 触发点消费（A8 批 3f）----
+
+    private static final ThreadLocal<org.bukkit.event.player.PlayerItemConsumeEvent> LAST_CONSUME_EVENT =
+            new ThreadLocal<>();
+    private static final ThreadLocal<org.bukkit.event.player.PlayerItemMendEvent> LAST_MEND_EVENT =
+            new ThreadLocal<>();
+    private static final ThreadLocal<org.bukkit.event.inventory.InventoryOpenEvent> LAST_INVENTORY_OPEN_EVENT =
+            new ThreadLocal<>();
+
+    public static void setLastConsumeEvent(org.bukkit.event.player.PlayerItemConsumeEvent event) {
+        LAST_CONSUME_EVENT.set(event);
+    }
+
+    public static org.bukkit.event.player.PlayerItemConsumeEvent takeLastConsumeEvent() {
+        org.bukkit.event.player.PlayerItemConsumeEvent event = LAST_CONSUME_EVENT.get();
+        LAST_CONSUME_EVENT.remove();
+        return event;
+    }
+
+    public static void clearLastConsumeEvent() {
+        LAST_CONSUME_EVENT.remove();
+    }
+
+    public static void setLastMendEvent(org.bukkit.event.player.PlayerItemMendEvent event) {
+        LAST_MEND_EVENT.set(event);
+    }
+
+    public static org.bukkit.event.player.PlayerItemMendEvent takeLastMendEvent() {
+        org.bukkit.event.player.PlayerItemMendEvent event = LAST_MEND_EVENT.get();
+        LAST_MEND_EVENT.remove();
+        return event;
+    }
+
+    public static void clearLastMendEvent() {
+        LAST_MEND_EVENT.remove();
+    }
+
+    public static void setLastInventoryOpenEvent(org.bukkit.event.inventory.InventoryOpenEvent event) {
+        LAST_INVENTORY_OPEN_EVENT.set(event);
+    }
+
+    public static org.bukkit.event.inventory.InventoryOpenEvent takeLastInventoryOpenEvent() {
+        org.bukkit.event.inventory.InventoryOpenEvent event = LAST_INVENTORY_OPEN_EVENT.get();
+        LAST_INVENTORY_OPEN_EVENT.remove();
+        return event;
+    }
+
+    public static void clearLastInventoryOpenEvent() {
+        LAST_INVENTORY_OPEN_EVENT.remove();
+    }
 }
