@@ -18,6 +18,10 @@ public interface PersistentDataContainerIfaceMixin {
     @Unique
     public abstract void readFromBytes(byte[] p0, boolean p1) throws java.io.IOException;
 
+    // A5-2 §1.9 ah：运行时与本仓库都没有 serializeToBytes，实现体在 CraftPersistentDataContainerApiMixin。
+    @Unique
+    public abstract byte[] serializeToBytes() throws java.io.IOException;
+
     // ===== A4-4：paper-api 的 default 方法体照搬（运行时接口里一个都没有）=====
 
     @Unique

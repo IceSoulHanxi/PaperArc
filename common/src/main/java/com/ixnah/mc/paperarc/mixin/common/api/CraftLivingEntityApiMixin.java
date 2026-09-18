@@ -252,7 +252,9 @@ public abstract class CraftLivingEntityApiMixin {
     @Unique
     private RayTraceResult paperarc$rayTraceEntities0(int maxDistance, boolean ignorePassable) {
         LivingEntity handle = this.getHandle();
-        if (maxDistance < 1.0E7 || maxDistance <= 0.0D || maxDistance > 2.147483647E9D) {
+        // 原先写成 `maxDistance < 1.0E7 || …`，任何正常距离都会进这个分支 —— 整条射线检测
+        // 其实从未成功执行过（checklist §1.9 ae，main 已修）。判据同 Bukkit：只要求 >= 1。
+        if (maxDistance < 1) {
             throw new IllegalArgumentException("maxDistance must be positive");
         }
         Level level = handle.level();

@@ -10,10 +10,10 @@ import org.spongepowered.asm.mixin.Unique;
 /**
  * Adds Paper's {@code Plugin#getPluginMeta()} to the runtime {@link JavaPlugin}.
  *
- * <p>Arclight's {@code JavaPlugin} does not implement {@code PluginMeta} (Paper makes
- * {@code PluginDescriptionFile} implement it), so the meta cannot be cast directly.
- * Returns {@code null} as a safe degradation — plugin-metadata introspection through
- * this Paper entry point is not supported on the Arclight plugin loader.</p>
+ * <p>Arclight 的 {@code JavaPlugin} 没有让 {@code PluginDescriptionFile} 实现
+ * {@code PluginMeta}（Paper 是直接让它实现的），不能强转。原先直接 {@code return null}，
+ * 而 paper 的契约是 {@code @NotNull}，插件一用就 NPE（checklist §1.9 af，main 已修）。
+ * 改为逐字段适配的 {@code bridge/api/PaperarcPluginMeta}。</p>
  */
 @Mixin(JavaPlugin.class)
 public abstract class JavaPluginApiMixin {
@@ -23,7 +23,6 @@ public abstract class JavaPluginApiMixin {
 
     @Unique
     public PluginMeta getPluginMeta() {
-        // Arclight PluginDescriptionFile does not implement io.papermc.paper.plugin.configuration.PluginMeta
-        return null;
+        return new com.ixnah.mc.paperarc.bridge.api.PaperarcPluginMeta(this.getDescription());
     }
 }
