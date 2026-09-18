@@ -34,6 +34,46 @@ public final class DeathEventSupport {
         event.setDeathSoundPitch(victim.getVoicePitch());
     }
 
+    /**
+     * Paper 的 {@code ServerPlayer#processKeep}（PlayerDeathEvent#getItemsToKeep）：
+     * 清空背包时把插件放进 {@code itemsToKeep} 的物品留下。
+     *
+     * <p>{@code inv == null} 表示"收尾"：{@code itemsToKeep} 里还剩的（插件自己加的、
+     * 原本不在掉落里的）直接塞回背包。
+     */
+    public static void processKeep(org.bukkit.event.entity.PlayerDeathEvent event,
+                                   net.minecraft.core.NonNullList<net.minecraft.world.item.ItemStack> inv) {
+        java.util.List<org.bukkit.inventory.ItemStack> itemsToKeep = event.getItemsToKeep();
+        if (inv == null) {
+            for (org.bukkit.inventory.ItemStack stack : itemsToKeep) {
+                event.getEntity().getInventory().addItem(stack);
+            }
+            return;
+        }
+        for (int i = 0; i < inv.size(); i++) {
+            net.minecraft.world.item.ItemStack item = inv.get(i);
+            if (net.minecraft.world.item.enchantment.EnchantmentHelper.hasVanishingCurse(item)
+                    || itemsToKeep.isEmpty() || item.isEmpty()) {
+                inv.set(i, net.minecraft.world.item.ItemStack.EMPTY);
+                continue;
+            }
+            org.bukkit.inventory.ItemStack bukkitStack =
+                    org.bukkit.craftbukkit.v.inventory.CraftItemStack.asCraftMirror(item);
+            boolean keep = false;
+            java.util.Iterator<org.bukkit.inventory.ItemStack> iterator = itemsToKeep.iterator();
+            while (iterator.hasNext()) {
+                if (bukkitStack.equals(iterator.next())) {
+                    iterator.remove();
+                    keep = true;
+                    break;
+                }
+            }
+            if (!keep) {
+                inv.set(i, net.minecraft.world.item.ItemStack.EMPTY);
+            }
+        }
+    }
+
     /** 事件未被取消时按事件里的值播死亡音效（vanilla 里那一句已被我们抑制）。 */
     public static void playDeathSound(net.minecraft.world.entity.LivingEntity victim, EntityDeathEvent event) {
         if (!event.shouldPlayDeathSound() || event.getDeathSound() == null
