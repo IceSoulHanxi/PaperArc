@@ -71,6 +71,17 @@ public final class PaperarcInjectionCoverage {
             org.bukkit.Sound.class,
             org.bukkit.SoundCategory.class,
             org.bukkit.inventory.ItemStack.class,
+            // Y-5 补了枚举常量的目标枚举（<clinit> TAIL 注入；不显式加载就验不到）
+            org.bukkit.PortalType.class,
+            org.bukkit.Fluid.class,
+            org.bukkit.entity.Boat.Status.class,
+            org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.class,
+            org.bukkit.event.entity.EntityRemoveEvent.Cause.class,
+            org.bukkit.event.entity.EntityTargetEvent.TargetReason.class,
+            org.bukkit.event.player.PlayerBedEnterEvent.BedEnterResult.class,
+            org.bukkit.event.player.PlayerFishEvent.State.class,
+            org.bukkit.MinecraftExperimental.Requires.class,
+            org.bukkit.scoreboard.DisplaySlot.class,
     };
 
     /** Arclight 自己的类：编译期只有 {@code src/arclightStub} 的桩，运行时解析到 Arclight 的实现。 */
