@@ -65,10 +65,10 @@ public abstract class CraftSchoolableFishApiMixin {
         if (leader == null) {
             return null;
         }
-        // 必须返回**同一个** Bukkit 包装对象：Paper 走 NMS 的 getBukkitEntity()（带缓存），
-        // 而 PaperArcBridge.bukkitEntity 每次都新建一个 CraftEntity（CraftEntity.getEntity
-        // 的字节码就是一长串 new，javap 核对），插件拿到的 leader 与自己手上的鱼不是同一对象。
-        // Bukkit.getEntity(uuid) 最终走 NMS Entity#getBukkitEntity()，拿到的是缓存那份。
+        // Paper 这里走 NMS 的 getBukkitEntity()（编译期不可见），我们走运行时自己的实体查找。
+        // 注意：Arclight 上 Bukkit 实体包装对象**没有身份唯一性** —— 探针 P12b 实测
+        // world.getEntity(uuid) 与 world.spawn(...) 返回的不是同一个对象，
+        // 所以任何返回实体的 paper API 都不能指望插件用 == 比较（要判 UUID）。
         org.bukkit.entity.Entity cached = org.bukkit.Bukkit.getEntity(leader.getUUID());
         return cached instanceof SchoolableFish fish ? fish
                 : PaperArcBridge.<SchoolableFish>bukkitEntity(leader);
