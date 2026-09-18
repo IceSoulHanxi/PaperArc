@@ -6,3 +6,5 @@
 # 没有这一步的地方不要往这里加 —— 直接 @Unique public static 会在 APPLY 阶段 FATAL。
 BukkitApiMixin.java
 ItemStackApiMixin.java
+CommandApiMixin.java
+WorldCreatorApiMixin.java
