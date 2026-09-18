@@ -7,7 +7,9 @@ import org.bukkit.Server;
 import org.bukkit.craftbukkit.v.CraftServer;
 import org.bukkit.event.Event;
 
+import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 
 /**
@@ -28,14 +30,53 @@ public final class PaperArcBridge {
         return Bukkit.getServer();
     }
 
-    /** NMS entity -> Bukkit entity via the static CraftBukkit factory. */
+    /**
+     * NMS entity -> Bukkit entity，**必须走 {@code Entity#getBukkitEntity()}**。
+     *
+     * <p>{@code CraftEntity.getEntity(server, nms)} 的字节码是一长串 {@code new}，
+     * 不查缓存；而 Arclight 的 {@code EntityMixin.internal$getBukkitEntity()} 里有
+     * {@code getfield bukkitEntity / ifnonnull / putfield} 的缓存字段。直接调工厂
+     * 会让每个事件、每个 API 返回值都发一个新包装对象 —— 插件用 {@code ==} 比较失效，
+     * 我们挂在 Craft 类上的 {@code @Unique} 状态字段也会随包装对象丢失
+     * （checklist §1.10 an）。</p>
+     *
+     * <p>{@code getBukkitEntity} 是 Arclight/CraftBukkit 注入到 NMS 上的成员，
+     * 不参与 intermediary/srg 重映射，按 B2-1 的分类属于"可保留反射"的一类，
+     * 这里用一次性解析的 {@link MethodHandle} 承载。</p>
+     */
     @SuppressWarnings("unchecked")
     public static <T extends org.bukkit.entity.Entity> T bukkitEntity(net.minecraft.world.entity.Entity nms) {
+        if (nms == null) {
+            return null;
+        }
+        if (GET_BUKKIT_ENTITY != null) {
+            try {
+                return (T) (org.bukkit.entity.Entity) GET_BUKKIT_ENTITY.invoke(nms);
+            } catch (RuntimeException | Error e) {
+                throw e;
+            } catch (Throwable t) {
+                throw new IllegalStateException("Entity#getBukkitEntity() failed", t);
+            }
+        }
         return (T) org.bukkit.craftbukkit.v.entity.CraftEntity.getEntity((CraftServer) getServer(), nms);
     }
 
     public static org.bukkit.entity.Player bukkitPlayer(net.minecraft.world.entity.player.Player player) {
-        return (org.bukkit.entity.Player) org.bukkit.craftbukkit.v.entity.CraftEntity.getEntity((CraftServer) getServer(), player);
+        return (org.bukkit.entity.Player) bukkitEntity(player);
+    }
+
+    /** {@code Entity#getBukkitEntity()}；解析不到时退回工厂（行为与本次修复前一致）。 */
+    private static final MethodHandle GET_BUKKIT_ENTITY = buildBukkitEntityHandle();
+
+    private static MethodHandle buildBukkitEntityHandle() {
+        try {
+            return MethodHandles.publicLookup().findVirtual(
+                    Entity.class,
+                    "getBukkitEntity",
+                    MethodType.methodType(org.bukkit.craftbukkit.v.entity.CraftEntity.class));
+        } catch (ReflectiveOperationException e) {
+            return null;
+        }
     }
 
     public static org.bukkit.World bukkitWorld(ServerLevel level) {
