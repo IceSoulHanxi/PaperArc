@@ -79,6 +79,9 @@ public abstract class CraftServerApiMixin {
     private io.papermc.paper.threadedregions.scheduler.GlobalRegionScheduler globalRegionScheduler;
 
     @Unique
+    private io.papermc.paper.threadedregions.scheduler.RegionScheduler regionScheduler;
+
+    @Unique
     private com.destroystokyo.paper.entity.ai.MobGoals mobGoals;
 
     @Unique
@@ -99,6 +102,14 @@ public abstract class CraftServerApiMixin {
 
     @Shadow
     public abstract net.minecraft.server.dedicated.DedicatedPlayerList getHandle();
+
+    @Shadow
+    private org.bukkit.configuration.file.YamlConfiguration commandsConfiguration;
+
+    @Shadow
+    private java.io.File getCommandsConfigFile() {
+        throw new AssertionError();
+    }
 
     @Unique
     public boolean addRecipe(org.bukkit.inventory.Recipe recipe, boolean resetRegistry) {
@@ -232,6 +243,67 @@ public abstract class CraftServerApiMixin {
             this.globalRegionScheduler = new SimpleGlobalRegionScheduler();
         }
         return this.globalRegionScheduler;
+    }
+
+    // ===== A5-3：pairing 基线里的 NO_IMPL =====
+
+    @Unique
+    public io.papermc.paper.threadedregions.scheduler.RegionScheduler getRegionScheduler() {
+        if (this.regionScheduler == null) {
+            this.regionScheduler = new com.ixnah.mc.paperarc.bridge.scheduler.SimpleRegionScheduler();
+        }
+        return this.regionScheduler;
+    }
+
+    /** paper {@code Server#updateResources()}：重载数据包并把结果推给所有在线玩家。 */
+    @Unique
+    public void updateResources() {
+        getHandle().reloadResources();
+    }
+
+    /**
+     * paper {@code Server#updateRecipes()}：Paper 走的是自己加的
+     * {@code PlayerList#reloadRecipeData()}，Arclight 没有（javap 核对），
+     * 这里直接补发 vanilla 的 {@code ClientboundUpdateRecipesPacket}，效果等价。
+     */
+    @Unique
+    public void updateRecipes() {
+        net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket packet =
+                new net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket(
+                        getServer().getRecipeManager().getRecipes());
+        for (net.minecraft.server.level.ServerPlayer player : getHandle().getPlayers()) {
+            player.connection.send(packet);
+        }
+    }
+
+    @Unique
+    public boolean removeRecipe(org.bukkit.NamespacedKey key, boolean resendRecipes) {
+        boolean removed = ((org.bukkit.Server) (Object) this).removeRecipe(key);
+        if (removed && resendRecipes) {
+            this.updateRecipes();
+        }
+        return removed;
+    }
+
+    /** paper {@code Server#reloadCommandAliases()}：逐行照抄 Paper 的实现。 */
+    @Unique
+    public boolean reloadCommandAliases() {
+        org.bukkit.craftbukkit.v.CraftServer self = (org.bukkit.craftbukkit.v.CraftServer) (Object) this;
+        java.util.Set<String> removals = self.getCommandAliases().keySet().stream()
+                .map(key -> key.toLowerCase(java.util.Locale.ENGLISH))
+                .collect(java.util.stream.Collectors.toSet());
+        self.getCommandMap().getKnownCommands().keySet().removeIf(removals::contains);
+        java.io.File file = this.getCommandsConfigFile();
+        try {
+            this.commandsConfiguration.load(file);
+        } catch (java.io.FileNotFoundException ex) {
+            return false;
+        } catch (java.io.IOException | org.bukkit.configuration.InvalidConfigurationException ex) {
+            org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.SEVERE, "Cannot load " + file, ex);
+            return false;
+        }
+        self.getCommandMap().registerServerAliases();
+        return true;
     }
 
     /**

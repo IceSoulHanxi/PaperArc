@@ -52,4 +52,26 @@ public abstract class CraftBlockDataApiMixin {
     public boolean isRandomlyTicked() {
         return this.getState().isRandomlyTicking();
     }
+    /**
+     * paper 的 {@code Levelled#getMinimumLevel()}（A5-3，pairing 基线 NO_IMPL）。
+     *
+     * <p>原实现挂在 {@code CraftLevelled} 上 —— 运行时的 {@code CraftComposter}/
+     * {@code CraftLight}/{@code CraftFluids}/两种炼药锅都是
+     * {@code extends CraftBlockData implements Levelled}，根本不继承它（javap 核对），
+     * 那份实现体是死代码（§1.8 q 同款），已删。这里挂在全部块数据的公共基类上，
+     * 按 {@code level} 属性的取值域算，与 Paper 的 {@code getMin(LEVEL)} 等价。</p>
+     */
+    @Unique
+    public int getMinimumLevel() {
+        for (net.minecraft.world.level.block.state.properties.Property<?> property
+                : ((org.bukkit.craftbukkit.v.block.data.CraftBlockData) (Object) this)
+                        .getState().getProperties()) {
+            if ("level".equals(property.getName())
+                    && property instanceof net.minecraft.world.level.block.state.properties.IntegerProperty level) {
+                return java.util.Collections.min(level.getPossibleValues());
+            }
+        }
+        return 0;
+    }
+
 }

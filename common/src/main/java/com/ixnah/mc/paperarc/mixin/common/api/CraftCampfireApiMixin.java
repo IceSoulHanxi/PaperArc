@@ -52,6 +52,21 @@ public abstract class CraftCampfireApiMixin {
         return previous;
     }
 
+    /** paper {@code Campfire#stopCooking()}：四个槽一起（A5-3，pairing 基线 NO_IMPL）。 */
+    @Unique
+    public void stopCooking() {
+        for (int i = 0; i < 4; i++) {
+            this.stopCooking(i);
+        }
+    }
+
+    @Unique
+    public void startCooking() {
+        for (int i = 0; i < 4; i++) {
+            this.startCooking(i);
+        }
+    }
+
     @Unique
     public boolean isCookingDisabled(int index) {
         Preconditions.checkArgument(-1 < index && index < 4, "Slot index must be between 0 (incl) to 3 (incl)");

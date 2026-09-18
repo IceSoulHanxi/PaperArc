@@ -2,7 +2,15 @@
 # 每行一条已知问题；门禁只对**新增**条目失败。修掉一条就从这里删一行。
 # 跑法见 common/build.gradle 的 checkIfaceImplPairing 任务（./gradlew :common:check）。
 #
+# 2026-09-17（Phase A5-3）：建立时 216 条 -> A4 清到 95 条 -> 本轮把 NO_IMPL 31 条全部实现，
+# 现余 64 条。
+#
 # ---- NO_DECL (63) ----
+# 这 63 条是同一个原因：**实现体写的是 1.20.2+/1.21 才进 paper-api 的方法**
+# （getVoidDamage* / getSentChunks / getIdleDuration / setExperienceLevelAndProgress /
+#  hasStructureAt / Wither#canChangeDimensions / Chunk#getChunkSnapshot(4 参) …），
+# 1.20.1 的 paper-api 根本没有对应接口声明，插件无从调用，属"提前实现"。
+# A5-3 逐条用 paper-api 1.20.1 复核，说明仍然成立：保留不删，回流 main 时它们是真实 API。
 NO_DECL org/bukkit/craftbukkit/v/CraftChunk#getChunkSnapshot/4
 NO_DECL org/bukkit/craftbukkit/v/CraftRaid#getBossBar/0
 NO_DECL org/bukkit/craftbukkit/v/CraftRaid#getId/0
@@ -67,39 +75,8 @@ NO_DECL org/bukkit/craftbukkit/v/entity/CraftWither#canChangeDimensions/0
 NO_DECL org/bukkit/craftbukkit/v/inventory/trim/CraftTrimMaterial#description/0
 NO_DECL org/bukkit/craftbukkit/v/inventory/trim/CraftTrimPattern#description/0
 
-# ---- NO_IMPL (31) ----
-NO_IMPL org/bukkit/Server#getRegionScheduler/0
-NO_IMPL org/bukkit/Server#reloadCommandAliases/0
-NO_IMPL org/bukkit/Server#removeRecipe/2
-NO_IMPL org/bukkit/Server#updateRecipes/0
-NO_IMPL org/bukkit/Server#updateResources/0
-NO_IMPL org/bukkit/block/Beacon#getEffectRange/0
-NO_IMPL org/bukkit/block/Beacon#resetEffectRange/0
-NO_IMPL org/bukkit/block/Beacon#setEffectRange/1
-NO_IMPL org/bukkit/block/Campfire#startCooking/0
-NO_IMPL org/bukkit/block/Campfire#stopCooking/0
-NO_IMPL org/bukkit/block/data/Levelled#getMinimumLevel/0
-NO_IMPL org/bukkit/entity/Player#getWardenTimeSinceLastWarning/0
-NO_IMPL org/bukkit/entity/Player#getWardenWarningCooldown/0
-NO_IMPL org/bukkit/entity/Player#getWardenWarningLevel/0
-NO_IMPL org/bukkit/entity/Player#giveExp/2
-NO_IMPL org/bukkit/entity/Player#hasFlyingFallDamage/0
-NO_IMPL org/bukkit/entity/Player#hasSeenWinScreen/0
-NO_IMPL org/bukkit/entity/Player#hideTitle/0
-NO_IMPL org/bukkit/entity/Player#increaseWardenWarningLevel/0
-NO_IMPL org/bukkit/entity/Player#isListed/1
-NO_IMPL org/bukkit/entity/Player#listPlayer/1
-NO_IMPL org/bukkit/entity/Player#locale/0
-NO_IMPL org/bukkit/entity/Player#lookAt/3
-NO_IMPL org/bukkit/entity/Player#lookAt/4
-NO_IMPL org/bukkit/entity/Player#playerListFooter/0
-NO_IMPL org/bukkit/entity/Tameable#getOwnerUniqueId/0
-NO_IMPL org/bukkit/inventory/meta/SkullMeta#getPlayerProfile/0
-NO_IMPL org/bukkit/inventory/meta/SkullMeta#setPlayerProfile/1
-NO_IMPL org/bukkit/scoreboard/Objective#displayName/0
-NO_IMPL org/bukkit/scoreboard/Objective#displayName/1
-NO_IMPL org/bukkit/util/CachedServerIcon#getData/0
-
 # ---- NO_RUNTIME_IMPLCLASS (1) ----
+# 脚本口径误报：`org.bukkit.plugin.Plugin` 在运行时 jar 里没有"实现类"（插件主类在插件 jar 里），
+# 实现体在 JavaPluginApiMixin 上（A5-2 af 已改成 PaperarcPluginMeta，不再恒返回 null）。
 NO_RUNTIME_IMPLCLASS org/bukkit/plugin/Plugin#getPluginMeta/0
 

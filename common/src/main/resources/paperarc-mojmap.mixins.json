@@ -6,6 +6,7 @@
   "mixins": [
     "block.AbstractFurnaceBlockEntityFieldsMixin",
     "block.AnvilMenuAnvilDamagedMixin",
+    "block.BeaconBlockEntityFieldsMixin",
     "block.BeehiveBlockEntityFieldsMixin",
     "block.CampfireBlockEntityFieldsMixin",
     "block.PistonBaseBlockMixin",

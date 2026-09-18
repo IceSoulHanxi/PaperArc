@@ -585,6 +585,120 @@ public abstract class CraftPlayerApiMixin {
         this.flyingFallDamage = triState;
     }
 
+    // ===== A5-3：pairing 基线里的 NO_IMPL（声明早就有，任何运行时实现类都没有实现体）=====
+
+    /** Paper 的 unlist 名单；{@code unlistPlayer} 原先只发包不记状态，{@code isListed} 无从判断。 */
+    @Unique
+    private final Set<java.util.UUID> paperarc$unlistedEntities = new HashSet<>();
+
+    @Unique
+    public TriState hasFlyingFallDamage() {
+        return this.flyingFallDamage;
+    }
+
+    @Unique
+    public boolean hasSeenWinScreen() {
+        return getHandle().seenCredits;
+    }
+
+    @Unique
+    public void hideTitle() {
+        paperarc$send(new net.minecraft.network.protocol.game.ClientboundClearTitlesPacket(false));
+    }
+
+    @Unique
+    public Component playerListFooter() {
+        return paperarc$adventure(playerListFooter);
+    }
+
+    @Unique
+    public java.util.Locale locale() {
+        String lang = ((CraftPlayer) (Object) this).getLocale();
+        // Bukkit 给的是 mc 的 "zh_cn" 形态，Locale 要的是 BCP-47 的 "zh-cn"
+        return lang == null || lang.isEmpty()
+                ? java.util.Locale.US : java.util.Locale.forLanguageTag(lang.replace('_', '-'));
+    }
+
+    @Unique
+    public void giveExp(int exp, boolean applyMending) {
+        getHandle().giveExperiencePoints(applyMending ? this.applyMending(exp) : exp);
+    }
+
+    @Unique
+    public int getWardenTimeSinceLastWarning() {
+        net.minecraft.world.entity.monster.warden.WardenSpawnTracker tracker = paperarc$wardenTracker();
+        return tracker == null ? 0 : tracker.ticksSinceLastWarning;
+    }
+
+    @Unique
+    public int getWardenWarningCooldown() {
+        net.minecraft.world.entity.monster.warden.WardenSpawnTracker tracker = paperarc$wardenTracker();
+        return tracker == null ? 0 : tracker.cooldownTicks;
+    }
+
+    @Unique
+    public int getWardenWarningLevel() {
+        net.minecraft.world.entity.monster.warden.WardenSpawnTracker tracker = paperarc$wardenTracker();
+        return tracker == null ? 0 : tracker.warningLevel;
+    }
+
+    @Unique
+    public void increaseWardenWarningLevel() {
+        net.minecraft.world.entity.monster.warden.WardenSpawnTracker tracker = paperarc$wardenTracker();
+        if (tracker != null) {
+            // increaseWarningLevel() 是 NMS private，已由 AT 放开（srg m_219605_）
+            tracker.increaseWarningLevel();
+        }
+    }
+
+    @Unique
+    public void lookAt(double x, double y, double z, io.papermc.paper.entity.LookAnchor playerAnchor) {
+        getHandle().lookAt(paperarc$anchor(playerAnchor), new net.minecraft.world.phys.Vec3(x, y, z));
+    }
+
+    @Unique
+    public void lookAt(org.bukkit.entity.Entity entity, io.papermc.paper.entity.LookAnchor playerAnchor,
+                       io.papermc.paper.entity.LookAnchor entityAnchor) {
+        getHandle().lookAt(paperarc$anchor(playerAnchor), ((CraftEntity) entity).getHandle(),
+                paperarc$anchor(entityAnchor));
+    }
+
+    @Unique
+    private static net.minecraft.commands.arguments.EntityAnchorArgument.Anchor paperarc$anchor(
+            io.papermc.paper.entity.LookAnchor anchor) {
+        return switch (anchor) {
+            case EYES -> net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES;
+            case FEET -> net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.FEET;
+        };
+    }
+
+    @Unique
+    public boolean isListed(org.bukkit.entity.Player other) {
+        Preconditions.checkArgument(other != null, "player must not be null");
+        return !this.paperarc$unlistedEntities.contains(other.getUniqueId());
+    }
+
+    @Unique
+    public boolean listPlayer(org.bukkit.entity.Player other) {
+        Preconditions.checkArgument(other != null, "player must not be null");
+        if (!(other instanceof CraftPlayer) || getHandle().connection == null) {
+            return false;
+        }
+        CraftPlayer self = (CraftPlayer) (Object) this;
+        if (self.equals(other)) {
+            return false;
+        }
+        if (!self.canSee(other)) {
+            throw new IllegalStateException("Player cannot see the other player");
+        }
+        if (!this.paperarc$unlistedEntities.remove(other.getUniqueId())) {
+            return false;
+        }
+        paperarc$send(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(
+                java.util.List.of(((CraftPlayer) other).getHandle())));
+        return true;
+    }
+
     @Unique
     public void setHasSeenWinScreen(boolean hasSeenWinScreen) {
         getHandle().seenCredits = hasSeenWinScreen;
@@ -830,6 +944,8 @@ public abstract class CraftPlayerApiMixin {
             // entries 由 AT 加宽（f_244436_）后直访
             packet.entries = entries;
             paperarc$send(packet);
+            // A5-3：记名单，否则 isListed 永远返回 true
+            this.paperarc$unlistedEntities.add(player.getUniqueId());
             return true;
         } catch (Exception e) {
             return false;
