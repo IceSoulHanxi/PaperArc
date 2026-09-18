@@ -3,6 +3,7 @@ package com.ixnah.mc.paperarc.bridge;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
@@ -43,52 +44,108 @@ public final class WidenPostProcessor {
     }
 
     public static void postApply(String targetClassName, ClassNode targetClass, IMixinInfo mixinInfo) {
-        List<String[]> expected = paperarc$widenedInMixin(mixinInfo);
-        if (expected.isEmpty()) {
-            return;
-        }
-        for (String[] key : expected) {
-            MethodNode merged = paperarc$find(targetClass, key[0], key[1]);
+        ClassNode mixinNode = paperarc$mixinNode(mixinInfo);
+        for (String[] key : paperarc$widenedMethods(mixinNode)) {
+            MethodNode merged = paperarc$findMethod(targetClass, key[0], key[1]);
             if (merged == null) {
                 throw new IllegalStateException("@Widen: " + mixinInfo.getClassName() + "#" + key[0] + key[1]
                         + " 没有按原名带着 @Widen 合并进 " + targetClassName
                         + "（Mixin 因签名冲突改了名，或目标本来就有同签名方法），拒绝静默放行");
             }
-            paperarc$widen(merged);
+            paperarc$widenMethod(merged);
+        }
+        // B6-2：字段侧（B5 设计里"留口不实现"的那一半）。枚举常量补齐要求目标类上真的有一个
+        // public static 字段，插件的 getstatic 才解析得到；判据与方法侧完全一致。
+        for (String[] key : paperarc$widenedFields(mixinNode)) {
+            FieldNode merged = paperarc$findField(targetClass, key[0], key[1]);
+            if (merged == null) {
+                throw new IllegalStateException("@Widen: " + mixinInfo.getClassName() + "#" + key[0] + " : " + key[1]
+                        + " 没有按原名带着 @Widen 合并进 " + targetClassName
+                        + "（Mixin 因冲突改了名，或目标本来就有同名字段），拒绝静默放行");
+            }
+            paperarc$widenField(merged);
+        }
+    }
+
+    private static ClassNode paperarc$mixinNode(IMixinInfo mixinInfo) {
+        try {
+            return mixinInfo.getClassNode(0);
+        } catch (Throwable t) {
+            throw new IllegalStateException("@Widen: 读不到 mixin " + mixinInfo.getClassName() + " 的 ClassNode", t);
+        }
+    }
+
+    /** 读 mixin 自己的 ClassNode，收集带 {@code @Widen} 的字段（名字 + 描述符）。 */
+    private static List<String[]> paperarc$widenedFields(ClassNode mixinNode) {
+        List<String[]> out = new ArrayList<>();
+        if (mixinNode == null || mixinNode.fields == null) {
+            return out;
+        }
+        for (FieldNode field : mixinNode.fields) {
+            if (paperarc$widenAnnotation(field.invisibleAnnotations, field.visibleAnnotations) != null) {
+                out.add(new String[]{field.name, field.desc});
+            }
+        }
+        return out;
+    }
+
+    private static FieldNode paperarc$findField(ClassNode target, String name, String desc) {
+        if (target.fields == null) {
+            return null;
+        }
+        for (FieldNode field : target.fields) {
+            if (name.equals(field.name) && desc.equals(field.desc)
+                    && paperarc$widenAnnotation(field.invisibleAnnotations, field.visibleAnnotations) != null) {
+                return field;
+            }
+        }
+        return null;
+    }
+
+    private static void paperarc$widenField(FieldNode field) {
+        AnnotationNode widen = paperarc$widenAnnotation(field.invisibleAnnotations, field.visibleAnnotations);
+        field.access = (field.access & ~ACCESS_MASK) | paperarc$flag(paperarc$access(widen));
+        if (!KEEP_ANNOTATION) {
+            if (field.invisibleAnnotations != null) {
+                field.invisibleAnnotations.remove(widen);
+                if (field.invisibleAnnotations.isEmpty()) {
+                    field.invisibleAnnotations = null;
+                }
+            }
+            if (field.visibleAnnotations != null) {
+                field.visibleAnnotations.remove(widen);
+                if (field.visibleAnnotations.isEmpty()) {
+                    field.visibleAnnotations = null;
+                }
+            }
         }
     }
 
     /** 读 mixin 自己的 ClassNode，收集带 {@code @Widen} 的方法（名字 + 描述符）。 */
-    private static List<String[]> paperarc$widenedInMixin(IMixinInfo mixinInfo) {
+    private static List<String[]> paperarc$widenedMethods(ClassNode mixinNode) {
         List<String[]> out = new ArrayList<>();
-        ClassNode mixinNode;
-        try {
-            mixinNode = mixinInfo.getClassNode(0);
-        } catch (Throwable t) {
-            throw new IllegalStateException("@Widen: 读不到 mixin " + mixinInfo.getClassName() + " 的 ClassNode", t);
-        }
         if (mixinNode == null || mixinNode.methods == null) {
             return out;
         }
         for (MethodNode method : mixinNode.methods) {
-            if (paperarc$widenAnnotation(method) != null) {
+            if (paperarc$widenAnnotation(method.invisibleAnnotations, method.visibleAnnotations) != null) {
                 out.add(new String[]{method.name, method.desc});
             }
         }
         return out;
     }
 
-    private static AnnotationNode paperarc$widenAnnotation(MethodNode method) {
-        if (method.invisibleAnnotations != null) {
-            for (AnnotationNode node : method.invisibleAnnotations) {
+    private static AnnotationNode paperarc$widenAnnotation(List<AnnotationNode> invisible, List<AnnotationNode> visible) {
+        if (invisible != null) {
+            for (AnnotationNode node : invisible) {
                 if (WIDEN_DESC.equals(node.desc)) {
                     return node;
                 }
             }
         }
         // RetentionPolicy.CLASS 本该落在 invisible 一侧，这里兜一下防止编译器行为差异
-        if (method.visibleAnnotations != null) {
-            for (AnnotationNode node : method.visibleAnnotations) {
+        if (visible != null) {
+            for (AnnotationNode node : visible) {
                 if (WIDEN_DESC.equals(node.desc)) {
                     return node;
                 }
@@ -103,18 +160,18 @@ public final class WidenPostProcessor {
      * 这种情况会命中那个原有方法 —— 放宽变成空操作、真正合并进去的方法插件永远调不到，
      * 断言却一无所知（B5-1 反向实验实测）。
      */
-    private static MethodNode paperarc$find(ClassNode target, String name, String desc) {
+    private static MethodNode paperarc$findMethod(ClassNode target, String name, String desc) {
         for (MethodNode method : target.methods) {
             if (name.equals(method.name) && desc.equals(method.desc)
-                    && paperarc$widenAnnotation(method) != null) {
+                    && paperarc$widenAnnotation(method.invisibleAnnotations, method.visibleAnnotations) != null) {
                 return method;
             }
         }
         return null;
     }
 
-    private static void paperarc$widen(MethodNode method) {
-        AnnotationNode widen = paperarc$widenAnnotation(method);
+    private static void paperarc$widenMethod(MethodNode method) {
+        AnnotationNode widen = paperarc$widenAnnotation(method.invisibleAnnotations, method.visibleAnnotations);
         method.access = (method.access & ~ACCESS_MASK) | paperarc$flag(paperarc$access(widen));
         if (!KEEP_ANNOTATION) {
             if (method.invisibleAnnotations != null) {

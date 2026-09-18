@@ -183,6 +183,7 @@
     "api.CraftZombieApiMixin",
     "api.CreativeCategoryApiMixin",
     "api.DifficultyApiMixin",
+    "api.DisplaySlotEnumMixin",
     "api.DoubleChestApiMixin",
     "api.EnchantmentMenuAccessorMixin",
     "api.EnchantmentWrapperApiMixin",
