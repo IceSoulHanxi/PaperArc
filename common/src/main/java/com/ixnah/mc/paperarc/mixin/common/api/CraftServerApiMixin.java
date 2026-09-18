@@ -506,15 +506,20 @@ public abstract class CraftServerApiMixin {
         return !this.getServer().isStopped();
     }
 
+    /**
+     * 与 Paper 一致：逐个比 {@code World#getKey()}。注意那是**维度的 ResourceKey**
+     * （主世界是 {@code minecraft:overworld}），不是世界文件夹名 —— 原来按名字查恒返回 null
+     * （checklist §1.12 bf，1.20.1 的 {@code 75da326} 同款；探针 P25 在 main 上实测复现）。
+     *
+     * <p>按 namespace/value 两个字符串比，而不是 {@code equals}：形参可能是任意
+     * {@code Key} 实现（{@code KeyImpl}），而 {@code NamespacedKey#equals} 要求同类。
+     */
     @Unique
     public World getWorld(net.kyori.adventure.key.Key worldKey) {
-        // Vanilla worlds live under the minecraft namespace; non-minecraft
-        // namespaces fall back to a case-insensitive name scan.
-        if ("minecraft".equals(worldKey.namespace())) {
-            return ((CraftServer) (Object) this).getWorld(worldKey.value());
-        }
         for (World world : ((org.bukkit.Server) (Object) this).getWorlds()) {
-            if (world.getName().equalsIgnoreCase(worldKey.value())) {
+            org.bukkit.NamespacedKey key = world.getKey();
+            if (key != null && key.getNamespace().equals(worldKey.namespace())
+                    && key.getKey().equals(worldKey.value())) {
                 return world;
             }
         }
