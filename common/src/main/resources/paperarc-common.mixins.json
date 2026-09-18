@@ -8,6 +8,7 @@
   "mixins": [
     "api.AbstractProjectileApiMixin",
     "api.AbstractVillagerInvokerMixin",
+    "api.BukkitApiMixin",
     "api.CatInvokerMixin",
     "api.CraftAbstractArrowApiMixin",
     "api.CraftAbstractHorseApiMixin",
