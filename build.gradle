@@ -258,11 +258,64 @@ subprojects {
         }
     }
 
+    // A6/B6-1：上面两个门禁都按"名字 + 形参个数"匹配，照不到"同名、同形参个数、类型不同"，
+    // 也照不到"Bukkit 静态门面转发到一个运行时根本不存在的 Server 重载"。两种模式都按
+    // **完整描述符**：--decls 声明必须在 paper-api 上真的存在；--calls 调用点必须在运行时
+    // （或我们自己的 mixin / @Widen 成员）上真的存在。故意提前实现的下版本方法放基线文件。
+    tasks.register('checkApiDescriptors') {
+        def script = rootProject.file('../tools/scripts/check-api-descriptors.py')
+        def arclightDir = rootProject.file('../Arclight/bootstrap/run_prod/fabric/.arclight/mod_file')
+        def spigotDeobf = rootProject.file('../Arclight/.gradle/arclight/arclight_repo/io/izzel/arclight/generated/spigot/1.21.1/spigot-1.21.1-deobf.jar')
+        def baseline = rootProject.file('gradle/api-descriptor-baseline.txt')
+        def classesDir = file("${buildDir}/classes/java/main")
+        dependsOn tasks.named('classes')
+        inputs.file(baseline).optional()
+        outputs.upToDateWhen { false }
+        doLast {
+            def arclight = arclightDir.isDirectory()
+                    ? arclightDir.listFiles().findAll { it.name.startsWith('arclight-1.21.1-') }
+                    : []
+            if (!script.isFile() || arclight.isEmpty() || !spigotDeobf.isFile() || !classesDir.isDirectory()) {
+                logger.warn("checkApiDescriptors(${project.name}): 脚本或运行时 jar 不可用，跳过")
+                return
+            }
+            def apiJars = project.configurations.compileClasspath.files.findAll {
+                it.name.startsWith('paper-api-') || it.name.startsWith('adventure-api-')
+            }
+            if (apiJars.isEmpty()) {
+                logger.warn("checkApiDescriptors(${project.name}): paper-api 不在 compileClasspath，跳过")
+                return
+            }
+            def cmd = ['python3', script.absolutePath, classesDir.absolutePath, '--jars']
+            cmd.addAll(arclight.collect { it.absolutePath })
+            cmd.add(spigotDeobf.absolutePath)
+            cmd << '--api-jars'
+            cmd.addAll(apiJars.collect { it.absolutePath })
+            cmd << '--baseline' << baseline.absolutePath
+            def out = new ByteArrayOutputStream()
+            def result = project.exec {
+                commandLine cmd
+                ignoreExitValue = true
+                standardOutput = out
+                errorOutput = out
+            }
+            def text = out.toString()
+            if (result.exitValue == 2) {
+                logger.warn("checkApiDescriptors(${project.name}): 运行时 jar 不可用，跳过\n${text}")
+            } else if (result.exitValue != 0) {
+                throw new GradleException("API 完整描述符对不上:\n${text}")
+            } else {
+                logger.lifecycle("checkApiDescriptors(${project.name}): ${text.trim()}")
+            }
+        }
+    }
+
     tasks.named('check') {
         dependsOn 'checkMixinRegistry'
         dependsOn 'checkNoSilentInjections'
         dependsOn 'checkRuntimeApiCalls'
         dependsOn 'checkMixinStaticMethods'
+        dependsOn 'checkApiDescriptors'
         if (project.name == 'common') {
             dependsOn 'checkIfaceImplPairing'
             dependsOn rootProject.tasks.named('checkLoaderMixinParity')
