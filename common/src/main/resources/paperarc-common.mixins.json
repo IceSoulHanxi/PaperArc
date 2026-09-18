@@ -489,6 +489,7 @@
     "server.PlayerListPostRespawnMixin",
     "server.ServerHandshakeNetworkClientMixin",
     "server.ServerLevelCallbacksMixin",
+    "server.ServerLoginPreLoginContextMixin",
     "server.SetSpawnCommandMixin",
     "server.WeatherCommandCauseMixin",
     "world.WeatherCauseMixin",
