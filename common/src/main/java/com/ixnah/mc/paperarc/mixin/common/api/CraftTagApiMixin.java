@@ -13,6 +13,13 @@ import org.spongepowered.asm.mixin.Unique;
  *
  * Membership is resolved purely via registry locations so it works for every
  * registry without per-type converters (Arclight has no CraftNamespacedKey#toMinecraft).
+ *
+ * <p><b>A8 复核</b>：{@code org.bukkit.Tag} 的 {@code isTagged}/{@code getValues}
+ * 在运行时是接口抽象方法，且 {@code CraftTag} 的各个**具体子类**
+ * （CraftBlockTag/CraftItemTag/…）都已经实现了它们（`javap -p` 核对，探针 P21c 实测
+ * blocks/items/fluids/entity_types 四个 registry 都取得到值）。
+ * 所以这里挂在抽象父类上的两个实现只是兜底，正常路径走不到 ——
+ * gaps.md 里"CraftTag.getValues 剩余"在 1.20.1 不是缺口。</p>
  */
 @Mixin(CraftTag.class)
 public abstract class CraftTagApiMixin {
@@ -80,7 +87,11 @@ public abstract class CraftTagApiMixin {
             map.put("minecraft:entity_type", org.bukkit.Registry.ENTITY_TYPE);
             map.put("minecraft:fluid", org.bukkit.Registry.FLUID);
             map.put("minecraft:game_event", org.bukkit.Registry.GAME_EVENT);
-            map.put("minecraft:mob_effect", org.bukkit.Registry.POTION_EFFECT_TYPE);
+            // 注意：运行时的 org.bukkit.Registry **没有** POTION_EFFECT_TYPE
+            // （paper-api 才加的，`javap -p` 核对 Arclight 1.20.1 的 Registry），
+            // 写进来就是一条潜伏的 NoSuchFieldError —— A8 把 checkRuntimeApiCalls
+            // 扩到字段引用之后当场抓出来的第一条。mob_effect 在 1.20.1 也没有
+            // 对应的 Bukkit Tag registry 常量，这一行直接去掉。
             map.put("minecraft:sound_event", org.bukkit.Registry.SOUNDS);
             map.put("minecraft:music_instrument", org.bukkit.Registry.INSTRUMENT);
             map.put("minecraft:trim_material", org.bukkit.Registry.TRIM_MATERIAL);

@@ -16,6 +16,15 @@ public final class PaperArcForge {
         com.ixnah.mc.paperarc.bridge.RuntimeClassInjector.defineDeferred();
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         modEventBus.addListener(this::commonSetup);
+        // 服务器起来之后把"只有玩家在线才会加载"的注入目标拉一遍，
+        // 让 countInjections 覆盖到它们（checklist bi）
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(this::serverStarted);
+    }
+
+    private void serverStarted(net.minecraftforge.event.server.ServerStartedEvent event) {
+        com.ixnah.mc.paperarc.PaperArcPlatform.logger().info(
+                "[PaperArc] injection coverage: "
+                        + com.ixnah.mc.paperarc.bridge.PaperarcInjectionCoverage.loadAll());
     }
 
     private void commonSetup(net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent event) {
