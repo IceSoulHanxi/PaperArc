@@ -151,6 +151,7 @@
     "api.HopperBlockEntityInvokerMixin",
     "api.JavaPluginApiMixin",
     "api.LightningBoltAccessorMixin",
+    "api.LocationApiMixin",
     "api.LocationFinePositionMixin",
     "api.NamespacedKeyApiMixin",
     "api.PaperEventApiMixin",
