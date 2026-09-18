@@ -53,6 +53,9 @@ public abstract class CraftBlockEntityStateNameableApiMixin {
             beacon.setCustomName(nms);
         } else if (snapshot instanceof EnchantmentTableBlockEntity table) {
             table.setCustomName(nms);
+        } else if (snapshot instanceof net.minecraft.world.level.block.entity.BannerBlockEntity banner) {
+            // A5-1：paper 的 Banner 也 extends Nameable，横幅不属于上面三族
+            banner.setCustomName(nms);
         }
     }
 }

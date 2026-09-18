@@ -28,4 +28,23 @@ public abstract class SimplePluginManagerApiMixin {
     public void overridePermissionManager(Plugin plugin, io.papermc.paper.plugin.PermissionManager manager) {
         // no-op: Arclight routes permissions through SimplePluginManager
     }
+
+    /** paper {@code PermissionManager#addPermissions}（A5-1）：批量注册，逐条走已有的 addPermission。 */
+    @Unique
+    public void addPermissions(java.util.List<org.bukkit.permissions.Permission> permissions) {
+        org.bukkit.plugin.PluginManager self = (org.bukkit.plugin.PluginManager) (Object) this;
+        for (org.bukkit.permissions.Permission permission : permissions) {
+            self.addPermission(permission);
+        }
+    }
+
+    /** paper {@code PermissionManager#clearPermissions}。 */
+    @Unique
+    public void clearPermissions() {
+        org.bukkit.plugin.PluginManager self = (org.bukkit.plugin.PluginManager) (Object) this;
+        for (org.bukkit.permissions.Permission permission :
+                new java.util.ArrayList<>(self.getPermissions())) {
+            self.removePermission(permission);
+        }
+    }
 }

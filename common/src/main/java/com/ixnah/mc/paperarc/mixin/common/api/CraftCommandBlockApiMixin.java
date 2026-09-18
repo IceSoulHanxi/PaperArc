@@ -27,8 +27,6 @@ public abstract class CraftCommandBlockApiMixin {
 
     @Unique
     public Component name() {
-        net.minecraft.core.HolderLookup.Provider lookup = ((org.bukkit.craftbukkit.v.CraftServer) com.ixnah.mc.paperarc.bridge.PaperArcBridge.getServer())
-            .getServer().registryAccess();
         return GsonComponentSerializer.gson().deserialize(Serializer.toJson(this.getSnapshot().getCommandBlock().getName()));
     }
 
@@ -39,5 +37,28 @@ public abstract class CraftCommandBlockApiMixin {
             ? net.minecraft.network.chat.Component.literal("@")
             : Serializer.fromJson(GsonComponentSerializer.gson().serialize(name));
         this.getSnapshot().getCommandBlock().setName(vanilla);
+    }
+
+    /** paper {@code CommandBlockHolder#getSuccessCount}（A5-1 父接口差集）。 */
+    @Unique
+    public int getSuccessCount() {
+        return this.getSnapshot().getCommandBlock().getSuccessCount();
+    }
+
+    @Unique
+    public void setSuccessCount(int successCount) {
+        this.getSnapshot().getCommandBlock().setSuccessCount(successCount);
+    }
+
+    @Unique
+    public Component lastOutput() {
+        net.minecraft.network.chat.Component output = this.getSnapshot().getCommandBlock().getLastOutput();
+        return output == null ? null : GsonComponentSerializer.gson().deserialize(Serializer.toJson(output));
+    }
+
+    @Unique
+    public void lastOutput(Component lastOutput) {
+        this.getSnapshot().getCommandBlock().setLastOutput(lastOutput == null ? null
+                : Serializer.fromJson(GsonComponentSerializer.gson().serialize(lastOutput)));
     }
 }

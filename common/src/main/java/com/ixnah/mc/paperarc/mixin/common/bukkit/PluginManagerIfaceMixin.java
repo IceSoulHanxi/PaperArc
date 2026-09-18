@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Unique;
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
  */
 @Mixin(targets = "org.bukkit.plugin.PluginManager", remap = false)
-public interface PluginManagerIfaceMixin {
+public interface PluginManagerIfaceMixin extends io.papermc.paper.plugin.PermissionManager {
 
     @Unique
     public abstract boolean isTransitiveDependency(io.papermc.paper.plugin.configuration.PluginMeta p0, io.papermc.paper.plugin.configuration.PluginMeta p1);

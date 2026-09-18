@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Unique;
  * the Craft* @Unique mixins (com.ixnah.mc.paperarc.mixin.common.api).*
  */
 @Mixin(targets = "org.bukkit.block.CommandBlock", remap = false)
-public interface CommandBlockIfaceMixin {
+public interface CommandBlockIfaceMixin extends io.papermc.paper.command.CommandBlockHolder {
 
     @Unique
     public abstract net.kyori.adventure.text.Component name();
