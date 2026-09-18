@@ -48,6 +48,23 @@ public final class PaperarcEnumConstants {
      * 这里转成异常：走不通必须让启动直接失败，不许留一个 null 的 public 静态字段
      * （插件读到 null 比 {@code NoSuchFieldError} 更难查）。</p>
      */
+    /**
+     * paper 只是把运行时**已有**的常量改了个名时用这个：按运行时的旧名取回同一个实例，
+     * 不造新常量。比 {@link #add} 好在 {@code values()}/{@code switch}/CraftBukkit 的转换表
+     * 全都照旧 —— 新名字只是同一个对象的第二个入口（{@code DisplaySlot.SIDEBAR_TEAM_*} 即如此）。
+     *
+     * <p>这里用 {@code Enum.valueOf} 按名字取：目标是 Bukkit 自己的枚举，名字不参与任何重映射，
+     * 属 docs/mixin-conventions.md 里"可以保留的反射"那一类；取不到直接抛，不留 null 字段。
+     */
+    public static <T extends Enum<T>> T alias(Class<T> type, String runtimeName) {
+        try {
+            return Enum.valueOf(type, runtimeName);
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalStateException(
+                    "枚举别名失败：运行时没有 " + type.getName() + "." + runtimeName, ex);
+        }
+    }
+
     public static <T> T add(Class<T> type, String name) {
         T added = EnumHelper.addEnum(type, name, Collections.emptyList(), Collections.emptyList());
         if (added == null) {
