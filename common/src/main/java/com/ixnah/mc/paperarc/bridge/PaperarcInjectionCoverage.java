@@ -143,6 +143,7 @@ public final class PaperarcInjectionCoverage {
             org.bukkit.MinecraftExperimental.Requires.class,
             org.bukkit.scoreboard.DisplaySlot.class,
             org.bukkit.Effect.class,
+            org.bukkit.EntityEffect.class,
     };
 
     /**

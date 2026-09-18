@@ -66,6 +66,7 @@
     "api.RegisteredListenerApiMixin",
     "entity.AbstractVillagerPurchaseMixin",
     "api.CraftItemStackAdventureModeMixin",
+    "api.EntityEffectEnumMixin",
     "player.ServerPlayerGameModeBlockFaceMixin",
     "entity.ExperienceOrbExpSourceMixin",
     "item.BlockItemCanBuildHandMixin",
