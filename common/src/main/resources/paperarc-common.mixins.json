@@ -377,6 +377,7 @@
     "player.WorldBorderMovingBorderExtentMixin",
     "server.AsyncChatMixin",
     "server.AsyncTabCompleteMixin",
+    "server.EntityClassLookupMixin",
     "server.MinecraftServerMixin",
     "server.PlayerListPostRespawnMixin",
     "server.ServerHandshakeNetworkClientMixin",

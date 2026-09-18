@@ -77,9 +77,18 @@ mixin {
     add sourceSets.main, 'paperarc-common-refmap.json'
 }
 
+// Arclight 实现类的编译期桩源码集（见 src/arclightStub 下的类注释）。
+// 只进 compileClasspath，不进产物。
+sourceSets {
+    arclightStub
+}
+
 dependencies {
     // Minecraft + Forge（1.20.1-47.4.18）
     minecraft "net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}"
+
+    // 让 Mixin 注解处理器能验证锚 Arclight 自身类的那几个 mixin 的 @Mixin target
+    compileOnly sourceSets.arclightStub.output
 
     // Bukkit / Arclight 层：运行时由 Arclight 提供
     // 注意：不能同时 compileOnly spigot-api 与 paper-api——两者都含 org.bukkit.event.Event，
