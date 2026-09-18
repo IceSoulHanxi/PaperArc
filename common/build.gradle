@@ -509,7 +509,40 @@ tasks.register('checkApiDescriptors') {
     }
 }
 
+// mixin 里不许有非 private 的 static 方法（B4/X-2 §1.11 as，两分支共用脚本）。
+// Mixin 的 checkMethodVisibility 会在**运行时 APPLY 阶段**拒绝合并并让服务器起不来，
+// 编译/refmap/注册表门禁全都发现不了。唯一例外是本仓库的 markSyntheticStaticApi
+// 后处理（打 ACC_SYNTHETIC），走这条路的类列在 gradle/mixin-static-allowlist.txt。
+tasks.register('checkMixinStaticMethods') {
+    def script = rootProject.file('../tools/scripts/check-mixin-static-methods.py')
+    def repoRoot = rootProject.projectDir
+    def allow = rootProject.file('gradle/mixin-static-allowlist.txt')
+    inputs.dir(file('src/main/java'))
+    inputs.file(allow).optional()
+    outputs.upToDateWhen { false }
+    doLast {
+        if (!script.isFile()) {
+            logger.warn("checkMixinStaticMethods: 找不到 ${script}，跳过")
+            return
+        }
+        def out = new ByteArrayOutputStream()
+        def result = project.exec {
+            commandLine 'python3', script.absolutePath, repoRoot.absolutePath,
+                        '--allow', allow.absolutePath
+            ignoreExitValue = true
+            standardOutput = out
+            errorOutput = out
+        }
+        def text = out.toString()
+        if (result.exitValue != 0) {
+            throw new GradleException("mixin 里有非 private 的 static 方法:\n${text}")
+        }
+        logger.lifecycle("checkMixinStaticMethods: ${text.trim()}")
+    }
+}
+
 tasks.named('check') {
+    dependsOn 'checkMixinStaticMethods'
     dependsOn 'checkMixinRegistry'
     dependsOn 'checkIfaceImplPairing'
     dependsOn 'checkRuntimeApiCalls'
