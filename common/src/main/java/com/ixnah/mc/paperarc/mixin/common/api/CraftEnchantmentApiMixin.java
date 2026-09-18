@@ -39,8 +39,9 @@ import java.util.Set;
  *   <li>{@code isTradeable()} / {@code isDiscoverable()}：1.21 改成了附魔标签，
  *       分别对应 {@code #minecraft:tradeable} 与 {@code #minecraft:in_enchanting_table}。</li>
  *   <li>{@code getDamageIncrease(..)}：1.21 的额外伤害由 {@code damage} 效果组件按
- *       条件计算，不再有"按实体类别给固定加成"的模型，无法在不模拟战斗上下文的前提下求值，
- *       统一返回 0（见 docs/gaps.md）。</li>
+ *       条件计算，不再有"按实体类别给固定加成"的模型。B7/Y-4 起照 Paper 硬编码 1.20 的公式
+ *       （见 {@code bridge/api/PaperarcEnchantmentDamage}），{@code EntityType} 重载用
+ *       vanilla 1.21.1 真正在用的 {@code #minecraft:sensitive_to_*} 标签判定。</li>
  * </ul>
  */
 @Mixin(CraftEnchantment.class)
@@ -121,12 +122,14 @@ public abstract class CraftEnchantmentApiMixin {
 
     @Unique
     public float getDamageIncrease(int level, EntityCategory entityCategory) {
-        return 0.0F; // 见类注释：1.21 没有这个模型
+        return com.ixnah.mc.paperarc.bridge.api.PaperarcEnchantmentDamage.byCategory(
+                ((org.bukkit.enchantments.Enchantment) (Object) this).getKey(), level, entityCategory);
     }
 
     @Unique
     public float getDamageIncrease(int level, EntityType entityType) {
-        return 0.0F; // 见类注释
+        return com.ixnah.mc.paperarc.bridge.api.PaperarcEnchantmentDamage.byEntityType(
+                ((org.bukkit.enchantments.Enchantment) (Object) this).getKey(), level, entityType);
     }
 
     @Unique

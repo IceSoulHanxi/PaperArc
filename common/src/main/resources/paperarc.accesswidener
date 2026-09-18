@@ -202,3 +202,6 @@ accessible class net/minecraft/world/level/block/entity/CalibratedSculkSensorBlo
 accessible method net/minecraft/world/entity/LivingEntity getDeathSound ()Lnet/minecraft/sounds/SoundEvent;
 accessible method net/minecraft/world/entity/LivingEntity getSoundVolume ()F
 accessible field net/minecraft/world/entity/LivingEntity dead Z
+
+# MobEffectInstance: paper 的 PotionEffect#getHiddenPotionEffect() 要读被盖住的那一层
+accessible field net/minecraft/world/effect/MobEffectInstance hiddenEffect Lnet/minecraft/world/effect/MobEffectInstance;

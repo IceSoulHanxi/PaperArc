@@ -7,6 +7,9 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "api.AbstractProjectileApiMixin",
+    "api.CraftLivingEntityPotionHiddenMixin",
+    "api.CraftPotionUtilHiddenMixin",
+    "api.PotionEffectHiddenMixin",
     "api.PlayerTeleportEventApiMixin",
     "api.EntityPortalEnterEventApiMixin",
     "api.EntityPortalEventApiMixin",

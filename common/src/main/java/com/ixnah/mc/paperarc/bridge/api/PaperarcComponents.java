@@ -23,6 +23,37 @@ public final class PaperarcComponents {
         return Serializer.fromJson(json, registries());
     }
 
+    /**
+     * paper {@code UnsafeValues#resolveWithContext} 的实现体：照 Paper 走 vanilla 的
+     * {@code ComponentUtils#updateForEntity}（展开选择器、记分板占位等）。
+     * {@code CommandSender → CommandSourceStack} 用 CraftBukkit 自带的
+     * {@code VanillaCommandWrapper#getListener}；解析失败（选择器语法错、匹配不到实体）
+     * 按 Paper 抛 {@code IllegalArgumentException}。
+     */
+    public static net.kyori.adventure.text.Component resolveWithContext(
+            net.kyori.adventure.text.Component component, org.bukkit.command.CommandSender context,
+            org.bukkit.entity.Entity scoreboardSubject, boolean bypassPermissions) {
+        if (component == null) {
+            return null;
+        }
+        net.minecraft.commands.CommandSourceStack stack = context == null ? null
+                : org.bukkit.craftbukkit.v.command.VanillaCommandWrapper.getListener(context);
+        if (stack == null) {
+            return component;
+        }
+        if (bypassPermissions) {
+            stack = stack.withPermission(2);
+        }
+        net.minecraft.world.entity.Entity subject = scoreboardSubject == null ? null
+                : ((org.bukkit.craftbukkit.v.entity.CraftEntity) scoreboardSubject).getHandle();
+        try {
+            return fromVanilla(net.minecraft.network.chat.ComponentUtils.updateForEntity(
+                    stack, toVanilla(component), subject, 0));
+        } catch (com.mojang.brigadier.exceptions.CommandSyntaxException ex) {
+            throw new IllegalArgumentException(ex.getMessage(), ex);
+        }
+    }
+
     private static net.minecraft.core.HolderLookup.Provider registries() {
         return ((org.bukkit.craftbukkit.v.CraftServer) PaperArcBridge.getServer()).getServer().registryAccess();
     }

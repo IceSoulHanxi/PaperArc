@@ -360,30 +360,31 @@ public abstract class CraftMagicNumbersApiMixin {
     /**
      * paper {@code UnsafeValues#resolveWithContext}：把组件里的选择器/记分板占位解析成实际内容。
      *
-     * <p><b>占位实现</b>：原样返回。vanilla 的解析走 {@code ComponentUtils.updateForEntity}，
-     * 需要一个完整的 {@code CommandSourceStack}（含权限级别与实体/世界上下文）；Arclight 侧
-     * 没有把 Bukkit 的 CommandSender 反向映射成 CommandSourceStack 的通道。
-     * 语义差异记 `docs/gaps.md`：带选择器的组件不会被展开，但至少不再 NoSuchMethodError。
+     * <p>照 Paper 走 vanilla 的 {@code ComponentUtils#updateForEntity}。
+     * 反向映射 {@code CommandSender → CommandSourceStack} 走 CraftBukkit 自带的
+     * {@code VanillaCommandWrapper#getListener}（B7/Y-4 之前这里是原样返回的占位实现）。
+     * {@code bypassPermissions} 按 Paper 提到权限级 2（选择器需要的级别）。
      */
     @Unique
     public net.kyori.adventure.text.Component resolveWithContext(
             net.kyori.adventure.text.Component component, org.bukkit.command.CommandSender context,
             org.bukkit.entity.Entity scoreboardSubject, boolean bypassPermissions) {
-        return component;
+        return com.ixnah.mc.paperarc.bridge.api.PaperarcComponents.resolveWithContext(
+                component, context, scoreboardSubject, bypassPermissions);
     }
 
     /**
      * paper {@code UnsafeValues#getTag}：按 {@code TagKey} 取注册表标签。
      *
-     * <p><b>占位实现</b>：返回 {@code null}（paper 的契约是"没有就 null"）。
-     * paper 的 {@code io.papermc.paper.registry.tag.Tag} 依赖它自己那套
-     * {@code RegistryAccess}/{@code RegistryKey} 体系，Arclight 完全没有，
-     * 造一个假的反而会让插件拿到空标签当成"标签为空"。记 `docs/gaps.md`。
+     * <p>paper 的 {@code RegistryKey} 与 vanilla 注册表 id 是同一套命名空间键，
+     * 所以不需要 paper 那套 RegistryAccess，按键名反查 vanilla 注册表的同名标签即可
+     * （实现见 {@code bridge/api/PaperarcRegistryTag}）。查不到注册表或标签仍返回
+     * {@code null} —— 那是 paper 的契约，不是占位。
      */
     @Unique
     public <A extends org.bukkit.Keyed, M> io.papermc.paper.registry.tag.Tag<A> getTag(
             io.papermc.paper.registry.tag.TagKey<A> tagKey) {
-        return null;
+        return com.ixnah.mc.paperarc.bridge.api.PaperarcRegistryTag.of(tagKey);
     }
 
     /**
