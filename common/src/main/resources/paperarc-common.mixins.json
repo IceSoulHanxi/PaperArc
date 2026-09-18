@@ -151,6 +151,7 @@
     "api.JavaPluginApiMixin",
     "api.LightningBoltAccessorMixin",
     "api.LocationFinePositionMixin",
+    "api.NamespacedKeyApiMixin",
     "api.PaperEventApiMixin",
     "api.ProxiedNativeCommandSenderApiMixin",
     "api.ServerCommandSenderApiMixin",
