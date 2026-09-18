@@ -182,6 +182,7 @@
     "api.EyeOfEnderAccessorMixin",
     "api.HopperBlockEntityInvokerMixin",
     "api.JavaPluginApiMixin",
+    "api.LocationApiMixin",
     "api.LocationFinePositionMixin",
     "api.NamespacedKeyNamespacedMixin",
     "api.PaperEventApiMixin",
