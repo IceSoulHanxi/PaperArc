@@ -4,6 +4,7 @@ import net.kyori.adventure.util.TriState;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.WorldCreator;
+import com.ixnah.mc.paperarc.mixin.annotation.Widen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -57,12 +58,14 @@ public abstract class WorldCreatorApiMixin {
     }
 
     @Unique
-    public static WorldCreator ofKey(NamespacedKey worldKey) {
+    @Widen(because = "paper-api: org.bukkit.WorldCreator 的 public static 工厂")
+    private static WorldCreator ofKey(NamespacedKey worldKey) {
         return ofNameAndKey(worldKey.getKey(), worldKey);
     }
 
     @Unique
-    public static WorldCreator ofNameAndKey(String levelName, NamespacedKey worldKey) {
+    @Widen(because = "paper-api: org.bukkit.WorldCreator 的 public static 工厂")
+    private static WorldCreator ofNameAndKey(String levelName, NamespacedKey worldKey) {
         WorldCreator creator = new WorldCreator(levelName);
         ((WorldCreatorApiMixin) (Object) creator).paperarc$key = worldKey;
         return creator;

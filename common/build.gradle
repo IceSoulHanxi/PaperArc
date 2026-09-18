@@ -260,20 +260,7 @@ tasks.withType(JavaCompile).configureEach {
 // 产物阶段由 arclight-gradle-plugin 把 v/ 重写回 v1_20_R1；paperarc 源码同样引用
 // v/（跨 MC 版本可复用），因此产物必须在打包后做相同重写，运行时才能匹配
 // Arclight 提供的 v1_20_R1 Craft* 类。
-import com.ixnah.mc.paperarc.build.MarkSyntheticStaticApiTask
 import com.ixnah.mc.paperarc.build.VersionCraftBukkitTask
-
-// Mixin 0.8.5 不许把非 private 的静态方法合并进目标类，唯一放行口是 ACC_SYNTHETIC
-// （见 MarkSyntheticStaticApiTask 的注释）。@Mixin(Bukkit.class) 的静态门面靠这一步成立。
-tasks.register('markSyntheticStaticApi', MarkSyntheticStaticApiTask) {
-    dependsOn tasks.named('compileJava')
-    classesDir.set(layout.buildDirectory.dir('classes/java/main'))
-    outputs.upToDateWhen { false }   // 就地改 compileJava 的输出，幂等，不参与增量
-}
-
-tasks.named('jar') {
-    dependsOn 'markSyntheticStaticApi'
-}
 
 tasks.register('versionCraftBukkit', VersionCraftBukkitTask) {
     dependsOn tasks.named('jar')
@@ -509,16 +496,14 @@ tasks.register('checkApiDescriptors') {
     }
 }
 
-// mixin 里不许有非 private 的 static 方法（B4/X-2 §1.11 as，两分支共用脚本）。
-// Mixin 的 checkMethodVisibility 会在**运行时 APPLY 阶段**拒绝合并并让服务器起不来，
-// 编译/refmap/注册表门禁全都发现不了。唯一例外是本仓库的 markSyntheticStaticApi
-// 后处理（打 ACC_SYNTHETIC），走这条路的类列在 gradle/mixin-static-allowlist.txt。
+// mixin 里 static 方法与 @Widen 的用法（B4 §1.11 as 立第 1 条，B5 补齐后三条，两分支共用脚本）。
+// Mixin 的 checkMethodVisibility 会在**运行时 APPLY 阶段**拒绝合并非 private 的 static 方法
+// 并让服务器起不来，编译/refmap/注册表门禁全都发现不了。正解是 @Widen：以 private 身份合并，
+// 在 IMixinConfigPlugin.postApply 里放宽到 paper-api 的访问级别（B5-3 已回流本分支）。
 tasks.register('checkMixinStaticMethods') {
     def script = rootProject.file('../tools/scripts/check-mixin-static-methods.py')
     def repoRoot = rootProject.projectDir
-    def allow = rootProject.file('gradle/mixin-static-allowlist.txt')
     inputs.dir(file('src/main/java'))
-    inputs.file(allow).optional()
     outputs.upToDateWhen { false }
     doLast {
         if (!script.isFile()) {
@@ -527,8 +512,7 @@ tasks.register('checkMixinStaticMethods') {
         }
         def out = new ByteArrayOutputStream()
         def result = project.exec {
-            commandLine 'python3', script.absolutePath, repoRoot.absolutePath,
-                        '--allow', allow.absolutePath
+            commandLine 'python3', script.absolutePath, repoRoot.absolutePath
             ignoreExitValue = true
             standardOutput = out
             errorOutput = out

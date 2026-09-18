@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import com.ixnah.mc.paperarc.mixin.annotation.Widen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -38,12 +39,14 @@ public abstract class CommandApiMixin {
     }
 
     @Unique
-    public static void broadcastCommandMessage(CommandSender source, Component message) {
+    @Widen(because = "paper-api: org.bukkit.command.Command 的 public static broadcastCommandMessage")
+    private static void broadcastCommandMessage(CommandSender source, Component message) {
         broadcastCommandMessage(source, message, true);
     }
 
     @Unique
-    public static void broadcastCommandMessage(CommandSender source, Component message,
+    @Widen(because = "paper-api: org.bukkit.command.Command 的 public static broadcastCommandMessage")
+    private static void broadcastCommandMessage(CommandSender source, Component message,
                                                boolean sendToSource) {
         Command.broadcastCommandMessage(source,
                 LegacyComponentSerializer.legacySection().serialize(message), sendToSource);

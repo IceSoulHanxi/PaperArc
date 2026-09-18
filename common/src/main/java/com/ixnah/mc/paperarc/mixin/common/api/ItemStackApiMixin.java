@@ -9,6 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import com.ixnah.mc.paperarc.mixin.annotation.Widen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -53,7 +54,8 @@ public abstract class ItemStackApiMixin implements HoverEventSource<HoverEvent.S
 
     /** paper 的 {@code new ItemStack()}（type=AIR、amount=0）；那个构造器是包私有，这里等价构造。 */
     @Unique
-    public static ItemStack empty() {
+    @Widen(because = "paper-api: org.bukkit.inventory.ItemStack 的 public static 工厂")
+    private static ItemStack empty() {
         ItemStack empty = new ItemStack(Material.AIR);
         empty.setAmount(0);
         return empty;
@@ -232,7 +234,8 @@ public abstract class ItemStackApiMixin implements HoverEventSource<HoverEvent.S
     }
 
     @Unique
-    public static ItemStack deserializeBytes(byte[] bytes) {
+    @Widen(because = "paper-api: org.bukkit.inventory.ItemStack 的 public static 工厂")
+    private static ItemStack deserializeBytes(byte[] bytes) {
         return Bukkit.getUnsafe().deserializeItem(bytes);
     }
 

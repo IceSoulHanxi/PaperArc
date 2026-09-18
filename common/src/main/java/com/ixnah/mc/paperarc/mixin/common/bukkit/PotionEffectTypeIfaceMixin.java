@@ -48,7 +48,7 @@ public abstract class PotionEffectTypeIfaceMixin {
 
     @Unique
     public org.bukkit.potion.PotionEffectType.Category getEffectCategory() {
-        return fromNMS(handle().getCategory());
+        return paperarc$fromNms(handle().getCategory());
     }
 
     @Unique
@@ -64,7 +64,7 @@ public abstract class PotionEffectTypeIfaceMixin {
     }
 
     @Unique
-    private static org.bukkit.potion.PotionEffectType.Category fromNMS(
+    private static org.bukkit.potion.PotionEffectType.Category paperarc$fromNms(
             net.minecraft.world.effect.MobEffectCategory category) {
         switch (category) {
             case BENEFICIAL: return org.bukkit.potion.PotionEffectType.Category.BENEFICIAL;

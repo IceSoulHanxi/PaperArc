@@ -54,5 +54,7 @@ public final class RuntimeClassConfigPlugin implements IMixinConfigPlugin {
 
     @Override
     public void postApply(String targetClassName, org.objectweb.asm.tree.ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
+        // @Widen：把已合并进目标类的 private 成员放宽到 paper-api 的访问级别（B5-3 回流）
+        WidenPostProcessor.postApply(targetClassName, targetClass, mixinInfo);
     }
 }

@@ -35,12 +35,12 @@ public abstract class EnchantmentIfaceMixin {
     @Unique
     public float getDamageIncrease(int level, org.bukkit.entity.EntityCategory entityCategory) {
         return CraftEnchantment.getRaw((org.bukkit.enchantments.Enchantment) (Object) this)
-                .getDamageBonus(level, fromBukkitEntityCategory(entityCategory));
+                .getDamageBonus(level, paperarc$fromBukkitEntityCategory(entityCategory));
     }
 
     @Unique
     public io.papermc.paper.enchantments.EnchantmentRarity getRarity() {
-        return fromNMSRarity(CraftEnchantment.getRaw((org.bukkit.enchantments.Enchantment) (Object) this).getRarity());
+        return paperarc$fromNmsRarity(CraftEnchantment.getRaw((org.bukkit.enchantments.Enchantment) (Object) this).getRarity());
     }
 
     @Unique
@@ -61,7 +61,7 @@ public abstract class EnchantmentIfaceMixin {
     }
 
     @Unique
-    private static io.papermc.paper.enchantments.EnchantmentRarity fromNMSRarity(
+    private static io.papermc.paper.enchantments.EnchantmentRarity paperarc$fromNmsRarity(
             net.minecraft.world.item.enchantment.Enchantment.Rarity rarity) {
         switch (rarity) {
             case COMMON: return io.papermc.paper.enchantments.EnchantmentRarity.COMMON;
@@ -72,7 +72,7 @@ public abstract class EnchantmentIfaceMixin {
     }
 
     @Unique
-    private static net.minecraft.world.entity.MobType fromBukkitEntityCategory(
+    private static net.minecraft.world.entity.MobType paperarc$fromBukkitEntityCategory(
             org.bukkit.entity.EntityCategory category) {
         switch (category) {
             case UNDEAD: return net.minecraft.world.entity.MobType.UNDEAD;
