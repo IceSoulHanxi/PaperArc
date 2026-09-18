@@ -1,32 +1,45 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import net.minecraft.world.entity.player.Player;
+import com.ixnah.mc.paperarc.bridge.api.PaperarcEventCauses;
 import org.bukkit.craftbukkit.v.entity.CraftHumanEntity;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
-
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * RuntimeClassInjector 现在会在 mixin 应用之前把这些 bukkit 类型的字节喂给
- * 字节码 provider（Forge/NeoForge 走 transformerLoader hook，Fabric 由产物直接携带），
- * 描述符可解析，因此本类从 fabric 专属回归 common，三端统一生效（B5）。
+ * paper 的 {@code HumanEntity#closeInventory(InventoryCloseEvent.Reason)}。
  *
- * spigot NMS lacks ServerPlayer.closeContainer(Reason); the reason is not
- * plumbed into the internally-fired InventoryCloseEvent. Player.closeContainer()
- * is public in vanilla but protected in spigot NMS, so a MethodHandle built via
- * privateLookupIn is used (JIT-inlinable, per project convention).
+ * <p>B7/Y-2 批 2 之前这个实现体把 reason 直接丢掉（checklist E1 的"未透传"）：
+ * spigot 的 NMS 没有带 Reason 的 {@code closeContainer}，Arclight 也没有。
+ * 现在改成把 reason 压进 {@link PaperarcEventCauses} 再关 —— 事件由 CraftBukkit 在
+ * {@code closeContainer()} 内部构造，构造器（也是我们的 mixin，见
+ * {@code InventoryCloseEventReasonMixin}）读回来。
+ *
+ * <p>无参的 {@code closeInventory()} 按 Paper 记 {@code PLUGIN}。
  */
 @Mixin(CraftHumanEntity.class)
 public abstract class CraftHumanEntityCloseInventoryMixin {
 
     @Unique
     public void closeInventory(InventoryCloseEvent.Reason reason) {
-        // vanilla Player#closeContainer() 本来就是 public，之前那层 MethodHandle 是多余的
-        ((org.bukkit.craftbukkit.v.entity.CraftPlayer) (Object) this).getHandle().closeContainer();
+        PaperarcEventCauses.pushInventoryClose(reason == null ? InventoryCloseEvent.Reason.UNKNOWN : reason);
+        try {
+            ((org.bukkit.craftbukkit.v.entity.CraftPlayer) (Object) this).getHandle().closeContainer();
+        } finally {
+            PaperarcEventCauses.popInventoryClose();
+        }
+    }
+
+    @Inject(method = "closeInventory()V", at = @At("HEAD"), remap = false)
+    private void paperarc$pluginClose(CallbackInfo ci) {
+        PaperarcEventCauses.pushInventoryClose(InventoryCloseEvent.Reason.PLUGIN);
+    }
+
+    @Inject(method = "closeInventory()V", at = @At("RETURN"), remap = false)
+    private void paperarc$pluginCloseDone(CallbackInfo ci) {
+        PaperarcEventCauses.popInventoryClose();
     }
 }
