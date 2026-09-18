@@ -72,4 +72,20 @@ public final class PaperarcEnumConstants {
         }
         return added;
     }
+
+    /**
+     * 带构造形参的版本：运行时枚举的构造器不是无参时用（{@code Effect(int, Effect.Type)}、
+     * {@code Effect(int, Effect.Type, Class)}…）。形参类型必须按**运行时那个枚举**的构造器写，
+     * 不是 paper-api 的 —— 两边可能不一样（paper 的 {@code Effect} 第三参是
+     * {@code Class[]} 变长，运行时是单个 {@code Class}）。
+     * {@code EnumHelper} 会自己补上枚举的隐式 {@code (String name, int ordinal)} 两个形参。
+     */
+    public static <T> T add(Class<T> type, String name,
+                            java.util.List<Class<?>> paramTypes, java.util.List<Object> paramValues) {
+        T added = EnumHelper.addEnum(type, name, paramTypes, paramValues);
+        if (added == null) {
+            throw new IllegalStateException("补枚举常量失败：" + type.getName() + "." + name);
+        }
+        return added;
+    }
 }

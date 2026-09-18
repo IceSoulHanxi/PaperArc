@@ -166,6 +166,7 @@
     "api.DoubleChestApiMixin",
     "api.DisplaySlotEnumMixin",
     "api.EffectApiMixin",
+    "api.EffectEnumMixin",
     "api.EnchantmentApiMixin",
     "api.EnchantmentMenuAccessorMixin",
     "api.EnchantmentWrapperApiMixin",
