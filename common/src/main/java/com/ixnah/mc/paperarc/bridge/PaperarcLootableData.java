@@ -1,5 +1,9 @@
 package com.ixnah.mc.paperarc.bridge;
 
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -85,5 +89,66 @@ public final class PaperarcLootableData {
         long old = this.nextRefill;
         this.nextRefill = refillAt;
         return old;
+    }
+
+    // ---- NBT 落盘（A8/Y-3）----
+    //
+    // Paper 把这块状态写在 `Paper.LootableData` 复合标签里（`lastFill`/`nextRefill`/
+    // `lootedPlayers`），宿主是容器方块实体与载具实体。这里沿用同一套键名，
+    // 只在真有记账时才写，避免给每个方块实体/实体都多一个空标签。
+
+    private static final String NBT_KEY = "Paper.LootableData";
+    private static final String NBT_LAST_FILL = "lastFill";
+    private static final String NBT_NEXT_REFILL = "nextRefill";
+    private static final String NBT_LOOTED = "lootedPlayers";
+    private static final String NBT_UUID = "UUID";
+    private static final String NBT_TIME = "Time";
+
+    /** 宿主还没有过任何 lootable 记账时不落盘（绝大多数方块实体/实体都走这条）。 */
+    public static void saveIfPresent(Object owner, CompoundTag nbt) {
+        PaperarcLootableData data = ApiState.get(owner, KEY, null);
+        if (data == null || data.isEmpty()) {
+            return;
+        }
+        nbt.put(NBT_KEY, data.save());
+    }
+
+    public static void loadIfPresent(Object owner, CompoundTag nbt) {
+        if (!nbt.contains(NBT_KEY, Tag.TAG_COMPOUND)) {
+            return;
+        }
+        of(owner).load(nbt.getCompound(NBT_KEY));
+    }
+
+    private boolean isEmpty() {
+        return this.looted.isEmpty() && this.lastFilled == -1L && this.nextRefill == -1L;
+    }
+
+    private CompoundTag save() {
+        CompoundTag tag = new CompoundTag();
+        tag.putLong(NBT_LAST_FILL, this.lastFilled);
+        tag.putLong(NBT_NEXT_REFILL, this.nextRefill);
+        ListTag list = new ListTag();
+        this.looted.forEach((uuid, time) -> {
+            CompoundTag entry = new CompoundTag();
+            entry.putUUID(NBT_UUID, uuid);
+            entry.putLong(NBT_TIME, time);
+            list.add(entry);
+        });
+        tag.put(NBT_LOOTED, list);
+        return tag;
+    }
+
+    private void load(CompoundTag tag) {
+        this.lastFilled = tag.contains(NBT_LAST_FILL) ? tag.getLong(NBT_LAST_FILL) : -1L;
+        this.nextRefill = tag.contains(NBT_NEXT_REFILL) ? tag.getLong(NBT_NEXT_REFILL) : -1L;
+        this.looted.clear();
+        ListTag list = tag.getList(NBT_LOOTED, Tag.TAG_COMPOUND);
+        for (int i = 0; i < list.size(); i++) {
+            CompoundTag entry = list.getCompound(i);
+            if (entry.hasUUID(NBT_UUID)) {
+                this.looted.put(entry.getUUID(NBT_UUID), entry.getLong(NBT_TIME));
+            }
+        }
     }
 }

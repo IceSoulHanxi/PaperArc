@@ -6,6 +6,7 @@ import net.minecraft.world.entity.monster.Evoker;
 import org.bukkit.craftbukkit.v.entity.CraftEvoker;
 import org.bukkit.craftbukkit.v.entity.CraftSheep;
 import org.jetbrains.annotations.Nullable;
+import com.ixnah.mc.paperarc.bridge.EvokerWololoBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -22,22 +23,19 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(CraftEvoker.class)
 public abstract class CraftEvokerApiMixin {
 
-    // Paper 在 NMS Evoker 上有 wololoTarget 字段；Arclight 无，注入 Craft 字段（CraftSheep 引用）。
-    @Unique
-    private org.bukkit.entity.Sheep wololoTarget;
-
     @Shadow
     public abstract Evoker getHandle();
 
     @Unique
     @Nullable
     private Sheep paperarc$nmsWololoTarget() {
-        if (this.wololoTarget instanceof CraftSheep craftSheep) {
-            Sheep sheep = craftSheep.getHandle();
+        // A8/Y-3：字段挪到 NMS Evoker 上（EvokerFieldsMixin），与 Paper 同宿主
+        Sheep sheep = ((EvokerWololoBridge) getHandle()).paper$getWololoTarget();
+        if (sheep != null) {
             if (!sheep.isRemoved()) {
                 return sheep;
             }
-            this.wololoTarget = null;
+            ((EvokerWololoBridge) getHandle()).paper$setWololoTarget(null);
         }
         return null;
     }
@@ -62,12 +60,12 @@ public abstract class CraftEvokerApiMixin {
     @Unique
     public void setWololoTarget(@Nullable org.bukkit.entity.Sheep sheep) {
         if (sheep == null) {
-            this.wololoTarget = null;
+            ((EvokerWololoBridge) getHandle()).paper$setWololoTarget(null);
             getHandle().setTarget(null);
             return;
         }
         Sheep nms = ((CraftSheep) sheep).getHandle();
-        this.wololoTarget = sheep;
+        ((EvokerWololoBridge) getHandle()).paper$setWololoTarget(nms);
         getHandle().setTarget(nms);
     }
 }

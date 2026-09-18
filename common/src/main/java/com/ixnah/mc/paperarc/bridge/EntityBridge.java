@@ -28,4 +28,14 @@ public interface EntityBridge {
     net.kyori.adventure.util.TriState paper$frictionState();
 
     void paper$setFrictionState(net.kyori.adventure.util.TriState state);
+
+    /** Paper 的 {@code Entity.spawnedViaMobSpawner}（{@code Entity#fromMobSpawner()}）。 */
+    boolean paper$spawnedViaMobSpawner();
+
+    void paper$setSpawnedViaMobSpawner(boolean spawnedViaMobSpawner);
+
+    /** Paper 的 {@code Entity.spawnReason}（{@code Entity#getEntitySpawnReason()}）。 */
+    org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason paper$spawnReason();
+
+    void paper$setSpawnReason(org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason reason);
 }

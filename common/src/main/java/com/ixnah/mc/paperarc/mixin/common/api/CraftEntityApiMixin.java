@@ -258,16 +258,16 @@ public abstract class CraftEntityApiMixin {
 
     @Unique
     public boolean fromMobSpawner() {
-        // Spigot 的 NMS 字段 spawnedViaMobSpawner 在 Arclight 1.20.1 上**不存在**
-        // （vanilla 没有、Arclight 的 EntityMixin 也没注入，已逐个核对），原先的反射
-        // 恒取不到值。语义不变地返回默认值，登记在 docs/gaps.md。
-        return false;
+        // A8/Y-3（E6）：字段由 EntityFieldsMixin 注入、ServerLevelSpawnReasonMixin 写入、
+        // Entity#saveWithoutId/load 落盘，不再是恒定的默认值。
+        return ((com.ixnah.mc.paperarc.bridge.EntityBridge) this.getHandle()).paper$spawnedViaMobSpawner();
     }
 
     @Unique
     public CreatureSpawnEvent.SpawnReason getEntitySpawnReason() {
-        // 同 fromMobSpawner()：Spigot 的 NMS 字段 spawnReason 在 Arclight 1.20.1 上不存在。
-        return CreatureSpawnEvent.SpawnReason.DEFAULT;
+        CreatureSpawnEvent.SpawnReason reason =
+                ((com.ixnah.mc.paperarc.bridge.EntityBridge) this.getHandle()).paper$spawnReason();
+        return reason == null ? CreatureSpawnEvent.SpawnReason.DEFAULT : reason;
     }
 
     @Unique
@@ -356,8 +356,8 @@ public abstract class CraftEntityApiMixin {
         }
         Entity handle = this.getHandle();
         handle.moveTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
-        // 注：Arclight 1.20.1 的 NMS Entity 上没有 Spigot 的 spawnReason 字段，
-        // 无处保存 reason（见 getEntitySpawnReason()）。
+        // A8/Y-3：reason 现在真的存得下（EntityFieldsMixin 的 spawnReason 字段）。
+        ((com.ixnah.mc.paperarc.bridge.EntityBridge) handle).paper$setSpawnReason(reason);
         net.minecraft.world.level.Level level = handle.level();
         try {
             // Spigot patches addFreshEntity(Entity, SpawnReason) onto Level;

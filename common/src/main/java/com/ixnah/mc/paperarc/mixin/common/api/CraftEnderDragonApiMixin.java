@@ -1,5 +1,6 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
+import com.ixnah.mc.paperarc.bridge.EnderDragonPodiumBridge;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.level.levelgen.feature.EndPodiumFeature;
@@ -17,16 +18,12 @@ import org.spongepowered.asm.mixin.Unique;
  *
  * Paper stores the custom podium in a new private NMS field {@code EnderDragon.podium}
  * (vanilla 1.21.1 has none) and falls back to {@code EndPodiumFeature.getLocation(fightOrigin)}.
- * Since the Craft-host mixin cannot declare NMS fields, the custom podium lives in
- * com.ixnah.mc.paperarc.bridge.ApiState; the vanilla default is computed exactly like Paper.
+ * A8/Y-3：自定义祭坛已挪到 NMS {@code EnderDragon} 上（{@code EnderDragonFieldsMixin}），
+ * 与 Paper 同宿主；没设过时按 Paper 的公式用 {@code EndPodiumFeature.getLocation(fightOrigin)}。
+ * 与 Paper 一样不落盘。
  */
 @Mixin(CraftEnderDragon.class)
 public abstract class CraftEnderDragonApiMixin {
-
-    // Paper stores the custom podium in a private NMS field; here it lives in an
-    // injected Craft field (vanilla default computed like Paper).
-    @Unique
-    private BlockPos podium;
 
     @Shadow
     public abstract EnderDragon getHandle();
@@ -38,21 +35,21 @@ public abstract class CraftEnderDragonApiMixin {
 
     @Unique
     public Location getPodium() {
-        BlockPos pos = this.podium != null
-            ? this.podium
-            : EndPodiumFeature.getLocation(getHandle().getFightOrigin());
+        BlockPos custom = ((EnderDragonPodiumBridge) getHandle()).paper$getPodium();
+        BlockPos pos = custom != null ? custom : EndPodiumFeature.getLocation(getHandle().getFightOrigin());
         return new Location(paperarc$world(), pos.getX(), pos.getY(), pos.getZ());
     }
 
     @Unique
     public void setPodium(@Nullable Location location) {
         if (location == null) {
-            this.podium = null;
+            ((EnderDragonPodiumBridge) getHandle()).paper$setPodium(null);
             return;
         }
         if (location.getWorld() != null && !location.getWorld().equals(paperarc$world())) {
             throw new IllegalArgumentException("You cannot set a podium in a different world to where the dragon is");
         }
-        this.podium = new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+        ((EnderDragonPodiumBridge) getHandle()).paper$setPodium(
+                new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ()));
     }
 }

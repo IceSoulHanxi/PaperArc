@@ -15,4 +15,13 @@ import org.bukkit.craftbukkit.v.CraftWorld;
 public interface WorldBridge {
 
     CraftWorld bridge$getWorld();
+
+    /**
+     * Arclight 在每次 {@code addFreshEntity/addWithUUID/…} 之前把生成原因压进
+     * {@code ServerLevel} 上的一个字段，{@code addEntity} 里读出来派发
+     * {@code CreatureSpawnEvent} 之后就清掉。A8/Y-3 用它在 {@code addEntity} 的 HEAD
+     * 把原因写进 {@code Entity.spawnReason}（Paper 是直接在
+     * {@code addFreshEntity(Entity, SpawnReason)} 里写）。
+     */
+    org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason bridge$getAddEntityReason();
 }
