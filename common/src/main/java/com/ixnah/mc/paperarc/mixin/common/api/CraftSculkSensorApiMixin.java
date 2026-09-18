@@ -1,48 +1,41 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.google.common.base.Preconditions;
+import com.ixnah.mc.paperarc.bridge.SculkSensorRangeBridge;
 import net.minecraft.world.level.block.entity.SculkSensorBlockEntity;
 import org.bukkit.craftbukkit.v.block.CraftSculkSensor;
 import com.ixnah.mc.paperarc.bridge.craft.CraftBlockEntityStateBridge;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 /**
  * Port of Paper's Configurable-sculk-sensor-listener-range.patch additions on
- * {@link CraftSculkSensor}: {@code get/setListenerRange()} plus the
- * {@code get/setPhase(Phase)} accessors.
+ * {@link CraftSculkSensor}: {@code get/setListenerRange()}.
  *
- * <p>Vanilla NMS has no per-sensor range-override field (that is a
- * Paper-side addition), so the range lives in the ApiState side map keyed by
- * the Craft state instance; unset reads fall back to the vanilla listener
- * radius from the snapshot's vibration user.</p>
+ * <p>范围覆盖值存在 NMS 侧（{@link SculkSensorRangeBridge}，落在快照方块实体的
+ * {@code VibrationUser} 上），不是 Craft 字段 —— {@code getState()} 每次返回新快照，
+ * Craft 侧字段活不过一次取状态，而且不会影响真实的振动监听半径也不持久化
+ * （checklist §1.10 an，A6/X-1）。{@code update()} 经 NBT 回写到真实方块实体。</p>
  */
 @Mixin(CraftSculkSensor.class)
 public abstract class CraftSculkSensorApiMixin {
 
-    // Paper 无 per-sensor override 字段（side addition）；注入 Craft 字段，未设读回退 vanilla。
     @Unique
-    private Integer listenerRange;
-
-    @Unique
-    private SculkSensorBlockEntity getSnapshot() {
+    private SculkSensorBlockEntity paperarc$snapshot() {
         return (SculkSensorBlockEntity) ((CraftBlockEntityStateBridge) (Object) this).paperarc$getSnapshot();
     }
 
     // Paper start - Configurable sculk sensor listener range
     @Unique
     public int getListenerRange() {
-        if (this.listenerRange != null) {
-            return this.listenerRange;
-        }
-        return this.getSnapshot().getListener().getListenerRadius();
+        return this.paperarc$snapshot().getListener().getListenerRadius();
     }
 
     @Unique
     public void setListenerRange(int range) {
         Preconditions.checkArgument(range > 0, "Vibration listener range must be greater than 0");
-        this.listenerRange = range;
+        ((SculkSensorRangeBridge) this.paperarc$snapshot().getVibrationUser())
+                .paperarc$setRangeOverride(range);
     }
     // Paper end - Configurable sculk sensor listener range
 }
