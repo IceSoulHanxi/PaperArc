@@ -62,7 +62,15 @@ public abstract class CraftSchoolableFishApiMixin {
     @Unique
     public SchoolableFish getSchoolLeader() {
         AbstractSchoolingFish leader = this.paperarc$schooling().leader;
-        // getBukkitEntity() 是 CraftBukkit 运行时注入方法，编译期不可见，走桥接工厂
-        return leader == null ? null : PaperArcBridge.<SchoolableFish>bukkitEntity(leader);
+        if (leader == null) {
+            return null;
+        }
+        // 必须返回**同一个** Bukkit 包装对象：Paper 走 NMS 的 getBukkitEntity()（带缓存），
+        // 而 PaperArcBridge.bukkitEntity 每次都新建一个 CraftEntity（CraftEntity.getEntity
+        // 的字节码就是一长串 new，javap 核对），插件拿到的 leader 与自己手上的鱼不是同一对象。
+        // Bukkit.getEntity(uuid) 最终走 NMS Entity#getBukkitEntity()，拿到的是缓存那份。
+        org.bukkit.entity.Entity cached = org.bukkit.Bukkit.getEntity(leader.getUUID());
+        return cached instanceof SchoolableFish fish ? fish
+                : PaperArcBridge.<SchoolableFish>bukkitEntity(leader);
     }
 }
