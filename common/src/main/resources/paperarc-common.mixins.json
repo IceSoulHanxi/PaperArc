@@ -181,6 +181,7 @@
     "api.EquipmentSlotApiMixin",
     "api.EyeOfEnderAccessorMixin",
     "api.HopperBlockEntityInvokerMixin",
+    "api.ItemStackApiMixin",
     "api.JavaPluginApiMixin",
     "api.LocationApiMixin",
     "api.LocationFinePositionMixin",
