@@ -465,4 +465,21 @@ public final class EventCauseState {
     public static void clearLastInventoryOpenEvent() {
         LAST_INVENTORY_OPEN_EVENT.remove();
     }
+
+    // ---- PlayerPurchaseEvent 的两个开关（A8/Y-4，gaps.md E2）----
+
+    private static final ThreadLocal<io.papermc.paper.event.player.PlayerPurchaseEvent> LAST_PURCHASE_EVENT =
+            new ThreadLocal<>();
+
+    public static void setLastPurchaseEvent(io.papermc.paper.event.player.PlayerPurchaseEvent event) {
+        LAST_PURCHASE_EVENT.set(event);
+    }
+
+    public static io.papermc.paper.event.player.PlayerPurchaseEvent getLastPurchaseEvent() {
+        return LAST_PURCHASE_EVENT.get();
+    }
+
+    public static void clearLastPurchaseEvent() {
+        LAST_PURCHASE_EVENT.remove();
+    }
 }

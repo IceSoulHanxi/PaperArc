@@ -494,10 +494,9 @@ public abstract class CraftWorldApiMixin {
      */
     @Unique
     public org.bukkit.generator.BiomeProvider vanillaBiomeProvider() {
-        throw new UnsupportedOperationException(
-            "PaperArc: World#vanillaBiomeProvider() needs Paper's extended CraftWorldInfo "
-                + "constructor storing vanillaChunkGenerator + RegistryAccess; Arclight's base "
-                + "CraftWorldInfo holds neither");
+        // A8/Y-4：CraftWorld 侧能拿到 ServerLevel，照 paper 的
+        // Expose-vanilla-BiomeProvider-from-WorldInfo.patch 直接造
+        return com.ixnah.mc.paperarc.bridge.PaperarcBiomeProviders.fromLevel(this.getHandle());
     }
 
     /** {@code ForwardingAudience#audiences()}（A4-3 父接口差集）：本世界的在线玩家。 */

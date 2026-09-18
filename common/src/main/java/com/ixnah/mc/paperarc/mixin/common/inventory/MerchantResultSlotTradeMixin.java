@@ -38,8 +38,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * a WrapOperation on Merchant.notifyTrade substitutes the stored offer so the
  * modified trade applies to vanilla processing.
  *
- * Deviation from Paper (documented): checkTakeAchievements runs BEFORE the
- * event instead of after it (vanilla order preserved on the success path).
+ * <p>A8/Y-4（gaps.md E2）复核过顺序：{@code checkTakeAchievements(stack)} 是
+ * {@code onTake} 的**第一句**（`javap -c` 核对 forge 映射后的
+ * {@code MerchantResultSlot#onTake}，offset 2），而我们的事件挂在 {@code @At("HEAD")}，
+ * 也就是**在它之前**触发、取消时 {@code ci.cancel()} 连它一起跳过 ——
+ * 与 paper 把那一句挪到事件之后的效果一致，原先记的"顺序有偏差"是错的。
+ *
+ * <p>同时补上 {@code PlayerPurchaseEvent} 的两个开关
+ * （{@code willIncreaseTradeUses()} / {@code isRewardingExp()}）：
+ * paper 是把 {@code increaseUses}/{@code rewardTradeXp} 从
+ * {@code notifyTrade} 提到新方法 {@code processTrade(offer, event)} 里按开关执行；
+ * 我们改成把事件压进 {@link com.ixnah.mc.paperarc.bridge.EventCauseState}，
+ * 由 {@code AbstractVillagerTradeMixin} 在 {@code notifyTrade} 里读回。
  */
 @Mixin(MerchantResultSlot.class)
 public abstract class MerchantResultSlotTradeMixin {
@@ -77,6 +87,7 @@ public abstract class MerchantResultSlotTradeMixin {
         }
 
         PaperArcBridge.fire(event);
+        com.ixnah.mc.paperarc.bridge.EventCauseState.setLastPurchaseEvent(event);
         if (event.isCancelled()) {
             stack.setCount(0);
             ((org.bukkit.entity.Player) PaperArcBridge.bukkitPlayer(serverPlayer)).updateInventory();
@@ -85,6 +96,11 @@ public abstract class MerchantResultSlotTradeMixin {
             this.paperarc$bukkitTradeOffer =
                     CraftMerchantRecipe.fromBukkit(event.getTrade()).toMinecraft();
         }
+    }
+
+    @Inject(method = "onTake", at = @At("RETURN"))
+    private void paperarc$clearPurchaseEvent(Player who, ItemStack stack, CallbackInfo ci) {
+        com.ixnah.mc.paperarc.bridge.EventCauseState.clearLastPurchaseEvent();
     }
 
     @WrapOperation(
