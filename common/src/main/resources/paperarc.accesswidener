@@ -193,3 +193,7 @@ mutable field net/minecraft/world/level/block/entity/BannerBlockEntity name Lnet
 
 # Player.hurtDir: Paper 的 CraftHumanEntity#setHurtDirection 写的就是这个 protected 字段
 accessible field net/minecraft/world/entity/player/Player hurtDir F
+
+# SculkSensor 的 VibrationUser 内部类是 protected：listener-range 覆盖要挂 mixin
+accessible class net/minecraft/world/level/block/entity/SculkSensorBlockEntity$VibrationUser
+accessible class net/minecraft/world/level/block/entity/CalibratedSculkSensorBlockEntity$VibrationUser

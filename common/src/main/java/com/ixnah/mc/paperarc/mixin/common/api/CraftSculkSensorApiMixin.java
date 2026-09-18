@@ -15,20 +15,14 @@ import org.spongepowered.asm.mixin.Unique;
  * {@link CraftSculkSensor}: {@code get/setListenerRange()} plus the
  * {@code get/setPhase(Phase)} accessors.
  *
- * <p>Vanilla NMS has no per-sensor range-override field (that is a
- * Paper-side addition), so the range lives in the ApiState side map keyed by
- * the Craft state instance; unset reads fall back to the vanilla listener
- * radius from the snapshot's vibration user.</p>
+ * <p>覆盖值存在 NMS {@code SculkSensorBlockEntity.rangeOverride} 上
+ * （{@code SculkSensorBlockEntityFieldsMixin}，NBT 键 {@code Paper.ListenerRange}），
+ * 因为方块状态是快照、每次 {@code getState()} 都是新的 Craft 包装对象，
+ * 挂在包装对象上的状态取一次就丢（checklist §1.10 an）。未设置时回落到
+ * 快照的 vibration user 的 vanilla 半径。</p>
  */
 @Mixin(CraftSculkSensor.class)
 public abstract class CraftSculkSensorApiMixin {
-
-    /** Paper 侧补充状态（原 ApiState 副表键 "paperarc:listenerRange"）；null = 未设置，读取时回落默认值。 */
-    @Unique
-    private Integer paperarc$listenerRange;
-
-    @Unique
-    private static final String PAPERARC_LISTENER_RANGE_KEY = "paperarc:listenerRange";
 
     @Unique
     private SculkSensorBlockEntity getSnapshot() {
@@ -48,7 +42,8 @@ public abstract class CraftSculkSensorApiMixin {
     // Paper start - Configurable sculk sensor listener range
     @Unique
     public int getListenerRange() {
-        Integer override = (this.paperarc$listenerRange != null ? this.paperarc$listenerRange : (null));
+        Integer override = ((com.ixnah.mc.paperarc.bridge.SculkSensorRangeBridge) this.getSnapshot())
+                .paperarc$getRangeOverride();
         if (override != null) {
             return override;
         }
@@ -58,7 +53,7 @@ public abstract class CraftSculkSensorApiMixin {
     @Unique
     public void setListenerRange(int range) {
         Preconditions.checkArgument(range > 0, "Vibration listener range must be greater than 0");
-        this.paperarc$listenerRange = range;
+        ((com.ixnah.mc.paperarc.bridge.SculkSensorRangeBridge) this.getSnapshot()).paperarc$setRangeOverride(range);
     }
     // Paper end - Configurable sculk sensor listener range
 

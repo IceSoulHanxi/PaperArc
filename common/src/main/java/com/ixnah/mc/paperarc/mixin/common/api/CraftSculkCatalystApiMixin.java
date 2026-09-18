@@ -16,19 +16,11 @@ import org.spongepowered.asm.mixin.Unique;
 /**
  * Port of Paper's SculkCatalyst-bloom-API additions on
  * {@link CraftSculkCatalyst}: {@code bloom(Position, int)} plus the
- * {@code isBloom()}/{@code setBloom(boolean)} accessors declared by
- * paper-api (no vanilla per-catalyst storage exists, so those two use the
- * ApiState side map).
+ * paper-api 的 {@code SculkCatalyst} 只有两个 {@code bloom(...)} 重载
+ * （javap 核对），没有 isBloom/setBloom，所以这里不需要任何状态字段。
  */
 @Mixin(CraftSculkCatalyst.class)
 public abstract class CraftSculkCatalystApiMixin {
-
-    /** Paper 侧补充状态（原 ApiState 副表键 "paperarc:bloom"）；null = 未设置，读取时回落默认值。 */
-    @Unique
-    private Boolean paperarc$bloom;
-
-    @Unique
-    private static final String PAPERARC_BLOOM_KEY = "paperarc:bloom";
 
     @Unique
     private boolean isPlaced() {
