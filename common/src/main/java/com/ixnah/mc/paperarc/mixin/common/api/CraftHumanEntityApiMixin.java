@@ -308,13 +308,22 @@ public abstract class CraftHumanEntityApiMixin {
     }
 
     /**
-     * Paper's InventoryCloseEvent-Reason-API overload. Vanilla 1.20.1 has only the
-     * no-arg {@code ServerPlayer.closeContainer()}; the Paper-injected
-     * {@code closeContainer(Reason)} overload does not exist, so the reason is
-     * accepted for interface compatibility and the vanilla close path is used.
+     * Paper 的 {@code closeInventory(Reason)}（checklist E1）。
+     *
+     * <p>vanilla 1.20.1 只有无参的 {@code ServerPlayer.closeContainer()}，
+     * Paper 那个带 Reason 的重载不存在；A7/Y-2 批 2 起把 reason 压进
+     * {@link com.ixnah.mc.paperarc.bridge.EventCauseState}，由
+     * {@code InventoryCloseEventApiMixin} 在事件构造器里取回，
+     * 于是 {@code InventoryCloseEvent#getReason()} 真的拿得到这里传的值。
      */
     @Unique
     public void closeInventory(org.bukkit.event.inventory.InventoryCloseEvent.Reason reason) {
-        this.getHandle().closeContainer();
+        com.ixnah.mc.paperarc.bridge.EventCauseState.setInventoryCloseReason(
+                reason == null ? org.bukkit.event.inventory.InventoryCloseEvent.Reason.PLUGIN : reason);
+        try {
+            this.getHandle().closeContainer();
+        } finally {
+            com.ixnah.mc.paperarc.bridge.EventCauseState.clearInventoryCloseReason();
+        }
     }
 }

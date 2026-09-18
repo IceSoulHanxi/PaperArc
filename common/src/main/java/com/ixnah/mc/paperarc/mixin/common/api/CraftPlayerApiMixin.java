@@ -1000,12 +1000,11 @@ public abstract class CraftPlayerApiMixin {
      * <p>{@code PlayerKickEvent$Cause} does not exist in the Arclight runtime, so it is
      * supplied by the RuntimeClassInjector (META-INF/paperarc/runtime/injections.json).
      *
-     * <p>Degradation vs Paper: Paper threads the cause through its own
-     * {@code ServerGamePacketListenerImpl#disconnect(Component, Cause)} overload so the
-     * resulting {@code PlayerKickEvent} carries it. Arclight only has the vanilla
-     * single-argument {@code disconnect(net.minecraft.network.chat.Component)} and fires
-     * its own PlayerKickEvent internally, so the cause cannot be propagated and is
-     * accepted/ignored here; the kick itself behaves exactly as Paper's.
+     * <p>Arclight 没有 Paper 的 {@code disconnect(Component, Cause)} 重载，
+     * 而是在自己的 {@code disconnect(String)} 里构造 PlayerKickEvent；A7/Y-2 批 2 起
+     * 把 cause 压进 {@link com.ixnah.mc.paperarc.bridge.EventCauseState}，
+     * 由 {@code PlayerKickEventApiMixin} 在事件构造器里取回，
+     * 于是 {@code PlayerKickEvent#getCause()} 真的拿得到这里传的值。
      */
     @Unique
     public void kick(Component message, org.bukkit.event.player.PlayerKickEvent.Cause cause) {
@@ -1013,7 +1012,13 @@ public abstract class CraftPlayerApiMixin {
         net.minecraft.server.network.ServerGamePacketListenerImpl connection = this.getHandle().connection;
         if (connection != null) {
             Component actual = message == null ? Component.empty() : message;
-            connection.disconnect(Serializer.fromJson(GsonComponentSerializer.gson().serialize(actual)));
+            com.ixnah.mc.paperarc.bridge.EventCauseState.setKickCause(
+                    cause == null ? org.bukkit.event.player.PlayerKickEvent.Cause.PLUGIN : cause);
+            try {
+                connection.disconnect(Serializer.fromJson(GsonComponentSerializer.gson().serialize(actual)));
+            } finally {
+                com.ixnah.mc.paperarc.bridge.EventCauseState.clearKickCause();
+            }
         }
     }
 
