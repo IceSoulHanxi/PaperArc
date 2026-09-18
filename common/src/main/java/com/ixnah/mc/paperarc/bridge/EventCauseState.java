@@ -155,4 +155,37 @@ public final class EventCauseState {
     public static void clearThunderCause() {
         THUNDER.remove();
     }
+
+    // ---- 触发点上下文（批 3）----
+
+    private static final ThreadLocal<org.bukkit.block.BlockFace> BLOCK_DAMAGE_FACE = new ThreadLocal<>();
+    private static final ThreadLocal<org.bukkit.entity.Entity> EXP_SOURCE = new ThreadLocal<>();
+
+    public static void setBlockDamageFace(org.bukkit.block.BlockFace face) {
+        BLOCK_DAMAGE_FACE.set(face);
+    }
+
+    public static org.bukkit.block.BlockFace takeBlockDamageFace() {
+        org.bukkit.block.BlockFace face = BLOCK_DAMAGE_FACE.get();
+        BLOCK_DAMAGE_FACE.remove();
+        return face;
+    }
+
+    public static void clearBlockDamageFace() {
+        BLOCK_DAMAGE_FACE.remove();
+    }
+
+    public static void setExperienceSource(org.bukkit.entity.Entity source) {
+        EXP_SOURCE.set(source);
+    }
+
+    public static org.bukkit.entity.Entity takeExperienceSource() {
+        org.bukkit.entity.Entity source = EXP_SOURCE.get();
+        EXP_SOURCE.remove();
+        return source;
+    }
+
+    public static void clearExperienceSource() {
+        EXP_SOURCE.remove();
+    }
 }
