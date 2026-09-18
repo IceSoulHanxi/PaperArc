@@ -322,16 +322,6 @@ public abstract class CraftPlayerApiMixin {
         return new com.ixnah.mc.paperarc.bridge.PaperArcSkinParts(raw);
     }
 
-    @Unique
-    private static final String PAPERARC$KEY_PLAYER_LIST_NAME = "playerListName";
-    @Unique
-    private static final String PAPERARC$KEY_AFFECTS_SPAWNING = "affectsSpawning";
-    @Unique
-    private static final String PAPERARC$KEY_FLYING_FALL_DAMAGE = "flyingFallDamage";
-    @Unique
-    private static final String PAPERARC$KEY_SEND_VIEW_DISTANCE = "sendViewDistance";
-    @Unique
-    private static final String PAPERARC$KEY_SIMULATION_DISTANCE = "simulationDistance";
 
     @Shadow
     public abstract String getPlayerListName();

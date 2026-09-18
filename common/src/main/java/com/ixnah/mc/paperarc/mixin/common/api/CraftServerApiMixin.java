@@ -112,11 +112,7 @@ public abstract class CraftServerApiMixin {
     @Unique
     private PotionBrewer paperarc$potionBrewer;
 
-    @Unique
-    private static final String PAPERARC_PERMISSION_MSG_KEY = "paperarc:permissionMessage";
 
-    @Unique
-    private static final String PAPERARC_PLUGINS_FOLDER_KEY = "paperarc:pluginsFolder";
 
     /**
      * Classic Bukkit default, matching bukkit.yml settings.permission-message
@@ -253,14 +249,8 @@ public abstract class CraftServerApiMixin {
 
     // ===== batch blocked-1 additions (scheduler / command-sender / explorer-map / mob-goals) =====
 
-    @Unique
-    private static final String PAPERARC_ASYNC_SCHEDULER_KEY = "paperarc:asyncScheduler";
 
-    @Unique
-    private static final String PAPERARC_GLOBAL_SCHEDULER_KEY = "paperarc:globalRegionScheduler";
 
-    @Unique
-    private static final String PAPERARC_MOB_GOALS_KEY = "paperarc:mobGoals";
 
     /**
      * Sync-fallback: tasks run on Bukkit's shared async worker pool, not on
@@ -431,18 +421,9 @@ public abstract class CraftServerApiMixin {
         return new CraftPlayerProfile(new GameProfile(uniqueId, name));
     }
 
-    @Unique
-    private static final String PAPERARC_POTION_BREWER_KEY = "paperarc:potionBrewer";
 
-    @Unique
-    private static final String PAPERARC_SHUTDOWN_MESSAGE_KEY = "paperarc:shutdownMessage";
 
-    @Unique
-    private static final String PAPERARC_SUGGEST_PLAYER_NAMES_KEY =
-            "paperarc:suggestPlayerNamesWhenNullTabCompletions";
 
-    @Unique
-    private static final String PAPERARC_IS_STOPPING_KEY = "paperarc:isStopping";
 
     /**
      * {@code MinecraftServer.recentTps}（1m/5m/15m 平均值）由 Arclight 的

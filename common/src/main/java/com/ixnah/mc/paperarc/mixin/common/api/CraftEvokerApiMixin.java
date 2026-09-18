@@ -25,8 +25,6 @@ public abstract class CraftEvokerApiMixin {
     @Unique
     private org.bukkit.entity.Sheep paperarc$wololoTarget;
 
-    @Unique
-    private static final String PAPERARC$WOLOLO_KEY = "paperarc.wololoTarget";
 
     @Shadow
     public abstract Evoker getHandle();

@@ -27,8 +27,6 @@ public abstract class CraftEnderDragonApiMixin {
     @Unique
     private BlockPos paperarc$podium;
 
-    @Unique
-    private static final String PAPERARC$PODIUM_KEY = "paperarc.podium";
 
     @Shadow
     public abstract EnderDragon getHandle();

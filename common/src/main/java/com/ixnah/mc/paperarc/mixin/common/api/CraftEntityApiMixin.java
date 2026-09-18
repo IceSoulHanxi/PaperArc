@@ -44,12 +44,6 @@ import java.util.concurrent.CompletableFuture;
 @Mixin(CraftEntity.class)
 public abstract class CraftEntityApiMixin {
 
-    @Unique
-    private static final String PAPERARC_ORIGIN_KEY = "paperarc:origin";
-    @Unique
-    private static final String PAPERARC_FIXED_POSE_KEY = "paperarc:fixedPose";
-    @Unique
-    private static final String PAPERARC_FREEZE_LOCKED_KEY = "paperarc:freezeLocked";
 
     @Shadow
     public abstract Entity getHandle();
