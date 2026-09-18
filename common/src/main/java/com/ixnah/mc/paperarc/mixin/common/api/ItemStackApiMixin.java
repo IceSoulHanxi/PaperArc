@@ -1,6 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.ixnah.mc.paperarc.bridge.api.PaperarcItemStacks;
+import com.ixnah.mc.paperarc.mixin.annotation.Widen;
 import io.papermc.paper.inventory.tooltip.TooltipContext;
 import io.papermc.paper.persistence.PersistentDataContainerView;
 import io.papermc.paper.registry.set.RegistryKeySet;
@@ -43,14 +44,91 @@ import java.util.function.UnaryOperator;
  * （{@code PersistentDataContainerIfaceMixin} 已让它返回 View）；
  * {@code getMaxItemUseDuration} → {@code CraftItemStack.asNMSCopy} 后问 NMS。</p>
  *
- * <p><b>7 个 static 方法（of ×2 / empty / deserializeBytes /
- * serializeItemsAsBytes ×2 / deserializeItemsFromBytes）没补</b>：Mixin 的
- * {@code MixinApplicatorStandard.checkMethodVisibility} 明确拒绝把**非 private 的
- * static 方法**合并进目标类（真机实测 {@code InvalidMixinException: contains
- * non-private static method}），这条路走不通，见 docs/mixin-conventions.md。</p>
+ * <p>7 个 {@code static} 方法写成 {@code private static} + {@code @Widen}：Mixin 拒绝
+ * 合并非 private 的 static 方法，放宽由 {@code bridge.WidenPostProcessor} 在 postApply
+ * 阶段做（B5，见 docs/mixin-conventions.md 的「@Widen」一节）。</p>
  */
 @Mixin(ItemStack.class)
 public abstract class ItemStackApiMixin {
+
+    @Unique
+    @Widen(because = "paper-api: public static ItemStack of(...)")
+    private static ItemStack of(Material type) {
+        return new ItemStack(type);
+    }
+
+    @Unique
+    @Widen(because = "paper-api: public static ItemStack of(...)")
+    private static ItemStack of(Material type, int amount) {
+        return new ItemStack(type, amount);
+    }
+
+    @Unique
+    @Widen(because = "paper-api: public static ItemStack deserializeBytes(...)")
+    private static ItemStack deserializeBytes(byte[] bytes) {
+        return Bukkit.getUnsafe().deserializeItem(bytes);
+    }
+
+    @Unique
+    @Widen(because = "paper-api: public static byte[] serializeItemsAsBytes(...)")
+    private static byte[] serializeItemsAsBytes(Collection<ItemStack> items) {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            DataOutputStream output = new DataOutputStream(outputStream);
+            output.writeByte(1);
+            output.writeInt(items.size());
+            for (ItemStack item : items) {
+                if (item != null && !PaperarcItemStacks.isEmpty(item)) {
+                    byte[] itemBytes = item.serializeAsBytes();
+                    output.writeInt(itemBytes.length);
+                    output.write(itemBytes);
+                } else {
+                    output.writeInt(0);
+                }
+            }
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException("Error while writing itemstack", e);
+        }
+    }
+
+    @Unique
+    @Widen(because = "paper-api: public static byte[] serializeItemsAsBytes(...)")
+    private static byte[] serializeItemsAsBytes(ItemStack[] items) {
+        return serializeItemsAsBytes(Arrays.asList(items));
+    }
+
+    @Unique
+    @Widen(because = "paper-api: public static ItemStack[] deserializeItemsFromBytes(...)")
+    private static ItemStack[] deserializeItemsFromBytes(byte[] bytes) {
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes)) {
+            DataInputStream input = new DataInputStream(inputStream);
+            byte version = input.readByte();
+            if (version != 1) {
+                throw new IllegalArgumentException("Unsupported version or bad data: " + version);
+            }
+            int count = input.readInt();
+            ItemStack[] items = new ItemStack[count];
+            for (int i = 0; i < count; i++) {
+                int length = input.readInt();
+                if (length == 0) {
+                    items[i] = ItemStack.empty();
+                } else {
+                    byte[] itemBytes = new byte[length];
+                    input.readFully(itemBytes);
+                    items[i] = ItemStack.deserializeBytes(itemBytes);
+                }
+            }
+            return items;
+        } catch (IOException e) {
+            throw new RuntimeException("Error while reading itemstack", e);
+        }
+    }
+
+    @Unique
+    @Widen(because = "paper-api: public static ItemStack empty(...)")
+    private static ItemStack empty() {
+        return Bukkit.getUnsafe().createEmptyStack();
+    }
 
     @Unique
     private ItemStack paperarc$self() {

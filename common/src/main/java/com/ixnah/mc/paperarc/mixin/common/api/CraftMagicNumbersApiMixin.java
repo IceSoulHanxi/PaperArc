@@ -153,7 +153,7 @@ public abstract class CraftMagicNumbersApiMixin {
 
     @Unique
     public String getMainLevelName() {
-        net.minecraft.server.MinecraftServer server = server();
+        net.minecraft.server.MinecraftServer server = paperarc$server();
         if (server instanceof DedicatedServer dedicatedServer) {
             return dedicatedServer.getProperties().levelName;
         }
@@ -170,7 +170,7 @@ public abstract class CraftMagicNumbersApiMixin {
 
     @Unique
     public String getTimingsServerName() {
-        net.minecraft.server.MinecraftServer server = server();
+        net.minecraft.server.MinecraftServer server = paperarc$server();
         return server != null ? server.getMotd() : "PaperArc";
     }
 
@@ -268,7 +268,7 @@ public abstract class CraftMagicNumbersApiMixin {
     }
 
     @Unique
-    private static net.minecraft.server.MinecraftServer server() {
+    private static net.minecraft.server.MinecraftServer paperarc$server() {
         try {
             return ((org.bukkit.craftbukkit.v.CraftServer) PaperArcBridge.getServer()).getServer();
         } catch (Throwable ignored) {
