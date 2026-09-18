@@ -18,21 +18,26 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Material;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 
 /**
  * Adds Paper's CanPlaceOn/CanDestroy NBT API and the adventure {@code Component}
  * variants to the craft {@code CraftMetaItem} (package-private).
  *
- * <p>The NBT read/write integration (CAN_DESTROY/CAN_PLACE_ON {@code ItemMetaKey}s,
- * HANDLED_TAGS, BlockStateParser) is Paper-patch internals not present in Arclight;
- * here the keys are kept in-memory only and the legacy {@code getCanDestroy/
+ * <p><b>B8/Y-4（gaps.md G.1）</b>：两组键不再只存在内存里 —— 1.21.1 的落点是数据组件
+ * {@code minecraft:can_place_on} / {@code minecraft:can_break}，由
+ * {@code api.CraftItemStackAdventureModeMixin} 在 {@code CraftItemStack} 的
+ * {@code setItemMeta}/{@code getItemMeta} 两头读写，所以设进去的键真的会影响
+ * 冒险模式的放置/破坏判定，也随物品一起存档。legacy {@code getCanDestroy/
  * setCanDestroy/getCanPlaceOn/setCanPlaceOn} plus {@code ...Keys} accessors mirror
  * the Paper semantics. Adventure {@code displayName()/lore()} convert via the legacy
  * section serializer like Paper's {@code PaperAdventure.LEGACY_SECTION_UX}; bungee
  * {@code BaseComponent} variants round-trip through gson.</p>
  */
 @Mixin(targets = "org.bukkit.craftbukkit.v.inventory.CraftMetaItem")
-public abstract class CraftMetaItemApiMixin {
+public abstract class CraftMetaItemApiMixin
+        implements com.ixnah.mc.paperarc.bridge.craft.CraftMetaItemAdventureBridge {
 
     @org.spongepowered.asm.mixin.Shadow
     public abstract String getDisplayName();
@@ -51,6 +56,61 @@ public abstract class CraftMetaItemApiMixin {
 
     @Unique
     private Set<Namespaced> destroyableKeys = new HashSet<>();
+
+    @Override
+    public Set<Namespaced> paperarc$placeableKeys() {
+        return this.placeableKeys;
+    }
+
+    @Override
+    public Set<Namespaced> paperarc$destroyableKeys() {
+        return this.destroyableKeys;
+    }
+
+    @Override
+    public void paperarc$setPlaceableKeys(Collection<Namespaced> keys) {
+        this.placeableKeys.clear();
+        this.placeableKeys.addAll(keys);
+    }
+
+    @Override
+    public void paperarc$setDestroyableKeys(Collection<Namespaced> keys) {
+        this.destroyableKeys.clear();
+        this.destroyableKeys.addAll(keys);
+    }
+
+    /**
+     * 复制构造器要把两组键带过去。
+     *
+     * <p>{@code ItemStack#setItemMeta} 并不会把插件给的那个 meta 直接存下来 ——
+     * 它走 {@code CraftItemFactory#asMetaFor}，也就是 {@code new CraftMetaItem(meta)}
+     * 复制一份；{@code clone()} 同理。vanilla 的复制构造器当然不认识我们
+     * {@code @Unique} 加的两个字段，不补这一条，键在 {@code setItemMeta} 那一步就没了
+     * （探针 P40 实测 {@code hasItemMeta=false inMemory=[]}）。
+     */
+    @Inject(method = "<init>(Lorg/bukkit/craftbukkit/v/inventory/CraftMetaItem;)V",
+            at = @At("RETURN"), remap = false)
+    private void paperarc$copyAdventureKeys(org.bukkit.craftbukkit.v.inventory.CraftMetaItem meta,
+                                            org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
+        if (meta instanceof com.ixnah.mc.paperarc.bridge.craft.CraftMetaItemAdventureBridge source) {
+            this.placeableKeys.addAll(source.paperarc$placeableKeys());
+            this.destroyableKeys.addAll(source.paperarc$destroyableKeys());
+        }
+    }
+
+    /**
+     * 有 CanPlaceOn/CanDestroy 就不算空 meta。
+     *
+     * <p>不改这条，落盘就是空跑：{@code ItemStack#hasItemMeta()} 与
+     * {@code CraftItemStack#setItemMeta} 都先问 {@code CraftMetaItem#isEmpty()}，
+     * 只带这两组键的 meta 被判成"空"后压根不会走到写物品那一步
+     * （探针 P40 的序列化往返当场抓到：两边都是 {@code []}）。Paper 同样在
+     * {@code isEmpty()} 里算上这两组键。
+     */
+    @com.llamalad7.mixinextras.injector.ModifyReturnValue(method = "isEmpty", at = @At("RETURN"), remap = false)
+    private boolean paperarc$notEmptyWithAdventureKeys(boolean empty) {
+        return empty && !this.hasPlaceableKeys() && !this.hasDestroyableKeys();
+    }
 
     // ------------------------------------------------------------------
     // CanPlaceOn / CanDestroy (legacy Material + Namespaced keys)

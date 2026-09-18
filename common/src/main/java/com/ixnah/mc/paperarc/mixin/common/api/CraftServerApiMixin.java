@@ -383,17 +383,14 @@ public abstract class CraftServerApiMixin {
     }
 
     /**
-     * Not implemented: {@code DatapackManager} needs io.papermc.paper.datapack
-     * wrappers over the NMS PackRepository (Datapack/DatapackSet lifecycle),
-     * which this vanilla-based build does not have. Thrown instead of returning
-     * a broken wrapper — see docs/reports/blocked-batch1.md.
+     * B8/Y-4：从"抛 UOE"换成真的包一层 NMS {@code PackRepository}
+     * （见 {@link com.ixnah.mc.paperarc.bridge.PaperarcDatapackManager}）。
+     * {@code setEnabled} 走完整的 {@code reloadResources}，不是只改个标记。
      */
     @Unique
     public io.papermc.paper.datapack.DatapackManager getDatapackManager() {
-        throw new UnsupportedOperationException(
-                "PaperArc: DatapackManager requires io.papermc.paper.datapack.Datapack wrappers over the "
-                        + "NMS PackRepository, which are not present in this vanilla-based build; "
-                        + "see docs/reports/blocked-batch1.md");
+        return new com.ixnah.mc.paperarc.bridge.PaperarcDatapackManager(
+                ((org.bukkit.craftbukkit.v.CraftServer) (Object) this).getServer());
     }
 
     // ===== batch blocked-2 additions (Paper PlayerProfile factory methods) =====

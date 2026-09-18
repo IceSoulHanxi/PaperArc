@@ -471,4 +471,21 @@ public final class PaperarcEventCauses {
         PRE_LOGIN_RAW_ADDRESS.remove();
         PRE_LOGIN_PROFILE.remove();
     }
+
+    // ---- Y-4：PlayerPurchaseEvent 的两个开关（gaps.md E2）----
+
+    private static final ThreadLocal<io.papermc.paper.event.player.PlayerPurchaseEvent> LAST_PURCHASE =
+            new ThreadLocal<>();
+
+    public static void rememberPurchaseEvent(io.papermc.paper.event.player.PlayerPurchaseEvent event) {
+        LAST_PURCHASE.set(event);
+    }
+
+    public static io.papermc.paper.event.player.PlayerPurchaseEvent purchaseEvent() {
+        return LAST_PURCHASE.get();
+    }
+
+    public static void popPurchaseEvent() {
+        LAST_PURCHASE.remove();
+    }
 }

@@ -61,6 +61,8 @@ public final class PaperarcInjectionCoverage {
             net.minecraft.world.entity.raid.Raid.class,
             net.minecraft.world.entity.boss.enderdragon.EnderDragon.class,
             net.minecraft.world.entity.monster.Evoker.class,
+            // B8/Y-4
+            net.minecraft.world.entity.npc.AbstractVillager.class,
     };
 
     /** CraftBukkit 侧：包名里的 {@code v} 段由构建期任务改成 {@code v1_21_R1}。 */
@@ -74,6 +76,10 @@ public final class PaperarcInjectionCoverage {
             org.bukkit.craftbukkit.v.potion.CraftPotionUtil.class,
             org.bukkit.craftbukkit.v.util.CraftMagicNumbers.class,
             org.bukkit.craftbukkit.v.enchantments.CraftEnchantment.class,
+            // B8/Y-4
+            org.bukkit.craftbukkit.v.inventory.CraftItemStack.class,
+            org.bukkit.craftbukkit.v.generator.CraftWorldInfo.class,
+            org.bukkit.craftbukkit.v.entity.CraftVillager.class,
     };
 
     /** Bukkit API 侧：事件类与几个具体类（我们给它们加了字段/父接口）。 */
@@ -124,6 +130,7 @@ public final class PaperarcInjectionCoverage {
             // B8 批 3e
             org.bukkit.event.block.BrewingStartEvent.class,
             org.bukkit.event.player.PlayerLocaleChangeEvent.class,
+            org.bukkit.plugin.RegisteredListener.class,
             // Y-5 补了枚举常量的目标枚举（<clinit> TAIL 注入；不显式加载就验不到）
             org.bukkit.PortalType.class,
             org.bukkit.Fluid.class,

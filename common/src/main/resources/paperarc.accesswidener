@@ -205,3 +205,7 @@ accessible field net/minecraft/world/entity/LivingEntity dead Z
 
 # MobEffectInstance: paper 的 PotionEffect#getHiddenPotionEffect() 要读被盖住的那一层
 accessible field net/minecraft/world/effect/MobEffectInstance hiddenEffect Lnet/minecraft/world/effect/MobEffectInstance;
+
+# AdventureModePredicate: private predicates list —— CanPlaceOn/CanDestroy 读回时要遍历它
+# （B8/Y-4，gaps.md G.1；1.21.1 没有公开的 getter，Paper 那边是靠补丁 publicize 的）
+accessible field net/minecraft/world/item/AdventureModePredicate predicates Ljava/util/List;

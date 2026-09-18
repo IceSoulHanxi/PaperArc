@@ -6,26 +6,24 @@ import org.spongepowered.asm.mixin.Unique;
 
 /**
  * CraftWorldInfo 补齐 paper-api {@link org.bukkit.generator.WorldInfo} 新增的
- * {@code vanillaBiomeProvider()}（PERMANENT-BLOCKED，降级存根）。
+ * {@code vanillaBiomeProvider()} 与 {@code getFeatureFlags()}。
  *
- * Paper 的实现依赖其新增的 6 参构造器把 vanillaChunkGenerator + RegistryAccess 存进
- * CraftWorldInfo 字段；Arclight 基础 jar 的 CraftWorldInfo 只有
- * (ServerLevelData, LevelStorageAccess, Environment, DimensionType) 与纯标量两个构造器，
- * 不持有任何生成器状态。尝试从构造参数推导也走不通：
- * 本 NMS 版本的 PrimaryLevelData 未公开 worldGenSettings/dimensions 访问器
- * （仅有 worldGenOptions()，拿不到 LevelStem.registry），DerivedLevelData 更无从下手。
- *
- * 因此降级抛 UnsupportedOperationException 并注明原因，避免返回错误的 Biome 数据。
+ * <p>B8/Y-4：{@code vanillaBiomeProvider()} 从"降级抛 UOE"换成真实现。Paper 是在它新增的
+ * 6 参构造器里把 vanillaChunkGenerator + RegistryAccess 存进 CraftWorldInfo 字段，
+ * Arclight 的基础 jar 没有那个构造器；改成**按世界名/UID 反查 {@code ServerLevel}**
+ * 再从 {@code ServerChunkCache} 现取 BiomeSource 与 sampler，取值与 Paper 一致
+ * （见 {@link com.ixnah.mc.paperarc.bridge.PaperarcBiomeProviders}）。
+ * 唯一的限制：世界还在生成、尚未注册进 Bukkit 时抛 IllegalStateException，
+ * 而不是返回一个错的 provider。
  */
 @Mixin(CraftWorldInfo.class)
 public abstract class CraftWorldInfoApiMixin {
 
     @Unique
     public org.bukkit.generator.BiomeProvider vanillaBiomeProvider() {
-        throw new UnsupportedOperationException(
-            "PaperArc: CraftWorldInfo#vanillaBiomeProvider() needs Paper's extended constructor "
-                + "storing vanillaChunkGenerator + RegistryAccess; Arclight's base CraftWorldInfo "
-                + "holds neither and PrimaryLevelData exposes no dimension registry accessor");
+        return com.ixnah.mc.paperarc.bridge.PaperarcBiomeProviders.fromLevel(
+                com.ixnah.mc.paperarc.bridge.PaperarcBiomeProviders.levelOf(
+                        (org.bukkit.generator.WorldInfo) (Object) this));
     }
 
     /**

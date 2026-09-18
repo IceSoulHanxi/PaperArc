@@ -37,8 +37,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * a WrapOperation on Merchant.notifyTrade substitutes the stored offer so the
  * modified trade applies to vanilla processing.
  *
- * Deviation from Paper (documented): checkTakeAchievements runs BEFORE the
- * event instead of after it (vanilla order preserved on the success path).
+ * B8/Y-4 复核（gaps.md E2）：顺序**本来就与 paper 一致** —— {@code @At("HEAD")} 的注入
+ * 跑在方法体第一条指令之前，也就在 {@code checkTakeAchievements} 之前，
+ * 与 paper 把事件提到那一句前面是同一个效果。原先这里写的"偏差"是笔误，已更正。
+ *
+ * <p>同批补上两个开关的消费方：{@code willIncreaseTradeUses()} / {@code isRewardingExp()}
+ * 由 {@code entity.AbstractVillagerPurchaseMixin} 在 {@code notifyTrade} 里守住
+ * {@code increaseUses()} 与 {@code rewardTradeXp()}；事件对象经 ThreadLocal 传过去，
+ * 在 {@code onTake} 的 RETURN 清掉。
  */
 @Mixin(MerchantResultSlot.class)
 public abstract class MerchantResultSlotTradeMixin {
@@ -85,7 +91,13 @@ public abstract class MerchantResultSlotTradeMixin {
         } else {
             this.paperarc$bukkitTradeOffer =
                     CraftMerchantRecipe.fromBukkit(event.getTrade()).toMinecraft();
+            com.ixnah.mc.paperarc.bridge.api.PaperarcEventCauses.rememberPurchaseEvent(event);
         }
+    }
+
+    @Inject(method = "onTake", at = @At("RETURN"))
+    private void paperarc$clearPurchaseEvent(Player who, ItemStack stack, CallbackInfo ci) {
+        com.ixnah.mc.paperarc.bridge.api.PaperarcEventCauses.popPurchaseEvent();
     }
 
     @WrapOperation(
