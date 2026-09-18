@@ -260,7 +260,20 @@ tasks.withType(JavaCompile).configureEach {
 // 产物阶段由 arclight-gradle-plugin 把 v/ 重写回 v1_20_R1；paperarc 源码同样引用
 // v/（跨 MC 版本可复用），因此产物必须在打包后做相同重写，运行时才能匹配
 // Arclight 提供的 v1_20_R1 Craft* 类。
+import com.ixnah.mc.paperarc.build.MarkSyntheticStaticApiTask
 import com.ixnah.mc.paperarc.build.VersionCraftBukkitTask
+
+// Mixin 0.8.5 不许把非 private 的静态方法合并进目标类，唯一放行口是 ACC_SYNTHETIC
+// （见 MarkSyntheticStaticApiTask 的注释）。@Mixin(Bukkit.class) 的静态门面靠这一步成立。
+tasks.register('markSyntheticStaticApi', MarkSyntheticStaticApiTask) {
+    dependsOn tasks.named('compileJava')
+    classesDir.set(layout.buildDirectory.dir('classes/java/main'))
+    outputs.upToDateWhen { false }   // 就地改 compileJava 的输出，幂等，不参与增量
+}
+
+tasks.named('jar') {
+    dependsOn 'markSyntheticStaticApi'
+}
 
 tasks.register('versionCraftBukkit', VersionCraftBukkitTask) {
     dependsOn tasks.named('jar')
