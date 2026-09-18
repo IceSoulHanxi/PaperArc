@@ -7,6 +7,9 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "api.AbstractProjectileApiMixin",
+    "api.ItemStackAdventureMixin",
+    "api.SoundAdventureMixin",
+    "api.SoundCategoryAdventureMixin",
     "api.CraftLivingEntityPotionHiddenMixin",
     "api.CraftPotionUtilHiddenMixin",
     "api.PotionEffectHiddenMixin",
