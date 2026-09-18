@@ -1,0 +1,9 @@
+# check-api-descriptors.py 的已知无害条目（A6/X-2 建立）。
+# 一行一条 `KIND what`。只放"故意提前实现的下个版本方法"——paper-api 1.20.1 没有、
+# 1.20.2+/1.21 才加的声明，多出来不影响任何按 1.20.1 paper-api 编译的插件
+# （与 check-iface-impl-pairing.py 的 NO_DECL 基线同一批，见任务书 A5-3）。
+# 真正的描述符写错（同名同形参个数、类型不同）必须修，不许进基线：
+# ServerIfaceMixin 的 getWorld(Key) 就是这么被抓出来的（应为 NamespacedKey）。
+DESC_MISMATCH org/bukkit/World#createExplosion(Lorg/bukkit/entity/Entity;Lorg/bukkit/Location;FZZZ)Z
+DESC_MISMATCH org/bukkit/World#rayTraceEntities(Lio/papermc/paper/math/Position;Lorg/bukkit/util/Vector;DDLjava/util/function/Predicate;)Lorg/bukkit/util/RayTraceResult;
+DESC_MISMATCH org/bukkit/attribute/AttributeInstance#removeModifier(Lnet/kyori/adventure/key/Key;)V

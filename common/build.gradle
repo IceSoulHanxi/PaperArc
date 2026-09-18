@@ -462,8 +462,56 @@ tasks.register('checkRuntimeApiCalls') {
     }
 }
 
+// 按**完整描述符**再核一遍（A6/X-2 新增，checklist §1.11 as）。
+// 上面两个门禁都按"名字 + 形参个数"匹配，照不到"同名、同形参个数、类型不同"：
+// ServerIfaceMixin 把 Server#getWorld(NamespacedKey) 声明成了 getWorld(Key)，
+// 两个门禁全绿而插件一调就 NoSuchMethodError（探针 P15a 实测）。
+// 两种模式：--decls 声明必须在 paper-api 上真的存在；--calls 调用点必须在运行时
+// （或我们自己的 mixin）上真的存在。故意提前实现的下版本方法放基线文件。
+tasks.register('checkApiDescriptors') {
+    dependsOn 'compileJava'
+    def script = rootProject.file('../tools/scripts/check-api-descriptors.py')
+    def ws = rootProject.file('..')
+    def classesDir = layout.buildDirectory.dir('classes/java/main')
+    def baseline = rootProject.file('gradle/api-descriptor-baseline.txt')
+    inputs.file(baseline).optional()
+    outputs.upToDateWhen { false }
+    doLast {
+        if (!script.isFile()) {
+            logger.warn("checkApiDescriptors: 找不到 ${script}，跳过")
+            return
+        }
+        def jars = paperarcAuditJars(ws)
+        if (jars == null) {
+            logger.warn('checkApiDescriptors: 运行时/API jar 不可用，跳过')
+            return
+        }
+        def cmd = ['python3', script.absolutePath, classesDir.get().asFile.absolutePath, '--jars']
+        cmd.addAll(jars.runtime*.absolutePath)
+        cmd << '--api-jars'
+        cmd.addAll(jars.api*.absolutePath)
+        cmd << '--baseline' << baseline.absolutePath
+        def out = new ByteArrayOutputStream()
+        def result = project.exec {
+            commandLine cmd
+            ignoreExitValue = true
+            standardOutput = out
+            errorOutput = out
+        }
+        def text = out.toString()
+        if (result.exitValue == 2) {
+            logger.warn("checkApiDescriptors: 运行时 jar 不可用，跳过\n${text}")
+        } else if (result.exitValue != 0) {
+            throw new GradleException("API 完整描述符对不上:\n${text}")
+        } else {
+            logger.lifecycle("checkApiDescriptors: ${text.trim()}")
+        }
+    }
+}
+
 tasks.named('check') {
     dependsOn 'checkMixinRegistry'
     dependsOn 'checkIfaceImplPairing'
     dependsOn 'checkRuntimeApiCalls'
+    dependsOn 'checkApiDescriptors'
 }
