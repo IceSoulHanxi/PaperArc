@@ -27,6 +27,11 @@ dependencies {
     // 让 Mixin 注解处理器能验证锚 Arclight 自身类的那几个 mixin 的 @Mixin target
     compileOnly sourceSets.arclightStub.output
 
+    // 桩里的 bridge 接口要按**真实描述符**声明（返回 org.bukkit.inventory.Recipe 之类），
+    // 写成 Object 会让调用点的 invokeinterface 描述符对不上 → 运行时 NoSuchMethodError。
+    // spigot-api 是纯 Maven 构件，不会像 configurations.minecraft 那样把 compileClasspath 绕成环。
+    arclightStubCompileOnly libs.spigot.api
+
     runtimeClassSource(libs.paper.api) { transitive = false }
 
     // Bukkit / Arclight 层：运行时由 Arclight 提供，仅编译期可见

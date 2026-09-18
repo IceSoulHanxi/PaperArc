@@ -37,6 +37,18 @@ public final class PaperarcInjectionCoverage {
             net.minecraft.server.commands.DefaultGameModeCommands.class,
             net.minecraft.world.level.block.NetherPortalBlock.class,
             net.minecraft.world.level.block.EndPortalBlock.class,
+            // B8 批 3b：触发点上下文
+            net.minecraft.server.level.ServerPlayerGameMode.class,
+            net.minecraft.world.entity.ExperienceOrb.class,
+            net.minecraft.world.entity.Entity.class,
+            net.minecraft.world.entity.player.Player.class,
+            net.minecraft.world.entity.projectile.AbstractArrow.class,
+            net.minecraft.world.food.FoodData.class,
+            net.minecraft.world.item.BlockItem.class,
+            net.minecraft.world.item.StandingAndWallBlockItem.class,
+            net.minecraft.world.level.block.entity.CampfireBlockEntity.class,
+            net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity.class,
+            net.minecraft.server.PlayerAdvancements.class,
     };
 
     /** CraftBukkit 侧：包名里的 {@code v} 段由构建期任务改成 {@code v1_21_R1}。 */
@@ -79,6 +91,16 @@ public final class PaperarcInjectionCoverage {
             org.bukkit.event.player.PlayerResourcePackStatusEvent.class,
             org.bukkit.event.block.BlockPhysicsEvent.class,
             org.bukkit.entity.Player.Spigot.class,
+            // B8 批 3b
+            org.bukkit.event.player.PlayerInteractEvent.class,
+            org.bukkit.event.block.BlockDamageEvent.class,
+            org.bukkit.event.player.PlayerExpChangeEvent.class,
+            org.bukkit.event.block.BlockCanBuildEvent.class,
+            org.bukkit.event.block.BlockCookEvent.class,
+            org.bukkit.event.entity.EntityRegainHealthEvent.class,
+            org.bukkit.event.vehicle.VehicleBlockCollisionEvent.class,
+            org.bukkit.event.player.PlayerAdvancementDoneEvent.class,
+            org.bukkit.event.entity.EntityDamageByEntityEvent.class,
             // Y-5 补了枚举常量的目标枚举（<clinit> TAIL 注入；不显式加载就验不到）
             org.bukkit.PortalType.class,
             org.bukkit.Fluid.class,

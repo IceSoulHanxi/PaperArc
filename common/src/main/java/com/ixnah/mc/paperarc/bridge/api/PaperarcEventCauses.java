@@ -168,4 +168,162 @@ public final class PaperarcEventCauses {
         Boolean dismount = TELEPORT_DISMOUNT.get();
         return dismount == null || dismount;
     }
+
+    // ---- Y-2 批 3b：触发点上下文（事件构造器读回）----
+
+    private static final ThreadLocal<org.bukkit.block.BlockFace> BLOCK_DAMAGE_FACE = new ThreadLocal<>();
+    private static final ThreadLocal<org.bukkit.entity.Entity> EXP_SOURCE = new ThreadLocal<>();
+    private static final ThreadLocal<org.bukkit.inventory.EquipmentSlot> CAN_BUILD_HAND = new ThreadLocal<>();
+    private static final ThreadLocal<org.bukkit.inventory.CookingRecipe<?>> COOK_RECIPE = new ThreadLocal<>();
+    private static final ThreadLocal<Boolean> FAST_REGEN = new ThreadLocal<>();
+    private static final ThreadLocal<org.bukkit.util.Vector> VEHICLE_COLLISION_VELOCITY = new ThreadLocal<>();
+    private static final ThreadLocal<Boolean> DAMAGE_CRITICAL = new ThreadLocal<>();
+    private static final ThreadLocal<net.kyori.adventure.text.Component> ADVANCEMENT_MESSAGE = new ThreadLocal<>();
+    private static final ThreadLocal<org.bukkit.event.player.PlayerAdvancementDoneEvent> LAST_ADVANCEMENT_EVENT =
+            new ThreadLocal<>();
+    private static final ThreadLocal<Boolean> ADVANCEMENT_BROADCASTING = new ThreadLocal<>();
+
+    public static void pushBlockDamageFace(org.bukkit.block.BlockFace face) {
+        BLOCK_DAMAGE_FACE.set(face);
+    }
+
+    public static org.bukkit.block.BlockFace takeBlockDamageFace() {
+        org.bukkit.block.BlockFace face = BLOCK_DAMAGE_FACE.get();
+        BLOCK_DAMAGE_FACE.remove();
+        return face;
+    }
+
+    public static void popBlockDamageFace() {
+        BLOCK_DAMAGE_FACE.remove();
+    }
+
+    public static void pushExperienceSource(org.bukkit.entity.Entity source) {
+        EXP_SOURCE.set(source);
+    }
+
+    public static org.bukkit.entity.Entity takeExperienceSource() {
+        org.bukkit.entity.Entity source = EXP_SOURCE.get();
+        EXP_SOURCE.remove();
+        return source;
+    }
+
+    public static void popExperienceSource() {
+        EXP_SOURCE.remove();
+    }
+
+    /**
+     * {@code BlockCanBuildEvent#getHand()}。两个触发点（{@code BlockItem#canPlace} 与
+     * {@code StandingAndWallBlockItem#getPlacementState}）在 HEAD 压同一个值；
+     * 不在触发点 RETURN 清 —— 外层的 {@code StandingAndWallBlockItem} 要等自己 RETURN
+     * 才构造事件，内层 {@code canPlace} 一清就把值清没了。残留值会被下一次压入覆盖。
+     */
+    public static void pushBlockCanBuildHand(org.bukkit.inventory.EquipmentSlot hand) {
+        CAN_BUILD_HAND.set(hand);
+    }
+
+    public static org.bukkit.inventory.EquipmentSlot takeBlockCanBuildHand() {
+        org.bukkit.inventory.EquipmentSlot hand = CAN_BUILD_HAND.get();
+        CAN_BUILD_HAND.remove();
+        return hand == null ? org.bukkit.inventory.EquipmentSlot.HAND : hand;
+    }
+
+    public static void pushBlockCookRecipe(org.bukkit.inventory.CookingRecipe<?> recipe) {
+        COOK_RECIPE.set(recipe);
+    }
+
+    public static org.bukkit.inventory.CookingRecipe<?> takeBlockCookRecipe() {
+        org.bukkit.inventory.CookingRecipe<?> recipe = COOK_RECIPE.get();
+        COOK_RECIPE.remove();
+        return recipe;
+    }
+
+    public static void popBlockCookRecipe() {
+        COOK_RECIPE.remove();
+    }
+
+    public static void pushFastRegen(boolean fastRegen) {
+        FAST_REGEN.set(fastRegen);
+    }
+
+    public static boolean takeFastRegen() {
+        Boolean fastRegen = FAST_REGEN.get();
+        FAST_REGEN.remove();
+        return fastRegen != null && fastRegen;
+    }
+
+    public static void popFastRegen() {
+        FAST_REGEN.remove();
+    }
+
+    public static void pushVehicleCollisionVelocity(org.bukkit.util.Vector velocity) {
+        VEHICLE_COLLISION_VELOCITY.set(velocity);
+    }
+
+    public static org.bukkit.util.Vector takeVehicleCollisionVelocity() {
+        org.bukkit.util.Vector velocity = VEHICLE_COLLISION_VELOCITY.get();
+        VEHICLE_COLLISION_VELOCITY.remove();
+        return velocity;
+    }
+
+    public static void popVehicleCollisionVelocity() {
+        VEHICLE_COLLISION_VELOCITY.remove();
+    }
+
+    public static void pushDamageCritical(boolean critical) {
+        DAMAGE_CRITICAL.set(critical);
+    }
+
+    public static boolean takeDamageCritical() {
+        Boolean critical = DAMAGE_CRITICAL.get();
+        DAMAGE_CRITICAL.remove();
+        return critical != null && critical;
+    }
+
+    public static void popDamageCritical() {
+        DAMAGE_CRITICAL.remove();
+    }
+
+    public static void pushAdvancementMessage(net.kyori.adventure.text.Component message) {
+        ADVANCEMENT_MESSAGE.set(message);
+    }
+
+    public static net.kyori.adventure.text.Component takeAdvancementMessage() {
+        net.kyori.adventure.text.Component message = ADVANCEMENT_MESSAGE.get();
+        ADVANCEMENT_MESSAGE.remove();
+        return message;
+    }
+
+    public static void popAdvancementMessage() {
+        ADVANCEMENT_MESSAGE.remove();
+    }
+
+    public static void rememberAdvancementEvent(org.bukkit.event.player.PlayerAdvancementDoneEvent event) {
+        LAST_ADVANCEMENT_EVENT.set(event);
+    }
+
+    public static org.bukkit.event.player.PlayerAdvancementDoneEvent advancementEvent() {
+        return LAST_ADVANCEMENT_EVENT.get();
+    }
+
+    public static void popAdvancementEvent() {
+        LAST_ADVANCEMENT_EVENT.remove();
+    }
+
+    /**
+     * 进度广播窗口：只在 {@code PlayerAdvancements#award} 走到那句
+     * {@code Optional.ifPresent(this::广播)} 之后才打开，关在 {@code award} 的 RETURN。
+     * 插件在 {@code PlayerAdvancementDoneEvent}（更早，锚在 {@code AdvancementRewards#grant}）
+     * 里自己发的广播落在窗口之外，不会被我们改写。
+     */
+    public static void openAdvancementBroadcast() {
+        ADVANCEMENT_BROADCASTING.set(Boolean.TRUE);
+    }
+
+    public static boolean advancementBroadcasting() {
+        return Boolean.TRUE.equals(ADVANCEMENT_BROADCASTING.get());
+    }
+
+    public static void closeAdvancementBroadcast() {
+        ADVANCEMENT_BROADCASTING.remove();
+    }
 }
