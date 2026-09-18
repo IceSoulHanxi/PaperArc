@@ -5,3 +5,4 @@
 # 真机实测：加了这一步后服务器正常启动，53 条静态门面全部可调（探针 P15a）。
 # 没有这一步的地方不要往这里加 —— 直接 @Unique public static 会在 APPLY 阶段 FATAL。
 BukkitApiMixin.java
+ItemStackApiMixin.java

@@ -161,6 +161,7 @@
     "api.GameModeApiMixin",
     "api.GameRuleApiMixin",
     "api.HopperBlockEntityInvokerMixin",
+    "api.ItemStackApiMixin",
     "api.JavaPluginApiMixin",
     "api.LightningBoltAccessorMixin",
     "api.LocationApiMixin",

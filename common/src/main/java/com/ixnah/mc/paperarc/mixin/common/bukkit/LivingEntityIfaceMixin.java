@@ -100,6 +100,10 @@ public interface LivingEntityIfaceMixin extends io.papermc.paper.entity.Friction
     @Unique
     public abstract void damageItemStack(org.bukkit.inventory.EquipmentSlot p0, int p1);
 
+    /** 实现体一直都在（CraftLivingEntityApiMixin），只是声明漏了 —— 同名同元不同类型的盲区。 */
+    @Unique
+    public abstract org.bukkit.inventory.ItemStack damageItemStack(org.bukkit.inventory.ItemStack p0, int p1);
+
     @Unique
     public abstract float getBodyYaw();
 
