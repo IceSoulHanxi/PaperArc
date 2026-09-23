@@ -32,13 +32,14 @@ public abstract class CraftEnderSignalApiMixin {
         Preconditions.checkArgument(this.getWorld().equals(location.getWorld()), "Cannot target EnderSignal across worlds");
         EyeOfEnder handle = ((org.bukkit.craftbukkit.v.entity.CraftEnderSignal) (Object) this).getHandle();
         BlockPos target = CraftLocation.toBlockPosition(location);
+        net.minecraft.world.phys.Vec3 targetVec = net.minecraft.world.phys.Vec3.atCenterOf(target);
         if (update || !(handle instanceof EyeOfEnderAccessorMixin acc)) {
-            handle.signalTo(target);
+            handle.signalTo(targetVec);
             return;
         }
         int life = acc.paperarc$getLife();
         boolean survive = acc.paperarc$getSurviveAfterDeath();
-        handle.signalTo(target);
+        handle.signalTo(targetVec);
         acc.paperarc$setLife(life);
         acc.paperarc$setSurviveAfterDeath(survive);
     }

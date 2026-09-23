@@ -1,7 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
-import net.minecraft.world.entity.animal.Sheep;
-import net.minecraft.world.entity.monster.Evoker;
+import net.minecraft.world.entity.animal.sheep.Sheep;
+import net.minecraft.world.entity.monster.illager.Evoker;
 import org.bukkit.craftbukkit.v.entity.CraftEvoker;
 import org.bukkit.craftbukkit.v.entity.CraftSheep;
 import org.jetbrains.annotations.Nullable;

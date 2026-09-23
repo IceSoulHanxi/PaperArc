@@ -10,7 +10,8 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.minecraft.network.chat.Component.Serializer;
+import org.bukkit.craftbukkit.v.util.CraftChatMessage.ChatSerializer;
+// alias: ChatSerializer
 import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.ScoreAccess;
 import net.minecraft.world.scores.Scoreboard;
@@ -230,13 +231,13 @@ public abstract class CraftScoreApiMixin {
 
     @Unique
     private static Component paperarc$asAdventure(net.minecraft.network.chat.Component vanilla) {
-        return GsonComponentSerializer.gson().deserialize(Serializer.toJson(vanilla,
+        return GsonComponentSerializer.gson().deserialize(ChatSerializer.toJson(vanilla,
                 ((org.bukkit.craftbukkit.v.CraftServer) PaperArcBridge.getServer()).getServer().registryAccess()));
     }
 
     @Unique
     private static net.minecraft.network.chat.Component paperarc$asVanilla(Component adventure) {
-        return Serializer.fromJson(GsonComponentSerializer.gson().serialize(adventure),
+        return ChatSerializer.fromJson(GsonComponentSerializer.gson().serialize(adventure),
                 ((org.bukkit.craftbukkit.v.CraftServer) PaperArcBridge.getServer()).getServer().registryAccess());
     }
 
@@ -244,7 +245,7 @@ public abstract class CraftScoreApiMixin {
     private static net.kyori.adventure.text.format.Style paperarc$styleAsAdventure(
             net.minecraft.network.chat.Style vanillaStyle) {
         return GsonComponentSerializer.gson()
-                .deserialize(Serializer.toJson(
+                .deserialize(ChatSerializer.toJson(
                         net.minecraft.network.chat.Component.empty().withStyle(vanillaStyle),
                         ((org.bukkit.craftbukkit.v.CraftServer) PaperArcBridge.getServer()).getServer().registryAccess()))
                 .style();
@@ -253,7 +254,7 @@ public abstract class CraftScoreApiMixin {
     @Unique
     private static net.minecraft.network.chat.Style paperarc$styleAsVanilla(
             net.kyori.adventure.text.format.Style adventureStyle) {
-        return Serializer.fromJson(GsonComponentSerializer.gson().serialize(
+        return ChatSerializer.fromJson(GsonComponentSerializer.gson().serialize(
                         Component.empty().style(adventureStyle)),
                 ((org.bukkit.craftbukkit.v.CraftServer) PaperArcBridge.getServer()).getServer().registryAccess()).getStyle();
     }

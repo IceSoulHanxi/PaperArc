@@ -3,7 +3,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.bukkit.craftbukkit.v.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.v.block.impl.CraftComposter;
-import org.bukkit.craftbukkit.v.block.impl.CraftFluids;
+import org.bukkit.craftbukkit.v.block.impl.CraftLiquid;
 import org.bukkit.craftbukkit.v.block.impl.CraftLayeredCauldron;
 import org.bukkit.craftbukkit.v.block.impl.CraftLight;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.Unique;
  * （PARTIAL_IMPL 门禁实测）。和 {@code CraftLeavesApiMixin} 一样 {@code extends
  * CraftBlockData} 才能调到 protected 的 {@code getMin}。</p>
  */
-@Mixin({CraftComposter.class, CraftFluids.class, CraftLayeredCauldron.class, CraftLight.class})
+@Mixin({CraftComposter.class, CraftLiquid.class, CraftLayeredCauldron.class, CraftLight.class})
 public abstract class CraftLevelledApiMixin extends CraftBlockData {
 
     @Unique

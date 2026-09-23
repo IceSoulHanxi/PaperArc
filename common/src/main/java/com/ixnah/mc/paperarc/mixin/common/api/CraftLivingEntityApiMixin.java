@@ -270,7 +270,7 @@ public abstract class CraftLivingEntityApiMixin {
         AABB searchBox = handle.getBoundingBox().expandTowards(dir).inflate(1.0D);
         net.minecraft.world.phys.EntityHitResult nmsHit = ProjectileUtil.getEntityHitResult(level, handle, from, to,
                 searchBox,
-                (net.minecraft.world.entity.Entity e) -> !e.isSpectator() && e.isPickable() && e.isAlive());
+                (net.minecraft.world.entity.Entity e) -> !e.isSpectator() && e.isPickable() && e.isAlive(), 0.0f);
         // ignorePassable 无法精确映射（NMS 无对应参数），仅按可拾取碰撞体过滤
         if (nmsHit == null) {
             return null;
@@ -444,9 +444,10 @@ public abstract class CraftLivingEntityApiMixin {
     @Unique
     public void setKiller(Player killer) {
         LivingEntity handle = this.getHandle();
-        handle.lastHurtByPlayer = killer == null
+        net.minecraft.world.entity.player.Player nmsPlayer = killer == null
                 ? null
                 : ((org.bukkit.craftbukkit.v.entity.CraftPlayer) killer).getHandle();
+        handle.setLastHurtByPlayer(nmsPlayer, nmsPlayer == null ? 0 : 100);
     }
 
     /**

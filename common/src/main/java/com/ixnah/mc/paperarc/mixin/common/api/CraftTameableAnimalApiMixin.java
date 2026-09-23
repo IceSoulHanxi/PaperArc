@@ -15,6 +15,7 @@ public abstract class CraftTameableAnimalApiMixin {
 
     @Unique
     public java.util.UUID getOwnerUniqueId() {
-        return this.getHandle().getOwnerUUID();
+        var ref = this.getHandle().getOwnerReference();
+        return ref != null ? ref.getUUID() : null;
     }
 }

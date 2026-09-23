@@ -12,7 +12,8 @@ import org.spongepowered.asm.mixin.Unique;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.minecraft.network.chat.Component.Serializer;
+import org.bukkit.craftbukkit.v.util.CraftChatMessage.ChatSerializer;
+// alias: ChatSerializer
 import net.minecraft.server.ServerLinks.Entry;
 
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
@@ -37,7 +38,7 @@ public abstract class CraftServerLinksApiMixin {
         // PaperAdventure unavailable: gson round-trip instead
         String json = GsonComponentSerializer.gson().serialize(displayName);
         net.minecraft.network.chat.Component vanilla =
-                Serializer.fromJson(json, ((org.bukkit.craftbukkit.v.CraftServer) PaperArcBridge.getServer()).getServer().registryAccess());
+                ChatSerializer.fromJson(json, ((org.bukkit.craftbukkit.v.CraftServer) PaperArcBridge.getServer()).getServer().registryAccess());
         Entry entry = Entry.custom(vanilla, url);
         CraftServerLink link = new CraftServerLink(entry);
         this.addLink(link);

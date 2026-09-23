@@ -3,7 +3,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-import net.minecraft.world.entity.animal.Cat;
+import net.minecraft.world.entity.animal.feline.Cat;
 
 /**
  * Exposes Cat's package-private {@code isRelaxStateOne}/{@code setRelaxStateOne}

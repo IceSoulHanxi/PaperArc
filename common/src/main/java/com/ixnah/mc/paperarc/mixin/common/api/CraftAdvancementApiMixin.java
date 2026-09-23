@@ -7,7 +7,8 @@ import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.AdvancementTree;
-import net.minecraft.network.chat.Component.Serializer;
+import org.bukkit.craftbukkit.v.util.CraftChatMessage.ChatSerializer;
+// alias: ChatSerializer
 import org.bukkit.advancement.Advancement;
 import org.bukkit.craftbukkit.v.advancement.CraftAdvancement;
 import org.spongepowered.asm.mixin.Mixin;
@@ -28,7 +29,7 @@ public abstract class CraftAdvancementApiMixin {
     @Unique
     public Component displayName() {
         // PaperAdventure unavailable: gson round-trip instead of asAdventure (project convention)
-        return GsonComponentSerializer.gson().deserialize(Serializer.toJson(
+        return GsonComponentSerializer.gson().deserialize(ChatSerializer.toJson(
             net.minecraft.advancements.Advancement.name(this.getHandle()),
             ((org.bukkit.craftbukkit.v.CraftServer) com.ixnah.mc.paperarc.bridge.PaperArcBridge.getServer()).getServer().registryAccess()));
     }

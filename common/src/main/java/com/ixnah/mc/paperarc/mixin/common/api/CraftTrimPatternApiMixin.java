@@ -7,8 +7,9 @@ import org.spongepowered.asm.mixin.Unique;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.minecraft.network.chat.Component.Serializer;
-import net.minecraft.world.item.armortrim.TrimPattern;
+import org.bukkit.craftbukkit.v.util.CraftChatMessage.ChatSerializer;
+// alias: ChatSerializer
+import net.minecraft.world.item.equipment.trim.TrimPattern;
 
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 
@@ -25,7 +26,7 @@ public abstract class CraftTrimPatternApiMixin {
 
     @Unique
     public Component description() {
-        String json = Serializer.toJson(this.getHandle().description(), ((org.bukkit.craftbukkit.v.CraftServer) PaperArcBridge.getServer()).getServer().registryAccess());
+        String json = ChatSerializer.toJson(this.getHandle().description(), ((org.bukkit.craftbukkit.v.CraftServer) PaperArcBridge.getServer()).getServer().registryAccess());
         return GsonComponentSerializer.gson().deserialize(json);
     }
 }

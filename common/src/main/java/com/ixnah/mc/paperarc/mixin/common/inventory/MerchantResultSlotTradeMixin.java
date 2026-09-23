@@ -70,7 +70,7 @@ public abstract class MerchantResultSlotTradeMixin {
 
         io.papermc.paper.event.player.PlayerPurchaseEvent event;
         org.bukkit.inventory.MerchantRecipe recipe = new CraftMerchantRecipe(offer);
-        if (this.merchant instanceof net.minecraft.world.entity.npc.AbstractVillager villager) {
+        if (this.merchant instanceof net.minecraft.world.entity.npc.villager.AbstractVillager villager) {
             event = new PlayerTradeEvent(
                     PaperArcBridge.bukkitPlayer(serverPlayer),
                     PaperArcBridge.<org.bukkit.entity.AbstractVillager>bukkitEntity(villager),
@@ -78,6 +78,7 @@ public abstract class MerchantResultSlotTradeMixin {
         } else if (this.merchant instanceof CraftMerchantCustom.MinecraftMerchant customMerchant) {
             event = new PlayerPurchaseEvent(
                     PaperArcBridge.bukkitPlayer(serverPlayer),
+                    customMerchant.getCraftMerchant(),
                     recipe, false, true);
         } else {
             return;

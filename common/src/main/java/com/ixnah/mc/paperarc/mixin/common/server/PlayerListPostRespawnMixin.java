@@ -9,7 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.portal.DimensionTransition;
+import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v.util.CraftLocation;
@@ -58,19 +58,19 @@ public abstract class PlayerListPostRespawnMixin {
         method = PAPERARC$RESPAWN,
         at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/server/level/ServerPlayer;findRespawnPositionAndUseSpawnBlock(ZLnet/minecraft/world/level/portal/DimensionTransition$PostDimensionTransition;)Lnet/minecraft/world/level/portal/DimensionTransition;"
+            target = "Lnet/minecraft/server/level/ServerPlayer;findRespawnPositionAndUseSpawnBlock(ZLnet/minecraft/world/level/portal/TeleportTransition$PostTeleportTransition;)Lnet/minecraft/world/level/portal/TeleportTransition;"
         )
     )
-    private DimensionTransition paperarc$recordRespawn(ServerPlayer player, boolean flag,
-                                                       DimensionTransition.PostDimensionTransition postTransition,
-                                                       Operation<DimensionTransition> original) {
+    private TeleportTransition paperarc$recordRespawn(ServerPlayer player, boolean flag,
+                                                      TeleportTransition.PostTeleportTransition postTransition,
+                                                      Operation<TeleportTransition> original) {
         paperarc$state.remove();
-        DimensionTransition transition = original.call(player, flag, postTransition);
+        TeleportTransition transition = original.call(player, flag, postTransition);
         if (transition != null) {
             RespawnCapture state = new RespawnCapture();
             state.respawn = true;
             state.transition = transition;
-            Vec3 pos = transition.pos();
+            Vec3 pos = transition.position();
             state.location = CraftLocation.toBukkit(
                 pos,
                 PaperArcBridge.bukkitWorld(transition.newLevel()),
@@ -100,10 +100,12 @@ public abstract class PlayerListPostRespawnMixin {
             return;
         }
         // replicate Paper's bed-spawn detection (blockstate read is stable by now)
-        BlockPos blockPos = BlockPos.containing(state.transition.pos());
-        if (state.transition.newLevel().getBlockState(blockPos).is(BlockTags.BEDS)
-            && !state.transition.missingRespawnBlock()) {
-            state.bedSpawn = true;
+        BlockPos blockPos = BlockPos.containing(state.transition.position());
+        net.minecraft.world.level.block.state.BlockState spawnBlock =
+            state.transition.newLevel().getBlockState(blockPos);
+        if (!state.transition.missingRespawnBlock()) {
+            state.bedSpawn = spawnBlock.is(BlockTags.BEDS);
+            state.anchorSpawn = spawnBlock.is(net.minecraft.world.level.block.Blocks.RESPAWN_ANCHOR);
         }
         ServerPlayer respawned = cir.getReturnValue();
         if (respawned == null) {
@@ -112,7 +114,10 @@ public abstract class PlayerListPostRespawnMixin {
         PlayerPostRespawnEvent event = new PlayerPostRespawnEvent(
             PaperArcBridge.bukkitPlayer(respawned),
             state.location,
-            state.bedSpawn
+            state.bedSpawn,
+            state.anchorSpawn,
+            state.transition.missingRespawnBlock(),
+            respawnReason
         );
         PaperArcBridge.fire(event);
     }

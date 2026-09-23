@@ -2,7 +2,7 @@ package com.ixnah.mc.paperarc.mixin.common.player;
 
 import com.destroystokyo.paper.ClientOption;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
-import com.ixnah.mc.paperarc.util.PaperArcSkinParts;
+import com.ixnah.mc.paperarc.bridge.PaperArcSkinParts;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.HumanoidArm;
@@ -27,7 +27,7 @@ import java.util.Map;
  * vanilla 构造器调用 updateOptions 时 {@code connection} 尚未赋值，而玩家在
  * 设置界面改动时连接必然已建立——据此区分两条路径。
  * <p>
- * SkinParts 用 com.ixnah.mc.paperarc.util.PaperArcSkinParts（Paper 的 PaperSkinParts 是
+ * SkinParts 用 com.ixnah.mc.paperarc.bridge.PaperArcSkinParts（Paper 的 PaperSkinParts 是
  * 服务端内部类不可用）；插件若 instanceof PaperSkinParts 会失败，见报告。
  * Arclight ServerPlayerMixin 同方法 HEAD 也注入（发 PlayerChangedMainHandEvent /
  * PlayerLocaleChangeEvent），均为非取消 Inject，与本 mixin 共存无冲突。

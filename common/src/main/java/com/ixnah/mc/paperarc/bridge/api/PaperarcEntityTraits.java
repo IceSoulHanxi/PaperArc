@@ -77,7 +77,10 @@ public final class PaperarcEntityTraits {
 
     /** paper {@code PaperShearable#shear}。 */
     public static void shear(Object self, Sound.Source source) {
-        ((net.minecraft.world.entity.Shearable) handle(self)).shear(asVanilla(source));
+        net.minecraft.world.entity.Entity entity = handle(self);
+        if (entity.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            ((net.minecraft.world.entity.Shearable) entity).shear(serverLevel, asVanilla(source), net.minecraft.world.item.ItemStack.EMPTY);
+        }
     }
 
     /**
@@ -98,6 +101,7 @@ public final class PaperarcEntityTraits {
             case PLAYER -> SoundSource.PLAYERS;
             case AMBIENT -> SoundSource.AMBIENT;
             case VOICE -> SoundSource.VOICE;
+            case UI -> SoundSource.UI;
         };
     }
 
@@ -123,8 +127,8 @@ public final class PaperarcEntityTraits {
 
     // ---------------------------------------------- io.papermc.paper.entity.SchoolableFish
 
-    private static net.minecraft.world.entity.animal.AbstractSchoolingFish school(Object self) {
-        return (net.minecraft.world.entity.animal.AbstractSchoolingFish) handle(self);
+    private static net.minecraft.world.entity.animal.fish.AbstractSchoolingFish school(Object self) {
+        return (net.minecraft.world.entity.animal.fish.AbstractSchoolingFish) handle(self);
     }
 
     public static void startFollowing(Object self, io.papermc.paper.entity.SchoolableFish leader) {
@@ -145,7 +149,7 @@ public final class PaperarcEntityTraits {
     }
 
     public static io.papermc.paper.entity.SchoolableFish getSchoolLeader(Object self) {
-        net.minecraft.world.entity.animal.AbstractSchoolingFish leader = school(self).leader;
+        net.minecraft.world.entity.animal.fish.AbstractSchoolingFish leader = school(self).leader;
         return leader == null ? null
                 : com.ixnah.mc.paperarc.bridge.PaperArcBridge.<io.papermc.paper.entity.SchoolableFish>bukkitEntity(leader);
     }
@@ -168,7 +172,7 @@ public final class PaperarcEntityTraits {
     public static boolean setLeashHolder(Object self, org.bukkit.entity.Entity holder) {
         net.minecraft.world.entity.Leashable leashable = (net.minecraft.world.entity.Leashable) handle(self);
         if (holder == null) {
-            leashable.dropLeash(true, false);
+            leashable.removeLeash();
             return true;
         }
         if (holder.isDead()) {

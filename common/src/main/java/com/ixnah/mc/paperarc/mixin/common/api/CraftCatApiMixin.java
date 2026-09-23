@@ -1,6 +1,6 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
-import net.minecraft.world.entity.animal.Cat;
+import net.minecraft.world.entity.animal.feline.Cat;
 import org.bukkit.craftbukkit.v.entity.CraftCat;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

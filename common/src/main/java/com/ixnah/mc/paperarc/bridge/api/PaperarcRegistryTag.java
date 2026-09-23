@@ -9,7 +9,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import org.bukkit.Keyed;
 import org.bukkit.NamespacedKey;
@@ -22,8 +22,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * paper 的 {@code UnsafeValues#getTag(TagKey)} 的返回值：一个只读的
- * {@code io.papermc.paper.registry.tag.Tag}，内容直接来自 vanilla 注册表的同名标签。
+ * paper 的注册表标签：一个只读的 {@code io.papermc.paper.registry.tag.Tag}，内容直接来自
+ * vanilla 注册表的同名标签。1.21.1 由 {@code UnsafeValues#getTag(TagKey)} 返回；paper-api
+ * 1.21.11 删了那个入口，改由 {@code Registry#getTag(TagKey)} 提供（接线留给 C4）。
  *
  * <p>paper 的 {@code RegistryKey} 与 vanilla 注册表 id 是同一套命名空间键
  *（{@code minecraft:item}、{@code minecraft:block}…），所以不需要 paper 那套 RegistryAccess，
@@ -50,22 +51,22 @@ public final class PaperarcRegistryTag<A extends Keyed> implements Tag<A> {
         }
         MinecraftServer server = ((CraftServer) org.bukkit.Bukkit.getServer()).getServer();
         RegistryKey<A> registryKey = tagKey.registryKey();
-        ResourceLocation registryId = ResourceLocation.parse(registryKey.key().asString());
+        Identifier registryId = Identifier.parse(registryKey.key().asString());
         ResourceKey<? extends Registry<Object>> resourceKey = ResourceKey.createRegistryKey(registryId);
-        Optional<Registry<Object>> registry = server.registryAccess().registry(resourceKey);
+        Optional<Registry<Object>> registry = server.registryAccess().lookup(resourceKey);
         if (registry.isEmpty()) {
             return null;
         }
         net.minecraft.tags.TagKey<Object> vanillaTag = net.minecraft.tags.TagKey.create(
-                resourceKey, ResourceLocation.parse(tagKey.key().asString()));
-        Optional<HolderSet.Named<Object>> holders = registry.get().getTag(vanillaTag);
+                resourceKey, Identifier.parse(tagKey.key().asString()));
+        Optional<HolderSet.Named<Object>> holders = registry.get().get(vanillaTag);
         if (holders.isEmpty()) {
             return null;
         }
         List<TypedKey<A>> values = new ArrayList<>();
         for (Holder<Object> holder : holders.get()) {
             holder.unwrapKey().ifPresent(key -> values.add(TypedKey.create(
-                    registryKey, Key.key(key.location().getNamespace(), key.location().getPath()))));
+                    registryKey, Key.key(key.identifier().getNamespace(), key.identifier().getPath()))));
         }
         return new PaperarcRegistryTag<>(tagKey, Collections.unmodifiableList(values));
     }

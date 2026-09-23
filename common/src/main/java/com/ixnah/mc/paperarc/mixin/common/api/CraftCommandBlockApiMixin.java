@@ -2,7 +2,8 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.minecraft.network.chat.Component.Serializer;
+import org.bukkit.craftbukkit.v.util.CraftChatMessage.ChatSerializer;
+// alias: ChatSerializer
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.CommandBlock;
@@ -42,7 +43,7 @@ public abstract class CraftCommandBlockApiMixin {
     public Component name() {
         net.minecraft.core.HolderLookup.Provider lookup = ((org.bukkit.craftbukkit.v.CraftServer) com.ixnah.mc.paperarc.bridge.PaperArcBridge.getServer())
             .getServer().registryAccess();
-        return GsonComponentSerializer.gson().deserialize(Serializer.toJson(this.getSnapshot().getCommandBlock().getName(), lookup));
+        return GsonComponentSerializer.gson().deserialize(ChatSerializer.toJson(this.getSnapshot().getCommandBlock().getName(), lookup));
     }
 
     @Unique
@@ -50,7 +51,7 @@ public abstract class CraftCommandBlockApiMixin {
         // As in Paper: a null component resets to the vanilla "@" fallback name
         net.minecraft.network.chat.Component vanilla = name == null
             ? net.minecraft.network.chat.Component.literal("@")
-            : Serializer.fromJson(GsonComponentSerializer.gson().serialize(name),
+            : ChatSerializer.fromJson(GsonComponentSerializer.gson().serialize(name),
                 ((org.bukkit.craftbukkit.v.CraftServer) com.ixnah.mc.paperarc.bridge.PaperArcBridge.getServer()).getServer().registryAccess());
         this.getSnapshot().getCommandBlock().setCustomName(vanilla);
     }
@@ -70,13 +71,13 @@ public abstract class CraftCommandBlockApiMixin {
     public Component lastOutput() {
         net.minecraft.network.chat.Component output = this.getSnapshot().getCommandBlock().getLastOutput();
         return output == null ? null : GsonComponentSerializer.gson().deserialize(
-                Serializer.toJson(output, com.ixnah.mc.paperarc.bridge.api.PaperarcCommandBlockHolder.registryAccess()));
+                ChatSerializer.toJson(output, com.ixnah.mc.paperarc.bridge.api.PaperarcCommandBlockHolder.registryAccess()));
     }
 
     @Unique
     public void lastOutput(Component lastOutput) {
         this.getSnapshot().getCommandBlock().setLastOutput(lastOutput == null ? null
-                : Serializer.fromJson(GsonComponentSerializer.gson().serialize(lastOutput),
+                : ChatSerializer.fromJson(GsonComponentSerializer.gson().serialize(lastOutput),
                         com.ixnah.mc.paperarc.bridge.api.PaperarcCommandBlockHolder.registryAccess()));
     }
 }

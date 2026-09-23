@@ -48,7 +48,7 @@ public abstract class AsyncTabCompleteMixin {
 
     @Inject(method = "handleCustomCommandSuggestions", at = @At("HEAD"), cancellable = true)
     private void paperarc$asyncTabComplete(ServerboundCommandSuggestionPacket packet, CallbackInfo ci) {
-        if (this.player.getServer() == null || this.player.getServer().isSameThread()) {
+        if (this.player.level().getServer().isSameThread()) {
             return; // 主线程那一趟：事件已经在 netty 线程 fire 过了
         }
         Player bukkitPlayer = Bukkit.getPlayer(this.player.getUUID());
@@ -80,7 +80,7 @@ public abstract class AsyncTabCompleteMixin {
                     builder.suggest(completion.suggestion());
                 } else {
                     // 1.21.1 的 Component.Serializer 需要 HolderLookup.Provider
-                    builder.suggest(completion.suggestion(), net.minecraft.network.chat.Component.Serializer
+                    builder.suggest(completion.suggestion(), org.bukkit.craftbukkit.v.util.CraftChatMessage.ChatSerializer
                             .fromJson(GsonComponentSerializer.gson().serialize(tooltip),
                                     this.player.registryAccess()));
                 }

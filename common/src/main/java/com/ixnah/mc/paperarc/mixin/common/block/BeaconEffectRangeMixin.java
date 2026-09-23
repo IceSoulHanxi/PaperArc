@@ -3,9 +3,9 @@ package com.ixnah.mc.paperarc.mixin.common.block;
 import com.ixnah.mc.paperarc.bridge.BeaconBlockEntityBridge;
 import com.ixnah.mc.paperarc.bridge.BeaconEffectRangeState;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
+import com.mojang.serialization.Codec;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BeaconBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -56,17 +56,17 @@ public abstract class BeaconEffectRangeMixin {
     }
 
     @Inject(method = "saveAdditional", at = @At("RETURN"))
-    private void paperarc$saveEffectRange(CompoundTag nbt, HolderLookup.Provider registries, CallbackInfo ci) {
+    private void paperarc$saveEffectRange(ValueOutput out, CallbackInfo ci) {
         double range = ((BeaconBlockEntityBridge) this).paper$getEffectRange();
         if (range >= 0) {
-            nbt.putDouble("Paper.Range", range);
+            out.putDouble("Paper.Range", range);
         }
     }
 
     @Inject(method = "loadAdditional", at = @At("RETURN"))
-    private void paperarc$loadEffectRange(CompoundTag nbt, HolderLookup.Provider registries, CallbackInfo ci) {
-        if (nbt.contains("Paper.Range", Tag.TAG_DOUBLE)) {
-            ((BeaconBlockEntityBridge) this).paper$setEffectRange(nbt.getDouble("Paper.Range"));
-        }
+    private void paperarc$loadEffectRange(ValueInput in, CallbackInfo ci) {
+        in.read("Paper.Range", Codec.DOUBLE).ifPresent(range -> {
+            ((BeaconBlockEntityBridge) this).paper$setEffectRange(range);
+        });
     }
 }

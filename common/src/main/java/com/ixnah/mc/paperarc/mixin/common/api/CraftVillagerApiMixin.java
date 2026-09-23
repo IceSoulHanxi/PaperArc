@@ -6,8 +6,8 @@ import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.world.entity.ai.gossip.GossipContainer;
 import net.minecraft.world.entity.ai.gossip.GossipType;
-import net.minecraft.world.entity.npc.Villager;
-import net.minecraft.world.entity.npc.VillagerData;
+import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.npc.villager.VillagerData;
 import org.bukkit.craftbukkit.v.entity.CraftVillager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -53,7 +53,10 @@ public abstract class CraftVillagerApiMixin {
         // 参考 Paper：updateTrades() 会向当前 offers 列表按当前等级追加新交易，
         // 数量参数由 Paper 的补丁用于控制追加数量；vanilla 的 updateTrades()
         // 无数量参数，这里等价于追加一批当前等级可解锁的新交易。
-        this.getHandle().updateTrades();
+        if (!(this.getHandle().level() instanceof net.minecraft.server.level.ServerLevel level)) {
+            return false;
+        }
+        this.getHandle().updateTrades(level);
         return true;
     }
 
@@ -62,11 +65,11 @@ public abstract class CraftVillagerApiMixin {
         Preconditions.checkArgument(amount > 0, "Amount must be greater than 0");
         Villager handle = this.getHandle();
         VillagerData villagerData = handle.getVillagerData();
-        if (villagerData.getLevel() >= VillagerData.MAX_VILLAGER_LEVEL) {
+        if (villagerData.level() >= VillagerData.MAX_VILLAGER_LEVEL) {
             return false;
         }
-        handle.setVillagerData(villagerData.setLevel(
-            Math.min(villagerData.getLevel() + amount, VillagerData.MAX_VILLAGER_LEVEL)));
+        handle.setVillagerData(villagerData.withLevel(
+            Math.min(villagerData.level() + amount, VillagerData.MAX_VILLAGER_LEVEL)));
         return true;
     }
 

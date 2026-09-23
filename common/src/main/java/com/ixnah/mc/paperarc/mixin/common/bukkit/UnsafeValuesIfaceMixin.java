@@ -77,9 +77,6 @@ public interface UnsafeValuesIfaceMixin {
     public abstract java.lang.String getStatisticCriteriaKey(org.bukkit.Statistic p0);
 
     @Unique
-    public abstract java.lang.String getTimingsServerName();
-
-    @Unique
     public abstract net.kyori.adventure.text.serializer.gson.GsonComponentSerializer gsonComponentSerializer();
 
     @Unique
@@ -102,9 +99,6 @@ public interface UnsafeValuesIfaceMixin {
 
     @Unique
     public abstract net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer plainTextSerializer();
-
-    @Unique
-    public abstract void reportTimings();
 
     @Unique
     public abstract byte[] serializeEntity(org.bukkit.entity.Entity p0);
@@ -149,10 +143,6 @@ public interface UnsafeValuesIfaceMixin {
     public abstract net.kyori.adventure.text.Component resolveWithContext(
             net.kyori.adventure.text.Component p0, org.bukkit.command.CommandSender p1,
             org.bukkit.entity.Entity p2, boolean p3);
-
-    @Unique
-    public abstract <A extends org.bukkit.Keyed, M> io.papermc.paper.registry.tag.Tag<A> getTag(
-            io.papermc.paper.registry.tag.TagKey<A> p0);
 
     @Unique
     public abstract <T extends io.papermc.paper.plugin.lifecycle.event.registrar.RegistrarEvent>

@@ -25,16 +25,16 @@ public abstract class CraftTagApiMixin {
     protected net.minecraft.core.Registry<?> registry;
 
     @Unique
-    private static net.minecraft.resources.ResourceLocation paperarc$toResourceLocation(NamespacedKey key) {
-        return net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(key.getNamespace(), key.getKey());
+    private static net.minecraft.resources.Identifier paperarc$toResourceLocation(NamespacedKey key) {
+        return net.minecraft.resources.Identifier.fromNamespaceAndPath(key.getNamespace(), key.getKey());
     }
 
     @Unique
     public boolean isTagged(Keyed item) {
-        net.minecraft.resources.ResourceLocation location = paperarc$toResourceLocation(item.getKey());
+        net.minecraft.resources.Identifier location = paperarc$toResourceLocation(item.getKey());
         for (net.minecraft.core.Holder<?> holder : getHandle()) {
             java.util.Optional<? extends net.minecraft.resources.ResourceKey<?>> key = holder.unwrapKey();
-            if (key.isPresent() && key.get().location().equals(location)) {
+            if (key.isPresent() && key.get().identifier().equals(location)) {
                 return true;
             }
         }
@@ -52,7 +52,7 @@ public abstract class CraftTagApiMixin {
         java.util.Set<org.bukkit.Keyed> values = new java.util.LinkedHashSet<>();
         for (net.minecraft.core.Holder<?> holder : getHandle()) {
             holder.unwrapKey().ifPresent(key -> {
-                net.minecraft.resources.ResourceLocation location = key.location();
+                net.minecraft.resources.Identifier location = key.identifier();
                 Object value = bukkitRegistry.get(new NamespacedKey(location.getNamespace(), location.getPath()));
                 if (value == null) {
                     throw new IllegalStateException("PaperArc CraftTag#getValues: registry "
@@ -71,7 +71,7 @@ public abstract class CraftTagApiMixin {
     @Unique
     @SuppressWarnings("unchecked")
     private static org.bukkit.Registry<org.bukkit.Keyed> paperarc$bukkitRegistry(net.minecraft.core.Registry<?> registry) {
-        String location = registry.key().location().toString();
+        String location = registry.key().identifier().toString();
         java.util.Map<String, org.bukkit.Registry<? extends org.bukkit.Keyed>> map = paperarc$registryMap;
         if (map == null) {
             map = new java.util.HashMap<>();

@@ -2,7 +2,7 @@ package com.ixnah.mc.paperarc.mixin.common.entity;
 
 import com.ixnah.mc.paperarc.bridge.BeeBridge;
 import net.kyori.adventure.util.TriState;
-import net.minecraft.world.entity.animal.Bee;
+import net.minecraft.world.entity.animal.bee.Bee;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 

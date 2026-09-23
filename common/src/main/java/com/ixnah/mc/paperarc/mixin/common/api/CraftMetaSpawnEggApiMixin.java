@@ -28,7 +28,7 @@ public abstract class CraftMetaSpawnEggApiMixin {
     @Unique
     public EntityType getCustomSpawnedType() {
         return Optional.ofNullable(this.entityTag)
-                .map(tag -> tag.getString("id"))
+                .flatMap(tag -> tag.getString("id"))
                 .flatMap(net.minecraft.world.entity.EntityType::byString)
                 .map(CraftMetaSpawnEggApiMixin::paperarc$toBukkit)
                 .orElse(null);

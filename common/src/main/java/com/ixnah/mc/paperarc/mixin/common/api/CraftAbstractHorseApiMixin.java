@@ -1,6 +1,6 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import org.bukkit.craftbukkit.v.entity.CraftAbstractHorse;
 import org.bukkit.entity.Horse;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,22 +30,22 @@ public abstract class CraftAbstractHorseApiMixin {
     @Unique
     public Horse.Variant getVariant() {
         AbstractHorse handle = getHandle();
-        if (handle instanceof net.minecraft.world.entity.animal.horse.SkeletonHorse) {
+        if (handle instanceof net.minecraft.world.entity.animal.equine.SkeletonHorse) {
             return Horse.Variant.SKELETON_HORSE;
         }
-        if (handle instanceof net.minecraft.world.entity.animal.horse.ZombieHorse) {
+        if (handle instanceof net.minecraft.world.entity.animal.equine.ZombieHorse) {
             return Horse.Variant.UNDEAD_HORSE;
         }
-        if (handle instanceof net.minecraft.world.entity.animal.horse.Llama) {
+        if (handle instanceof net.minecraft.world.entity.animal.equine.Llama) {
             return Horse.Variant.LLAMA;
         }
         if (handle instanceof net.minecraft.world.entity.animal.camel.Camel) {
             return Horse.Variant.CAMEL;
         }
-        if (handle instanceof net.minecraft.world.entity.animal.horse.Mule) {
+        if (handle instanceof net.minecraft.world.entity.animal.equine.Mule) {
             return Horse.Variant.MULE;
         }
-        if (handle instanceof net.minecraft.world.entity.animal.horse.Donkey) {
+        if (handle instanceof net.minecraft.world.entity.animal.equine.Donkey) {
             return Horse.Variant.DONKEY;
         }
         return Horse.Variant.HORSE;

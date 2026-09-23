@@ -1,7 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.entity;
 
 import com.ixnah.mc.paperarc.bridge.WanderingTraderBridge;
-import net.minecraft.world.entity.npc.WanderingTrader;
+import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 

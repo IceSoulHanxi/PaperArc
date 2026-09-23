@@ -6,7 +6,8 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import io.papermc.paper.event.entity.TameableDeathMessageEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.minecraft.network.chat.Component.Serializer;
+import org.bukkit.craftbukkit.v.util.CraftChatMessage.ChatSerializer;
+// alias: ChatSerializer
 import net.minecraft.world.entity.TamableAnimal;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.At;
  *
  * <p>1.20.1 paper-api ships no {@code PaperAdventure}, so the NMS {@code Component} is
  * bridged through GSON via {@link GsonComponentSerializer} (matching the rest of this
- * codebase; {@code Serializer.toJson/fromJson} are the 1-arg mojmap forms here).
+ * codebase; {@code ChatSerializer.toJson/fromJson} are the 1-arg mojmap forms here).
  */
 @Mixin(TamableAnimal.class)
 public abstract class TamableAnimalDeathMessageMixin {
@@ -30,21 +31,21 @@ public abstract class TamableAnimalDeathMessageMixin {
             method = "die(Lnet/minecraft/world/damagesource/DamageSource;)V",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/entity/LivingEntity;sendSystemMessage(Lnet/minecraft/network/chat/Component;)V"
+                    target = "Lnet/minecraft/server/level/ServerPlayer;sendSystemMessage(Lnet/minecraft/network/chat/Component;)V"
             )
     )
-    private void paperarc$tameableDeathMessage(net.minecraft.world.entity.LivingEntity owner,
+    private void paperarc$tameableDeathMessage(net.minecraft.server.level.ServerPlayer owner,
                                                net.minecraft.network.chat.Component vanillaMsg,
                                                Operation<Void> original) {
         TamableAnimal self = (TamableAnimal) (Object) this;
-        // 1.21.1 的 Component.Serializer 需要 HolderLookup.Provider（1.20.1 是单参）
+        // 1.21.1 的 Component.ChatSerializer 需要 HolderLookup.Provider（1.20.1 是单参）
         net.minecraft.core.HolderLookup.Provider registries = self.registryAccess();
         Component adventureMsg = GsonComponentSerializer.gson()
-                .deserialize(Serializer.toJson(vanillaMsg, registries));
+                .deserialize(ChatSerializer.toJson(vanillaMsg, registries));
         TameableDeathMessageEvent event = new TameableDeathMessageEvent(
                 (org.bukkit.entity.Tameable) PaperArcBridge.bukkitEntity(self), adventureMsg);
         if (event.callEvent()) {
-            owner.sendSystemMessage(Serializer.fromJson(
+            owner.sendSystemMessage(ChatSerializer.fromJson(
                     GsonComponentSerializer.gson().serialize(event.deathMessage()), registries));
         }
     }

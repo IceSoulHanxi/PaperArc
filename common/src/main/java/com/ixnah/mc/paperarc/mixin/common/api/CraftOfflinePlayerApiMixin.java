@@ -1,7 +1,6 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.ixnah.mc.paperarc.bridge.CraftPlayerProfile;
-import com.mojang.authlib.GameProfile;
 import org.bukkit.craftbukkit.v.CraftOfflinePlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -17,9 +16,8 @@ public abstract class CraftOfflinePlayerApiMixin {
     @Unique
     public com.destroystokyo.paper.profile.PlayerProfile getPlayerProfile() {
         org.bukkit.OfflinePlayer self = (org.bukkit.OfflinePlayer) (Object) this;
-        // authlib 的 GameProfile 不接受 null 名字（从没登录过的 UUID 就是 null），用空串代替
-        String name = self.getName();
-        return new CraftPlayerProfile(new GameProfile(self.getUniqueId(), name == null ? "" : name));
+        // 从没登录过的 UUID 名字为 null；CraftPlayerProfile 自持可空的 id/name
+        return new CraftPlayerProfile(self.getUniqueId(), self.getName());
     }
 
     @Unique

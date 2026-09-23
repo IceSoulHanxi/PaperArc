@@ -1,7 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.monster.ZombieVillager;
+import net.minecraft.world.entity.monster.zombie.ZombieVillager;
 import org.bukkit.craftbukkit.v.entity.CraftVillagerZombie;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -30,7 +30,7 @@ public abstract class CraftVillagerZombieApiMixin {
             this.getHandle().villagerConversionTime = -1;
             this.getHandle().getEntityData().set(ZombieVillager.DATA_CONVERTING_ID, false);
             this.getHandle().conversionStarter = null;
-            this.getHandle().removeEffect(MobEffects.DAMAGE_BOOST);
+            this.getHandle().removeEffect(MobEffects.STRENGTH);
         } else {
             this.getHandle().startConverting(null, time);
         }

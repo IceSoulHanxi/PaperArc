@@ -116,8 +116,8 @@ public abstract class CraftItemFactoryApiMixin {
         net.minecraft.core.RegistryAccess registryAccess = ((org.bukkit.craftbukkit.v.CraftServer) PaperArcBridge.getServer()).getServer().registryAccess();
         Optional<HolderSet<net.minecraft.world.item.enchantment.Enchantment>> possibleEnchantments = allowTreasure
                 ? Optional.empty()
-                : Optional.of(registryAccess.registryOrThrow(Registries.ENCHANTMENT)
-                        .getTag(EnchantmentTags.IN_ENCHANTING_TABLE)
+                : Optional.of(registryAccess.lookupOrThrow(Registries.ENCHANTMENT)
+                        .get(EnchantmentTags.IN_ENCHANTING_TABLE)
                         .orElseThrow(() -> new IllegalStateException("Missing IN_ENCHANTING_TABLE enchantment tag")));
         return paperarc$enchantWithLevels(itemStack, levels, possibleEnchantments, random);
     }
@@ -142,7 +142,7 @@ public abstract class CraftItemFactoryApiMixin {
             nms = CraftItemStack.asNMSCopy(item);
         }
         return nms != null
-                ? Language.getInstance().getOrDefault(nms.getItem().getDescriptionId(nms))
+                ? nms.getItemName().getString()
                 : null;
     }
 
@@ -217,6 +217,6 @@ public abstract class CraftItemFactoryApiMixin {
             net.minecraft.network.chat.Component vanilla) {
         // PaperAdventure unavailable: gson round-trip (see CraftObjectiveApiMixin)
         return net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson()
-                .deserialize(net.minecraft.network.chat.Component.Serializer.toJson(vanilla,
+                .deserialize(org.bukkit.craftbukkit.v.util.CraftChatMessage.ChatSerializer.toJson(vanilla,
                         ((org.bukkit.craftbukkit.v.CraftServer) PaperArcBridge.getServer()).getServer().registryAccess()));
     }}

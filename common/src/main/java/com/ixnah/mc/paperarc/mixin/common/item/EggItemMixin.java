@@ -6,7 +6,7 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.EggItem;
@@ -36,7 +36,7 @@ public abstract class EggItemMixin {
     )
     private boolean paperarc$launch(Level world, Entity projectile, Operation<Boolean> original,
                                     Level level, Player user, InteractionHand hand) {
-        if (world.isClientSide) {
+        if (world.isClientSide()) {
             return original.call(world, projectile);
         }
         return ProjectileLaunchSupport.callLaunchEvent(user, user.getItemInHand(hand), projectile)
@@ -62,11 +62,11 @@ public abstract class EggItemMixin {
     }
 
     @ModifyReturnValue(method = "use", at = @At("RETURN"))
-    private InteractionResultHolder<ItemStack> paperarc$result(InteractionResultHolder<ItemStack> original,
+    private InteractionResult paperarc$result(InteractionResult original,
                                                                Level level, Player user, InteractionHand hand) {
         if (LaunchState.takeCancelled()) {
             ProjectileLaunchSupport.updateInventory(user);
-            return InteractionResultHolder.fail(user.getItemInHand(hand));
+            return InteractionResult.FAIL;
         }
         return original;
     }

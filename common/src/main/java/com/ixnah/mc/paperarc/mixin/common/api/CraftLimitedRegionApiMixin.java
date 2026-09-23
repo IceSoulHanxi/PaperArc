@@ -73,8 +73,10 @@ public abstract class CraftLimitedRegionApiMixin {
                 + state.getBlockData().getAsString(false) + ", got "
                 + CraftBlockData.fromData(this.getHandle().getBlockState(pos)).getAsString(false));
         }
-        this.getHandle().getBlockEntity(pos)
-            .loadWithComponents(((CraftBlockEntityState<?>) state).getSnapshotNBT(), this.getHandle().registryAccess());
+        net.minecraft.world.level.block.entity.BlockEntity be = this.getHandle().getBlockEntity(pos);
+        if (be != null && state instanceof CraftBlockEntityState<?> entityState) {
+            be.loadWithComponents(entityState.getSnapshotInput());
+        }
     }
 
     /** paper {@code FeatureFlagSetHolder#getFeatureFlags}（B3-2）：取世代区域所属世界的特性开关。 */

@@ -3,29 +3,21 @@ package com.ixnah.mc.paperarc.mixin.common.entity;
 import com.ixnah.mc.paperarc.bridge.EntityBridge;
 import com.ixnah.mc.paperarc.bridge.craft.PaperarcLootableData;
 import net.kyori.adventure.util.TriState;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/**
- * 把我们加在实体上的 Paper 补充字段写进 / 读出实体 NBT（gaps.md §3.1 持久化行）。
- *
- * <p>为什么挂在 {@code Entity#saveWithoutId}/{@code load} 而不是各子类的
- * {@code addAdditionalSaveData}：这几样状态分散在 {@code Entity}（origin、spawnReason）、
- * {@code LivingEntity} 与 {@code ItemEntity}（frictionState）、以及矿车/箱船
- * （lootable 记账）上，一处收口最省事，也与 CraftBukkit 写 {@code BukkitValues} 的位置一致。
- *
- * <p>键名沿用 Paper（{@code Paper.Origin}/{@code Paper.OriginWorld}/
- * {@code Paper.FrictionState}）与 Spigot（{@code Spigot.ticksLived} 那一族的
- * {@code Bukkit.*}）的命名习惯；只在值不是默认值时才写，避免给每个实体都加标签。
- */
+import java.util.Optional;
+import java.util.UUID;
+
 @Mixin(Entity.class)
 public abstract class EntityPersistenceMixin {
 
@@ -45,72 +37,60 @@ public abstract class EntityPersistenceMixin {
     private static final String PAPERARC_FROM_SPAWNER = "Paper.FromMobSpawner";
 
     @Inject(method = "saveWithoutId", at = @At("RETURN"))
-    private void paperarc$saveSupplementary(CompoundTag nbt, CallbackInfoReturnable<CompoundTag> cir) {
+    private void paperarc$saveSupplementary(ValueOutput out, CallbackInfo ci) {
         EntityBridge bridge = (EntityBridge) this;
         org.bukkit.util.Vector origin = bridge.getOriginVector();
         if (origin != null) {
-            nbt.put(PAPERARC_ORIGIN, paperarc$vectorTag(origin));
-            java.util.UUID world = bridge.getOriginWorld();
+            out.store(PAPERARC_ORIGIN, Vec3.CODEC, new Vec3(origin.getX(), origin.getY(), origin.getZ()));
+            UUID world = bridge.getOriginWorld();
             if (world != null) {
-                nbt.putUUID(PAPERARC_ORIGIN_WORLD, world);
+                out.store(PAPERARC_ORIGIN_WORLD, UUIDUtil.CODEC, world);
             }
         }
         CreatureSpawnEvent.SpawnReason reason = bridge.paper$spawnReason();
         if (reason != null && reason != CreatureSpawnEvent.SpawnReason.DEFAULT) {
-            nbt.putString(PAPERARC_SPAWN_REASON, reason.name());
+            out.putString(PAPERARC_SPAWN_REASON, reason.name());
         }
         if (bridge.paper$spawnedViaMobSpawner()) {
-            nbt.putBoolean(PAPERARC_FROM_SPAWNER, true);
+            out.putBoolean(PAPERARC_FROM_SPAWNER, true);
         }
         TriState friction = paperarc$friction();
         if (friction != null && friction != TriState.NOT_SET) {
-            nbt.putString(PAPERARC_FRICTION, friction.name());
+            out.putString(PAPERARC_FRICTION, friction.name());
         }
-        PaperarcLootableData.saveIfPresent(this, nbt);
+        PaperarcLootableData.saveIfPresent(this, out);
     }
 
     @Inject(method = "load", at = @At("RETURN"))
-    private void paperarc$loadSupplementary(CompoundTag nbt, CallbackInfo ci) {
+    private void paperarc$loadSupplementary(ValueInput in, CallbackInfo ci) {
         EntityBridge bridge = (EntityBridge) this;
-        if (nbt.contains(PAPERARC_ORIGIN, Tag.TAG_LIST) && nbt.hasUUID(PAPERARC_ORIGIN_WORLD)) {
-            net.minecraft.nbt.ListTag list = nbt.getList(PAPERARC_ORIGIN, Tag.TAG_DOUBLE);
-            org.bukkit.World world = org.bukkit.Bukkit.getWorld(nbt.getUUID(PAPERARC_ORIGIN_WORLD));
-            if (list.size() == 3 && world != null) {
-                bridge.setOrigin(new org.bukkit.Location(world,
-                        list.getDouble(0), list.getDouble(1), list.getDouble(2)));
+        Optional<Vec3> originOpt = in.read(PAPERARC_ORIGIN, Vec3.CODEC);
+        Optional<UUID> worldOpt = in.read(PAPERARC_ORIGIN_WORLD, UUIDUtil.CODEC);
+        if (originOpt.isPresent() && worldOpt.isPresent()) {
+            org.bukkit.World world = org.bukkit.Bukkit.getWorld(worldOpt.get());
+            if (world != null) {
+                Vec3 vec = originOpt.get();
+                bridge.setOrigin(new org.bukkit.Location(world, vec.x, vec.y, vec.z));
             }
         }
-        if (nbt.contains(PAPERARC_SPAWN_REASON, Tag.TAG_STRING)) {
+        in.getString(PAPERARC_SPAWN_REASON).ifPresent(str -> {
             try {
-                bridge.paper$setSpawnReason(
-                        CreatureSpawnEvent.SpawnReason.valueOf(nbt.getString(PAPERARC_SPAWN_REASON)));
+                bridge.paper$setSpawnReason(CreatureSpawnEvent.SpawnReason.valueOf(str));
             } catch (IllegalArgumentException ignored) {
-                // 存档里是别的版本写的原因名，按默认处理即可
             }
-        }
-        if (nbt.getBoolean(PAPERARC_FROM_SPAWNER)) {
+        });
+        if (in.getBooleanOr(PAPERARC_FROM_SPAWNER, false)) {
             bridge.paper$setSpawnedViaMobSpawner(true);
         }
-        if (nbt.contains(PAPERARC_FRICTION, Tag.TAG_STRING)) {
+        in.getString(PAPERARC_FRICTION).ifPresent(str -> {
             try {
-                paperarc$setFriction(TriState.valueOf(nbt.getString(PAPERARC_FRICTION)));
+                paperarc$setFriction(TriState.valueOf(str));
             } catch (IllegalArgumentException ignored) {
-                // 同上
             }
-        }
-        PaperarcLootableData.loadIfPresent(this, nbt);
+        });
+        PaperarcLootableData.loadIfPresent(this, in);
     }
 
-    @Unique
-    private static net.minecraft.nbt.ListTag paperarc$vectorTag(org.bukkit.util.Vector vec) {
-        net.minecraft.nbt.ListTag list = new net.minecraft.nbt.ListTag();
-        list.add(net.minecraft.nbt.DoubleTag.valueOf(vec.getX()));
-        list.add(net.minecraft.nbt.DoubleTag.valueOf(vec.getY()));
-        list.add(net.minecraft.nbt.DoubleTag.valueOf(vec.getZ()));
-        return list;
-    }
-
-    /** frictionState 只存在于 LivingEntity / ItemEntity 两条线上，各有各的 bridge。 */
     @Unique
     private TriState paperarc$friction() {
         if (this instanceof com.ixnah.mc.paperarc.bridge.LivingEntityFieldsBridge living) {

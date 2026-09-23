@@ -9,4 +9,6 @@ public interface ProjectileBridge {
     boolean paper$hasBeenShot();
 
     void paper$setHasBeenShot(boolean hasBeenShot);
+
+    java.util.UUID paper$getOwnerUniqueId();
 }

@@ -6,7 +6,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.minecraft.network.chat.Component.Serializer;
+import org.bukkit.craftbukkit.v.util.CraftChatMessage.ChatSerializer;
+// alias: ChatSerializer
 import org.bukkit.craftbukkit.v.scoreboard.CraftScoreboard;
 import org.bukkit.entity.Entity;
 import org.spongepowered.asm.mixin.Final;
@@ -180,12 +181,12 @@ public abstract class CraftTeamApiMixin {
     @Unique
     private static Component paperarc$asAdventure(net.minecraft.network.chat.Component vanilla) {
         return GsonComponentSerializer.gson()
-                .deserialize(Serializer.toJson(vanilla, paperarc$nmsServer().registryAccess()));
+                .deserialize(ChatSerializer.toJson(vanilla, paperarc$nmsServer().registryAccess()));
     }
 
     @Unique
     private static net.minecraft.network.chat.Component paperarc$asVanilla(Component adventure) {
-        return Serializer.fromJson(GsonComponentSerializer.gson().serialize(adventure),
+        return ChatSerializer.fromJson(GsonComponentSerializer.gson().serialize(adventure),
                 paperarc$nmsServer().registryAccess());
     }
 

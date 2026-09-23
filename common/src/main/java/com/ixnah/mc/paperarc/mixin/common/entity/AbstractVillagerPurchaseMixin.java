@@ -3,7 +3,7 @@ package com.ixnah.mc.paperarc.mixin.common.entity;
 import com.ixnah.mc.paperarc.bridge.api.PaperarcEventCauses;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import io.papermc.paper.event.player.PlayerPurchaseEvent;
-import net.minecraft.world.entity.npc.AbstractVillager;
+import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.item.trading.MerchantOffer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

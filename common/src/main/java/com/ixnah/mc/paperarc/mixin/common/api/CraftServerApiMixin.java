@@ -5,7 +5,6 @@ import com.ixnah.mc.paperarc.bridge.CraftPlayerProfile;
 import com.ixnah.mc.paperarc.bridge.api.SimpleMobGoals;
 import com.ixnah.mc.paperarc.bridge.scheduler.SimpleAsyncScheduler;
 import com.ixnah.mc.paperarc.bridge.scheduler.SimpleGlobalRegionScheduler;
-import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Pair;
 import io.papermc.paper.math.Position;
 import io.papermc.paper.potion.PotionMix;
@@ -18,7 +17,7 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.MapItem;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.saveddata.maps.MapDecorationType;
@@ -209,17 +208,16 @@ public abstract class CraftServerApiMixin {
 
     @Unique
     public String getMinecraftVersion() {
-        return SharedConstants.getCurrentVersion().getName();
+        return SharedConstants.getCurrentVersion().name();
     }
 
     @Unique
     public OfflinePlayer getOfflinePlayerIfCached(String name) {
-        Optional<GameProfile> profile = this.getServer().getProfileCache().get(name);
-        if (!profile.isPresent()) {
+        Optional<net.minecraft.server.players.NameAndId> entry = this.getServer().services().nameToIdCache().get(name);
+        if (!entry.isPresent()) {
             return null;
         }
-        // CraftServer.getOfflinePlayer(GameProfile) is public (javap-verified).
-        return ((CraftServer) (Object) this).getOfflinePlayer(profile.get());
+        return ((CraftServer) (Object) this).getOfflinePlayer(entry.get());
     }
 
     @Unique
@@ -233,8 +231,8 @@ public abstract class CraftServerApiMixin {
         if (online != null) {
             return online.getUniqueId();
         }
-        Optional<GameProfile> profile = this.getServer().getProfileCache().get(name);
-        return profile.map(GameProfile::getId).orElse(null);
+        Optional<net.minecraft.server.players.NameAndId> entry = this.getServer().services().nameToIdCache().get(name);
+        return entry.map(net.minecraft.server.players.NameAndId::id).orElse(null);
     }
 
     /**
@@ -319,10 +317,10 @@ public abstract class CraftServerApiMixin {
             return null;
         }
         net.minecraft.server.level.ServerLevel level = craftWorld.getHandle();
-        Registry<Structure> structures = level.registryAccess().registryOrThrow(Registries.STRUCTURE);
-        ResourceLocation structureId = ResourceLocation.parse(structureType.getKey().toString());
+        Registry<Structure> structures = level.registryAccess().lookupOrThrow(Registries.STRUCTURE);
+        Identifier structureId = Identifier.parse(structureType.getKey().toString());
         Holder<Structure> holder = structures
-                .getHolder(ResourceKey.create(Registries.STRUCTURE, structureId))
+                .get(ResourceKey.create(Registries.STRUCTURE, structureId))
                 .orElse(null);
         if (holder == null) {
             return null;
@@ -354,16 +352,16 @@ public abstract class CraftServerApiMixin {
     private static Holder<MapDecorationType> paperarc$mapDecorationType(
             net.minecraft.server.level.ServerLevel level, MapCursor.Type icon) {
         Registry<MapDecorationType> decorations =
-                level.registryAccess().registryOrThrow(Registries.MAP_DECORATION_TYPE);
-        Holder<MapDecorationType> resolved = decorations.getHolder(ResourceKey.create(
+                level.registryAccess().lookupOrThrow(Registries.MAP_DECORATION_TYPE);
+        Holder<MapDecorationType> resolved = decorations.get(ResourceKey.create(
                         Registries.MAP_DECORATION_TYPE,
-                        ResourceLocation.fromNamespaceAndPath("minecraft", icon.name().toLowerCase(Locale.ROOT))))
+                        Identifier.fromNamespaceAndPath("minecraft", icon.name().toLowerCase(Locale.ROOT))))
                 .orElse(null);
         if (resolved != null) {
             return resolved;
         }
-        return decorations.getHolder(ResourceKey.create(Registries.MAP_DECORATION_TYPE,
-                ResourceLocation.withDefaultNamespace("target_x"))).orElse(null);
+        return decorations.get(ResourceKey.create(Registries.MAP_DECORATION_TYPE,
+                Identifier.withDefaultNamespace("target_x"))).orElse(null);
     }
 
     /**
@@ -398,24 +396,24 @@ public abstract class CraftServerApiMixin {
     /** Wraps {@code (id, null)}; completion fills the name from the profile cache. */
     @Unique
     public com.destroystokyo.paper.profile.PlayerProfile createProfile(java.util.UUID uniqueId) {
-        return new CraftPlayerProfile(new GameProfile(uniqueId, null));
+        return new CraftPlayerProfile(uniqueId, null);
     }
 
     @Unique
     public com.destroystokyo.paper.profile.PlayerProfile createProfile(java.util.UUID uniqueId, String name) {
-        return new CraftPlayerProfile(new GameProfile(uniqueId, name));
+        return new CraftPlayerProfile(uniqueId, name);
     }
 
     /** No cached id available yet; a random UUID is used as a placeholder (Paper parity). */
     @Unique
     public com.destroystokyo.paper.profile.PlayerProfile createProfile(String name) {
-        return new CraftPlayerProfile(new GameProfile(java.util.UUID.randomUUID(), name));
+        return new CraftPlayerProfile(java.util.UUID.randomUUID(), name);
     }
 
     /** Exact variant: stores both values verbatim without offline-UUID derivation. */
     @Unique
     public com.destroystokyo.paper.profile.PlayerProfile createProfileExact(java.util.UUID uniqueId, String name) {
-        return new CraftPlayerProfile(new GameProfile(uniqueId, name));
+        return new CraftPlayerProfile(uniqueId, name);
     }
 
 
@@ -634,9 +632,11 @@ public abstract class CraftServerApiMixin {
 
     @Unique
     public void updateRecipes() {
+        var recipeManager = this.getServer().getRecipeManager();
         net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket packet =
                 new net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket(
-                        this.getServer().getRecipeManager().getRecipes());
+                        recipeManager.getSynchronizedItemProperties(),
+                        recipeManager.getSynchronizedStonecutterRecipes());
         for (net.minecraft.server.level.ServerPlayer player : this.getHandle().getPlayers()) {
             if (player.connection != null) {
                 player.connection.send(packet);

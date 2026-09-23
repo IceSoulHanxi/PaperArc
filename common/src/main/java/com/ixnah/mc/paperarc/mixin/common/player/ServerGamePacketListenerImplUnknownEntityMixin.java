@@ -25,7 +25,7 @@ public abstract class ServerGamePacketListenerImplUnknownEntityMixin {
 
     @Inject(method = "handleInteract", at = @At("TAIL"))
     private void paperarc$useUnknownEntity(ServerboundInteractPacket packet, CallbackInfo ci) {
-        if (packet.getTarget(this.player.serverLevel()) != null) {
+        if (packet.getTarget(this.player.level()) != null) {
             return; // known entity: vanilla interaction pipeline handled it
         }
         final ServerPlayer sender = this.player;

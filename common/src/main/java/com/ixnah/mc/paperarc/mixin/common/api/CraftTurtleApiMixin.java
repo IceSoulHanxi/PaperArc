@@ -1,7 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.animal.Turtle;
+import net.minecraft.world.entity.animal.turtle.Turtle;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v.entity.CraftTurtle;
 import org.bukkit.craftbukkit.v.util.CraftLocation;
@@ -25,7 +25,7 @@ public abstract class CraftTurtleApiMixin {
 
     @Unique
     public Location getHome() {
-        return CraftLocation.toBukkit(getHandle().getHomePos(), getHandle().level());
+        return CraftLocation.toBukkit(getHandle().homePos, getHandle().level());
     }
 
     @Unique
@@ -35,7 +35,7 @@ public abstract class CraftTurtleApiMixin {
 
     @Unique
     public boolean isGoingHome() {
-        return getHandle().isGoingHome();
+        return getHandle().goingHome;
     }
 
     @Unique

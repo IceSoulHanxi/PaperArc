@@ -19,6 +19,9 @@ public abstract class ProjectileFieldsMixin implements ProjectileBridge {
     @Shadow
     private boolean hasBeenShot;
 
+    @Shadow
+    protected net.minecraft.world.entity.EntityReference<net.minecraft.world.entity.Entity> owner;
+
     @Override
     public boolean paper$hasBeenShot() {
         return this.hasBeenShot;
@@ -27,5 +30,10 @@ public abstract class ProjectileFieldsMixin implements ProjectileBridge {
     @Override
     public void paper$setHasBeenShot(boolean hasBeenShot) {
         this.hasBeenShot = hasBeenShot;
+    }
+
+    @Override
+    public java.util.UUID paper$getOwnerUniqueId() {
+        return this.owner != null ? this.owner.getUUID() : null;
     }
 }

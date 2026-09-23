@@ -7,10 +7,14 @@ import java.util.Optional;
 
 import com.google.common.base.Preconditions;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import com.ixnah.mc.paperarc.bridge.AbstractFurnaceBlockEntityBridge;
@@ -67,8 +71,8 @@ public abstract class CraftFurnaceApiMixin {
         // Paper 的 4 参 getTotalCookTime(Level, RecipeType, AFBE, double) 是它自己加的，
         // vanilla 只有 2 参版本，这里按同样的语义除以倍率。
         Level level = this.paperarc$isPlaced() ? (Level) ((CraftBlockState) (Object) this).getWorldHandle() : null;
-        if (level != null) {
-            int vanillaTotal = AbstractFurnaceBlockEntity.getTotalCookTime(level, snapshot);
+        if (level instanceof ServerLevel serverLevel) {
+            int vanillaTotal = AbstractFurnaceBlockEntity.getTotalCookTime(serverLevel, snapshot);
             snapshot.cookingTotalTime = multiplier <= 0.0D
                     ? vanillaTotal
                     : (int) Math.ceil(vanillaTotal / multiplier);
@@ -78,31 +82,36 @@ public abstract class CraftFurnaceApiMixin {
     // Paper start - Furnace RecipesUsed API
 
     @Unique
+    private static ResourceKey<Recipe<?>> paperarc$recipeKey(NamespacedKey key) {
+        return ResourceKey.create(Registries.RECIPE, CraftNamespacedKey.toMinecraft(key));
+    }
+
+    @Unique
     public int getRecipeUsedCount(NamespacedKey furnaceRecipe) {
-        Map<ResourceLocation, Integer> recipesUsed = this.paperarc$recipesUsed();
-        Integer count = recipesUsed.get(CraftNamespacedKey.toMinecraft(furnaceRecipe));
+        Map<ResourceKey<Recipe<?>>, Integer> recipesUsed = this.paperarc$recipesUsed();
+        Integer count = recipesUsed.get(paperarc$recipeKey(furnaceRecipe));
         return count != null ? count : 0;
     }
 
     @Unique
     public boolean hasRecipeUsedCount(NamespacedKey furnaceRecipe) {
-        return this.paperarc$recipesUsed().containsKey(CraftNamespacedKey.toMinecraft(furnaceRecipe));
+        return this.paperarc$recipesUsed().containsKey(paperarc$recipeKey(furnaceRecipe));
     }
 
     @Unique
     public void setRecipeUsedCount(CookingRecipe<?> furnaceRecipe, int count) {
-        ResourceLocation location = CraftNamespacedKey.toMinecraft(furnaceRecipe.getKey());
+        ResourceKey<Recipe<?>> key = paperarc$recipeKey(furnaceRecipe.getKey());
         Level level = this.paperarc$isPlaced() ? (Level) ((CraftBlockState) (Object) this).getWorldHandle() : null;
         // this mapping has no MinecraftServer.getServer(); reach it via CraftServer
-        RecipeManager recipeManager = level != null ? level.getRecipeManager()
+        RecipeManager recipeManager = level instanceof ServerLevel serverLevel ? serverLevel.recipeAccess()
             : ((CraftServer) PaperArcBridge.getServer()).getServer().getRecipeManager();
-        Optional<RecipeHolder<?>> nmsRecipe = recipeManager.byKey(location);
+        Optional<RecipeHolder<?>> nmsRecipe = recipeManager.byKey(key);
         Preconditions.checkArgument(nmsRecipe.isPresent() && nmsRecipe.get().value() instanceof AbstractCookingRecipe,
             furnaceRecipe.getKey() + " is not recognized as a valid and registered furnace recipe");
         if (count > 0) {
-            this.paperarc$recipesUsed().put(location, count);
+            this.paperarc$recipesUsed().put(key, count);
         } else {
-            this.paperarc$recipesUsed().remove(location);
+            this.paperarc$recipesUsed().remove(key);
         }
     }
 
@@ -117,8 +126,8 @@ public abstract class CraftFurnaceApiMixin {
     }
 
     @Unique
-    private Map<ResourceLocation, Integer> paperarc$recipesUsed() {
-        return this.paperarc$snapshot().recipesUsed;
+    private Map<ResourceKey<Recipe<?>>, Integer> paperarc$recipesUsed() {
+        return ((AbstractFurnaceBlockEntityBridge) this.paperarc$snapshot()).paper$getRecipesUsed();
     }
 
     @Unique

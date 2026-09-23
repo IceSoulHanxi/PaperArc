@@ -3,7 +3,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import org.bukkit.craftbukkit.v.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.v.block.impl.CraftLeaves;
+import org.bukkit.craftbukkit.v.block.data.type.CraftLeaves;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -19,8 +19,9 @@ import org.spongepowered.asm.mixin.Unique;
 // CraftCherryLeaves / CraftMangroveLeaves 是独立生成的 BlockData 实现类，
 // 不继承 CraftLeaves，必须一起挂（PARTIAL_IMPL 门禁）。
 @Mixin({CraftLeaves.class,
-        org.bukkit.craftbukkit.v.block.impl.CraftCherryLeaves.class,
-        org.bukkit.craftbukkit.v.block.impl.CraftMangroveLeaves.class})
+        org.bukkit.craftbukkit.v.block.impl.CraftMangroveLeaves.class,
+        org.bukkit.craftbukkit.v.block.impl.CraftTintedParticleLeaves.class,
+        org.bukkit.craftbukkit.v.block.impl.CraftUntintedParticleLeaves.class})
 public abstract class CraftLeavesApiMixin extends CraftBlockData {
 
     @Unique

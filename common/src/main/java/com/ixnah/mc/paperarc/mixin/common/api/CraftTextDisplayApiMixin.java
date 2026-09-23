@@ -3,7 +3,8 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.minecraft.network.chat.Component.Serializer;
+import org.bukkit.craftbukkit.v.util.CraftChatMessage.ChatSerializer;
+// alias: ChatSerializer
 import net.minecraft.world.entity.Display;
 import org.bukkit.craftbukkit.v.entity.CraftTextDisplay;
 import org.spongepowered.asm.mixin.Mixin;
@@ -32,7 +33,7 @@ public abstract class CraftTextDisplayApiMixin {
             return Component.empty();
         }
         // PaperAdventure unavailable: gson round-trip instead
-        String json = Serializer.toJson(vanilla,
+        String json = ChatSerializer.toJson(vanilla,
                 ((org.bukkit.craftbukkit.v.CraftServer) PaperArcBridge.getServer()).getServer().registryAccess());
         return GsonComponentSerializer.gson().deserialize(json);
     }
@@ -44,7 +45,7 @@ public abstract class CraftTextDisplayApiMixin {
         }
         String json = GsonComponentSerializer.gson().serialize(component);
         net.minecraft.network.chat.Component vanilla =
-                Serializer.fromJson(json, ((org.bukkit.craftbukkit.v.CraftServer) PaperArcBridge.getServer()).getServer().registryAccess());
+                ChatSerializer.fromJson(json, ((org.bukkit.craftbukkit.v.CraftServer) PaperArcBridge.getServer()).getServer().registryAccess());
         this.getHandle().setText(vanilla);
     }
 }

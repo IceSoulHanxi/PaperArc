@@ -1,6 +1,6 @@
 package com.ixnah.mc.paperarc.bridge;
 
-import net.minecraft.world.level.portal.DimensionTransition;
+import net.minecraft.world.level.portal.TeleportTransition;
 import org.bukkit.Location;
 
 /**
@@ -12,6 +12,7 @@ public final class RespawnCapture {
 
     public boolean respawn;
     public boolean bedSpawn;
+    public boolean anchorSpawn;
     public Location location;
-    public DimensionTransition transition;
+    public TeleportTransition transition;
 }

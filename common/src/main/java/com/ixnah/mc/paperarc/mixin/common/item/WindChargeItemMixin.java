@@ -10,7 +10,7 @@ import net.minecraft.network.protocol.game.ClientboundCooldownPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stat;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemCooldowns;
@@ -46,7 +46,7 @@ public abstract class WindChargeItemMixin {
     )
     private boolean paperarc$launch(Level world, Entity projectile, Operation<Boolean> original,
                                     Level level, Player user, InteractionHand hand) {
-        if (world.isClientSide) {
+        if (world.isClientSide()) {
             return original.call(world, projectile);
         }
         PlayerLaunchProjectileEvent event = new PlayerLaunchProjectileEvent(
@@ -57,7 +57,7 @@ public abstract class WindChargeItemMixin {
             LaunchState.cancelled(true);
             user.containerMenu.sendAllDataToRemote();
             if (user instanceof ServerPlayer serverPlayer) {
-                serverPlayer.connection.send(new ClientboundCooldownPacket((Item) (Object) this, 0));
+                serverPlayer.connection.send(new ClientboundCooldownPacket(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey((Item) (Object) this), 0));
             }
             return false;
         }
@@ -108,10 +108,10 @@ public abstract class WindChargeItemMixin {
     }
 
     @ModifyReturnValue(method = "use", at = @At("RETURN"))
-    private InteractionResultHolder<ItemStack> paperarc$result(InteractionResultHolder<ItemStack> original,
+    private InteractionResult paperarc$result(InteractionResult original,
                                                                Level level, Player user, InteractionHand hand) {
         return LaunchState.takeCancelled()
-                ? InteractionResultHolder.fail(user.getItemInHand(hand))
+                ? InteractionResult.FAIL
                 : original;
     }
 }

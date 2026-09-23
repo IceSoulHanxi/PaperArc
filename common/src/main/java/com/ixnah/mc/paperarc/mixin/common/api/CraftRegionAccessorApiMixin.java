@@ -51,7 +51,7 @@ public abstract class CraftRegionAccessorApiMixin {
     @Unique
     public NamespacedKey getKey() {
         // Paper: CraftNamespacedKey.fromMinecraft(this.getHandle().getLevel().dimension().location())
-        return CraftNamespacedKey.fromMinecraft(this.getHandle().getLevel().dimension().location());
+        return CraftNamespacedKey.fromMinecraft(this.getHandle().getLevel().dimension().identifier());
     }
 
     @Unique

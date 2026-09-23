@@ -13,9 +13,8 @@ import org.spongepowered.asm.mixin.Unique;
 /**
  * Adds Paper's per-slot drop chance API on CraftEntityEquipment.
  *
- * Paper delegates to {@code Mob#getEquipmentDropChance(slot)} which is protected
- * in vanilla 1.21.1 (publicized by Paper's AT and by
- * {@code paperarc.accesswidener}). {@code Mob#setDropChance} is public.
+ * Reads go through {@code Mob#getDropChances().byEquipment(slot)} (1.21.5+ moved
+ * the per-slot chances into a {@code DropChances} record). {@code Mob#setDropChance} is public.
  */
 @Mixin(CraftEntityEquipment.class)
 public abstract class CraftEntityEquipmentApiMixin {
@@ -30,7 +29,7 @@ public abstract class CraftEntityEquipmentApiMixin {
         if (!(entity.getHandle() instanceof net.minecraft.world.entity.Mob mob)) {
             return 1;
         }
-        return mob.getEquipmentDropChance(nms);
+        return mob.getDropChances().byEquipment(nms);
     }
 
     @Unique

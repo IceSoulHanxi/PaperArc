@@ -1,7 +1,8 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
+import com.ixnah.mc.paperarc.mixin.common.entity.DolphinAccessor;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.animal.Dolphin;
+import net.minecraft.world.entity.animal.dolphin.Dolphin;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v.entity.CraftDolphin;
 import org.bukkit.craftbukkit.v.util.CraftLocation;
@@ -47,13 +48,13 @@ public abstract class CraftDolphinApiMixin {
 
     @Unique
     public Location getTreasureLocation() {
-        BlockPos pos = this.getHandle().getTreasurePos();
+        BlockPos pos = ((DolphinAccessor) this.getHandle()).paperarc$getTreasurePos();
         return pos == null ? null : CraftLocation.toBukkit(pos, this.getHandle().level());
     }
 
     @Unique
     public void setTreasureLocation(Location location) {
-        this.getHandle().setTreasurePos(CraftLocation.toBlockPosition(location));
+        ((DolphinAccessor) this.getHandle()).paperarc$setTreasurePos(CraftLocation.toBlockPosition(location));
     }
     // Paper end - Missing Dolphin API
 }

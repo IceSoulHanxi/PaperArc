@@ -16,4 +16,6 @@ public interface AbstractFurnaceBlockEntityBridge {
 
     void paper$setCookSpeedMultiplier(double multiplier);
 
+    java.util.Map<net.minecraft.resources.ResourceKey<net.minecraft.world.item.crafting.Recipe<?>>, java.lang.Integer> paper$getRecipesUsed();
+
 }

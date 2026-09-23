@@ -53,6 +53,6 @@ public abstract class ConnectionMixin {
         }
         InetAddress inetAddress =
             this.address instanceof InetSocketAddress socketAddress ? socketAddress.getAddress() : null;
-        PaperArcEvents.fire(new PlayerConnectionCloseEvent(profile.getId(), profile.getName(), inetAddress, false));
+        PaperArcEvents.fire(new PlayerConnectionCloseEvent(profile.id(), profile.name(), inetAddress, false));
     }
 }

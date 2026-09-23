@@ -116,12 +116,20 @@ public abstract class CraftHumanEntityApiMixin {
         if (!(this.getHandle() instanceof ServerPlayer player)) {
             return null;
         }
-        BlockPos bed = player.getRespawnPosition();
+        var respawnConfig = player.getRespawnConfig();
+        if (respawnConfig == null) {
+            return null;
+        }
+        var respawnData = respawnConfig.respawnData();
+        if (respawnData == null) {
+            return null;
+        }
+        BlockPos bed = respawnData.pos();
         if (bed == null) {
             return null;
         }
-        ResourceKey<Level> dimension = player.getRespawnDimension();
-        ServerLevel level = player.server.getLevel(dimension);
+        ResourceKey<Level> dimension = respawnData.dimension();
+        ServerLevel level = player.level().getServer().getLevel(dimension);
         if (level == null) {
             return null;
         }
@@ -180,7 +188,9 @@ public abstract class CraftHumanEntityApiMixin {
 
     @Unique
     public org.bukkit.entity.Entity releaseLeftShoulderEntity() {
-        Player handle = this.getHandle();
+        if (!(this.getHandle() instanceof ServerPlayer handle)) {
+            return null;
+        }
         CompoundTag tag = handle.getShoulderEntityLeft();
         if (tag == null || tag.isEmpty()) {
             return null;
@@ -192,7 +202,9 @@ public abstract class CraftHumanEntityApiMixin {
 
     @Unique
     public org.bukkit.entity.Entity releaseRightShoulderEntity() {
-        Player handle = this.getHandle();
+        if (!(this.getHandle() instanceof ServerPlayer handle)) {
+            return null;
+        }
         CompoundTag tag = handle.getShoulderEntityRight();
         if (tag == null || tag.isEmpty()) {
             return null;
@@ -277,11 +289,11 @@ public abstract class CraftHumanEntityApiMixin {
     }
 
     @Unique
-    private static net.minecraft.world.entity.Entity paperarc$spawnFromShoulder(Player player,
+    private static net.minecraft.world.entity.Entity paperarc$spawnFromShoulder(ServerPlayer player,
             CompoundTag tag) {
-        Optional<net.minecraft.world.entity.Entity> created =
-                EntityType.create(tag, player.level());
-        net.minecraft.world.entity.Entity entity = created.orElse(null);
+        net.minecraft.world.entity.Entity entity = EntityType.loadEntityRecursive(
+                tag, player.level(), net.minecraft.world.entity.EntitySpawnReason.EVENT,
+                net.minecraft.world.entity.EntityProcessor.NOP);
         if (entity != null) {
             // approximation of Paper's spawn logic: release at the player's position
             entity.setPos(player.getX(), player.getY() + 0.7D, player.getZ());
@@ -291,7 +303,7 @@ public abstract class CraftHumanEntityApiMixin {
     }
 
     @Unique
-    private static void paperarc$setShoulder(Player player, boolean right, CompoundTag value) {
+    private static void paperarc$setShoulder(ServerPlayer player, boolean right, CompoundTag value) {
         // 两个 setter 在 vanilla 里是 protected，由 paperarc.accesswidener 放开
         if (right) {
             player.setShoulderEntityRight(value);

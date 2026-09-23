@@ -5,13 +5,12 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.DisplayInfo;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.v.CraftServer;
 import org.bukkit.craftbukkit.v.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Optional;
 
 /**
  * 把 NMS 的 {@link DisplayInfo} 适配成 paper 的 {@link AdvancementDisplay}
@@ -36,7 +35,7 @@ public final class PaperarcAdvancementDisplay implements AdvancementDisplay {
         net.minecraft.core.HolderLookup.Provider registries =
                 ((CraftServer) org.bukkit.Bukkit.getServer()).getServer().registryAccess();
         return GsonComponentSerializer.gson().deserialize(
-                net.minecraft.network.chat.Component.Serializer.toJson(vanilla, registries));
+                org.bukkit.craftbukkit.v.util.CraftChatMessage.ChatSerializer.toJson(vanilla, registries));
     }
 
     @Override
@@ -81,8 +80,9 @@ public final class PaperarcAdvancementDisplay implements AdvancementDisplay {
 
     @Override
     public NamespacedKey backgroundPath() {
-        Optional<ResourceLocation> background = this.handle.getBackground();
-        return background.map(id -> new NamespacedKey(id.getNamespace(), id.getPath())).orElse(null);
+        return this.handle.getBackground()
+                .map(asset -> new NamespacedKey(asset.id().getNamespace(), asset.id().getPath()))
+                .orElse(null);
     }
 
     @Override

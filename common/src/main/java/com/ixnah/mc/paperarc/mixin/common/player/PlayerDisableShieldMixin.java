@@ -5,6 +5,7 @@ import io.papermc.paper.event.player.PlayerShieldDisableEvent;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemCooldowns;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -27,6 +28,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * broadcast, mirroring Paper's early-return semantics. No captured attacker ->
  * plain vanilla path with no event (matches Paper's null-attacker branch).
  * Arclight's PlayerMixin has no decorations on disableShield/blockUsingShield.
+ *
+ * TODO(1.21.11): 1.21.5 起 Player#disableShield/blockUsingShield 已删除，盾牌禁用改由
+ * BlocksAttacks#disable 组件逻辑承担；本 mixin 的两个锚点都不存在，需在 C2 改锚后重写。
  */
 @Mixin(Player.class)
 public abstract class PlayerDisableShieldMixin {
@@ -62,7 +66,7 @@ public abstract class PlayerDisableShieldMixin {
             ci.cancel();
             return;
         }
-        this.getCooldowns().addCooldown(Items.SHIELD, event.getCooldown());
+        this.getCooldowns().addCooldown(new ItemStack(Items.SHIELD), event.getCooldown());
         ((LivingEntity) (Object) this).stopUsingItem();
         ((LivingEntity) (Object) this).level().broadcastEntityEvent(self, (byte) 30);
         ci.cancel(); // body re-implemented above

@@ -3,6 +3,8 @@ package com.ixnah.mc.paperarc.bridge;
 import com.destroystokyo.paper.profile.ProfileProperty;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
@@ -22,20 +24,21 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import net.minecraft.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.v.CraftServer;
 import org.bukkit.profile.PlayerTextures;
 
 /**
  * Minimal paper-api {@link com.destroystokyo.paper.profile.PlayerProfile}
- * implementation wrapping a mutable authlib {@link GameProfile} (blocked
+ * implementation over an authlib {@link GameProfile} snapshot (blocked
  * batch 2 infrastructure; replaces the dynamic-proxy adapter previously
  * needed for {@code Skull#getPlayerProfile}).
  *
  * <p>Textures round-trip through the packed base64 {@code textures} property
  * exactly like Mojang ships them; locally built payloads (via
  * {@link #setTextures}) are unsigned. Completion resolves through the
- * server {@code GameProfileCache}; {@code complete(...)} additionally fills
+ * server name/id cache; {@code complete(...)} additionally fills
  * properties from the {@code MinecraftSessionService}. {@link #update()} 走专用
  * 守护线程池，是真异步。</p>
  */
@@ -57,13 +60,24 @@ public class CraftPlayerProfile implements com.destroystokyo.paper.profile.Playe
                 }
             });
 
-    private GameProfile profile;
+    /** authlib 7 的 GameProfile 是不可变 Record：id/name/属性自持，按需 build（同 CB 的 buildGameProfile）。 */
+    private UUID id;
+    private String name;
+    private final PropertyMap properties = new PropertyMap(LinkedHashMultimap.create());
 
-    public CraftPlayerProfile(GameProfile gameProfile) {
-        this.profile = Preconditions.checkNotNull(gameProfile, "gameProfile");
+    public CraftPlayerProfile(UUID id, String name) {
+        this.id = id;
+        this.name = name;
     }
 
-    /** Mirrors the given GameProfile (shares its property map, Paper semantics). */
+    public CraftPlayerProfile(GameProfile gameProfile) {
+        Preconditions.checkNotNull(gameProfile, "gameProfile");
+        this.id = Util.NIL_UUID.equals(gameProfile.id()) ? null : gameProfile.id();
+        this.name = gameProfile.name().isEmpty() ? null : gameProfile.name();
+        this.properties.putAll(gameProfile.properties());
+    }
+
+    /** Wraps the given GameProfile (authlib 7 profiles are immutable, so this is a copy). */
     public static CraftPlayerProfile asBukkitMirror(GameProfile gameProfile) {
         return new CraftPlayerProfile(gameProfile);
     }
@@ -74,55 +88,53 @@ public class CraftPlayerProfile implements com.destroystokyo.paper.profile.Playe
      */
     public static GameProfile asAuthlibCopy(com.destroystokyo.paper.profile.PlayerProfile profile) {
         Preconditions.checkNotNull(profile, "profile");
-        GameProfile out = new GameProfile(profile.getId(), profile.getName());
-        PropertyMap props = out.getProperties();
+        Multimap<String, Property> props = LinkedHashMultimap.create();
         for (ProfileProperty property : profile.getProperties()) {
             props.put(property.getName(),
                     new Property(property.getName(), property.getValue(), property.getSignature()));
         }
-        return out;
+        return paperarc$build(profile.getId(), profile.getName(), props);
     }
 
-    /** The wrapped authlib profile (same accessor Paper's CraftPlayerProfile exposes). */
+    private static GameProfile paperarc$build(UUID id, String name, Multimap<String, Property> props) {
+        return new GameProfile(id != null ? id : Util.NIL_UUID, name != null ? name : "",
+                new PropertyMap(LinkedHashMultimap.create(props)));
+    }
+
+    /** A freshly built authlib profile (same accessor Paper's CraftPlayerProfile exposes). */
     public GameProfile getGameProfile() {
-        return this.profile;
-    }
-
-    private void paperarc$rebuild(UUID id, String name) {
-        GameProfile rebuilt = new GameProfile(
-                id != null ? id : this.profile.getId(),
-                name != null ? name : this.profile.getName());
-        rebuilt.getProperties().putAll(this.profile.getProperties());
-        this.profile = rebuilt;
+        return paperarc$build(this.id, this.name, this.properties);
     }
 
     // ===== identity =====
 
     @Override
     public UUID getId() {
-        return this.profile.getId();
+        return this.id;
     }
 
     @Override
     public UUID setId(UUID uniqueId) {
-        paperarc$rebuild(uniqueId, null);
-        return uniqueId;
+        UUID previous = this.id;
+        this.id = uniqueId;
+        return previous;
     }
 
     @Override
     public String getName() {
-        return this.profile.getName();
+        return this.name;
     }
 
     @Override
     public String setName(String name) {
-        paperarc$rebuild(null, name);
-        return name;
+        String previous = this.name;
+        this.name = name;
+        return previous;
     }
 
     @Override
     public UUID getUniqueId() {
-        return this.profile.getId();
+        return this.id;
     }
 
     // ===== properties =====
@@ -130,7 +142,7 @@ public class CraftPlayerProfile implements com.destroystokyo.paper.profile.Playe
     @Override
     public Set<ProfileProperty> getProperties() {
         Set<ProfileProperty> out = new HashSet<>();
-        for (Map.Entry<String, Property> entry : this.profile.getProperties().entries()) {
+        for (Map.Entry<String, Property> entry : this.properties.entries()) {
             Property property = entry.getValue();
             out.add(new ProfileProperty(entry.getKey(), property.value(), property.signature()));
         }
@@ -140,35 +152,33 @@ public class CraftPlayerProfile implements com.destroystokyo.paper.profile.Playe
     @Override
     public boolean hasProperty(String name) {
         Preconditions.checkNotNull(name, "name");
-        return this.profile.getProperties().containsKey(name);
+        return this.properties.containsKey(name);
     }
 
     @Override
     public void setProperty(ProfileProperty property) {
         Preconditions.checkNotNull(property, "property");
-        this.profile.getProperties().put(property.getName(),
+        this.properties.put(property.getName(),
                 new Property(property.getName(), property.getValue(), property.getSignature()));
     }
 
     @Override
     public void setProperties(Collection<ProfileProperty> properties) {
         Preconditions.checkNotNull(properties, "properties");
-        PropertyMap map = this.profile.getProperties();
         for (ProfileProperty property : properties) {
-            map.put(property.getName(),
-                    new Property(property.getName(), property.getValue(), property.getSignature()));
+            setProperty(property);
         }
     }
 
     @Override
     public boolean removeProperty(String name) {
         Preconditions.checkNotNull(name, "name");
-        return !this.profile.getProperties().removeAll(name).isEmpty();
+        return !this.properties.removeAll(name).isEmpty();
     }
 
     @Override
     public void clearProperties() {
-        this.profile.getProperties().clear();
+        this.properties.clear();
     }
 
     @Override
@@ -178,10 +188,9 @@ public class CraftPlayerProfile implements com.destroystokyo.paper.profile.Playe
 
     // ===== completion =====
 
-    /** authlib 6 GameProfile carries no isComplete(); compare fields instead. */
     @Override
     public boolean isComplete() {
-        return this.profile.getId() != null && this.profile.getName() != null;
+        return this.id != null && this.name != null;
     }
 
     @Override
@@ -196,7 +205,7 @@ public class CraftPlayerProfile implements com.destroystokyo.paper.profile.Playe
 
     /**
      * Resolves the missing half (id/name) from the server's in-memory
-     * {@code GameProfileCache} — no network. {@code lookupName}: resolve the
+     * name/id cache ({@code Services#nameToIdCache}) — no network. {@code lookupName}: resolve the
      * name from the id; {@code lookupId}: resolve the id from the name.
      */
     @Override
@@ -206,11 +215,9 @@ public class CraftPlayerProfile implements com.destroystokyo.paper.profile.Playe
             return isComplete();
         }
         if (getId() == null && getName() != null && lookupId) {
-            nms.getProfileCache().get(getName()).ifPresent(found ->
-                    paperarc$rebuild(found.getId(), null));
+            nms.services().nameToIdCache().get(getName()).ifPresent(found -> this.id = found.id());
         } else if (getName() == null && getId() != null && lookupName) {
-            nms.getProfileCache().get(getId()).ifPresent(found ->
-                    paperarc$rebuild(null, found.getName()));
+            nms.services().nameToIdCache().get(getId()).ifPresent(found -> this.name = found.name());
         }
         return isComplete();
     }
@@ -246,20 +253,19 @@ public class CraftPlayerProfile implements com.destroystokyo.paper.profile.Playe
         }
         try {
             com.mojang.authlib.yggdrasil.ProfileResult result =
-                    nms.getSessionService().fetchProfile(getId(), requireSecure);
+                    nms.services().sessionService().fetchProfile(getId(), requireSecure);
             if (result == null) {
                 return false;
             }
-            // authlib 6.x ProfileResult#profile() returns the GameProfile directly
-            // (not an Optional).
+            // authlib ProfileResult#profile() returns the GameProfile directly (not an Optional).
             GameProfile found = result.profile();
-            if (found == null || found.getId() == null) {
+            if (found == null) {
                 return false;
             }
-            if (getName() == null && found.getName() != null) {
-                paperarc$rebuild(null, found.getName());
+            if (getName() == null && !found.name().isEmpty()) {
+                this.name = found.name();
             }
-            this.profile.getProperties().putAll(found.getProperties());
+            this.properties.putAll(found.properties());
             return true;
         } catch (Exception e) {
             return false;
@@ -317,9 +323,9 @@ public class CraftPlayerProfile implements com.destroystokyo.paper.profile.Playe
 
     @Override
     public CraftPlayerProfile clone() {
-        GameProfile copy = new GameProfile(this.profile.getId(), this.profile.getName());
-        copy.getProperties().putAll(this.profile.getProperties());
-        return new CraftPlayerProfile(copy);
+        CraftPlayerProfile copy = new CraftPlayerProfile(this.id, this.name);
+        copy.properties.putAll(this.properties);
+        return copy;
     }
 
     @Override
@@ -354,7 +360,7 @@ public class CraftPlayerProfile implements com.destroystokyo.paper.profile.Playe
     @Override
     public void setTextures(PlayerTextures textures) {
         Preconditions.checkNotNull(textures, "textures");
-        PropertyMap props = this.profile.getProperties();
+        PropertyMap props = this.properties;
         props.removeAll(TEXTURES_PROPERTY);
         if (textures.isEmpty()) {
             return;
@@ -402,7 +408,7 @@ public class CraftPlayerProfile implements com.destroystokyo.paper.profile.Playe
 
         private JsonObject paperarc$decodeRoot() {
             Collection<Property> stored =
-                    CraftPlayerProfile.this.profile.getProperties().get(TEXTURES_PROPERTY);
+                    CraftPlayerProfile.this.properties.get(TEXTURES_PROPERTY);
             if (stored == null || stored.isEmpty()) {
                 return null;
             }
@@ -448,7 +454,7 @@ public class CraftPlayerProfile implements com.destroystokyo.paper.profile.Playe
             mutator.accept(root.getAsJsonObject("textures"));
             String packed = Base64.getEncoder()
                     .encodeToString(root.toString().getBytes(StandardCharsets.UTF_8));
-            CraftPlayerProfile.this.profile.getProperties()
+            CraftPlayerProfile.this.properties
                     .put(TEXTURES_PROPERTY, new Property(TEXTURES_PROPERTY, packed));
         }
 
@@ -460,7 +466,7 @@ public class CraftPlayerProfile implements com.destroystokyo.paper.profile.Playe
 
         @Override
         public void clear() {
-            CraftPlayerProfile.this.profile.getProperties().removeAll(TEXTURES_PROPERTY);
+            CraftPlayerProfile.this.properties.removeAll(TEXTURES_PROPERTY);
         }
 
         @Override
@@ -547,7 +553,7 @@ public class CraftPlayerProfile implements com.destroystokyo.paper.profile.Playe
         @Override
         public boolean isSigned() {
             Collection<Property> stored =
-                    CraftPlayerProfile.this.profile.getProperties().get(TEXTURES_PROPERTY);
+                    CraftPlayerProfile.this.properties.get(TEXTURES_PROPERTY);
             return stored != null && !stored.isEmpty() && stored.iterator().next().hasSignature();
         }
     }

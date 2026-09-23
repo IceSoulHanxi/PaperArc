@@ -1,9 +1,9 @@
 package com.ixnah.mc.paperarc.mixin.common.block;
 
 import com.ixnah.mc.paperarc.bridge.craft.PaperarcLootableData;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -20,12 +20,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class BlockEntityPersistenceMixin {
 
     @Inject(method = "saveAdditional", at = @At("RETURN"))
-    private void paperarc$saveLootable(CompoundTag nbt, HolderLookup.Provider registries, CallbackInfo ci) {
-        PaperarcLootableData.saveIfPresent(this, nbt);
+    private void paperarc$saveLootable(ValueOutput out, CallbackInfo ci) {
+        PaperarcLootableData.saveIfPresent(this, out);
     }
 
     @Inject(method = "loadAdditional", at = @At("RETURN"))
-    private void paperarc$loadLootable(CompoundTag nbt, HolderLookup.Provider registries, CallbackInfo ci) {
-        PaperarcLootableData.loadIfPresent(this, nbt);
+    private void paperarc$loadLootable(ValueInput in, CallbackInfo ci) {
+        PaperarcLootableData.loadIfPresent(this, in);
     }
 }

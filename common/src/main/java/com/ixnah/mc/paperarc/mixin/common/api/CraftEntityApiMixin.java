@@ -109,12 +109,12 @@ public abstract class CraftEntityApiMixin {
 
     @Unique
     public boolean isInBubbleColumn() {
-        return this.getHandle().isInBubbleColumn();
+        return this.getHandle().level().getBlockState(this.getHandle().blockPosition()).is(net.minecraft.world.level.block.Blocks.BUBBLE_COLUMN);
     }
 
     @Unique
     public boolean isInWaterOrBubbleColumn() {
-        return this.getHandle().isInWaterOrBubble();
+        return this.getHandle().isInWater() || this.isInBubbleColumn();
     }
 
     @Unique
@@ -124,7 +124,7 @@ public abstract class CraftEntityApiMixin {
 
     @Unique
     public boolean isInWaterOrRainOrBubbleColumn() {
-        return this.getHandle().isInWaterRainOrBubble();
+        return this.getHandle().isInWaterOrRain() || this.isInBubbleColumn();
     }
 
     @Unique
@@ -324,7 +324,7 @@ public abstract class CraftEntityApiMixin {
             return false;
         }
         Entity handle = this.getHandle();
-        handle.moveTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+        handle.snapTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
         net.minecraft.world.level.Level level = handle.level();
         // Spigot 的 Level#addFreshEntity(Entity, SpawnReason) 在 Arclight 上叫
         // IWorldWriterBridge#bridge$addEntity —— Arclight 自有成员，名字不参与重映射，
@@ -341,7 +341,7 @@ public abstract class CraftEntityApiMixin {
     public net.kyori.adventure.text.Component teamDisplayName() {
         try {
             net.minecraft.network.chat.Component vanilla = this.getHandle().getDisplayName();
-            String json = net.minecraft.network.chat.Component.Serializer.toJson(vanilla,
+            String json = org.bukkit.craftbukkit.v.util.CraftChatMessage.ChatSerializer.toJson(vanilla,
                     this.getHandle().level().registryAccess());
             // PaperAdventure unavailable: gson round-trip instead
             return net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson().deserialize(json);
@@ -395,7 +395,7 @@ public abstract class CraftEntityApiMixin {
     public CompletableFuture<Boolean> teleportAsync(Location location, PlayerTeleportEvent.TeleportCause cause,
                                                     TeleportFlag... flags) {
         Preconditions.checkArgument(location != null, "location cannot be null");
-        net.minecraft.server.MinecraftServer server = this.getHandle().getServer();
+        net.minecraft.server.MinecraftServer server = this.getHandle().level().getServer();
         if (server == null || server.isSameThread()) {
             return CompletableFuture.completedFuture(teleport(location, cause, flags));
         }
@@ -444,7 +444,7 @@ public abstract class CraftEntityApiMixin {
             return net.kyori.adventure.text.Component.empty();
         }
         return net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson().deserialize(
-                net.minecraft.network.chat.Component.Serializer.toJson(
+                org.bukkit.craftbukkit.v.util.CraftChatMessage.ChatSerializer.toJson(
                         vanilla, this.getHandle().level().registryAccess()));
     }
 
@@ -457,7 +457,7 @@ public abstract class CraftEntityApiMixin {
     public net.kyori.adventure.text.event.HoverEvent<net.kyori.adventure.text.event.HoverEvent.ShowEntity>
             asHoverEvent(java.util.function.UnaryOperator<net.kyori.adventure.text.event.HoverEvent.ShowEntity> op) {
         net.minecraft.world.entity.Entity handle = this.getHandle();
-        net.minecraft.resources.ResourceLocation id =
+        net.minecraft.resources.Identifier id =
                 net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(handle.getType());
         net.kyori.adventure.text.event.HoverEvent.ShowEntity show =
                 net.kyori.adventure.text.event.HoverEvent.ShowEntity.of(

@@ -13,6 +13,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player.BedSleepingProblem;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.LevelData;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v.CraftWorld;
 import org.spongepowered.asm.mixin.Mixin;
@@ -26,12 +27,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /**
  * Port of Paper's Add-PlayerSetSpawnEvent patch.
  *
- * Injects at HEAD of the vanilla five-arg
- * {@code ServerPlayer#setRespawnPosition(ResourceKey, BlockPos, float, boolean,
- * boolean)}: fires {@link PlayerSetSpawnEvent}, supports plugin-side
- * modification of location/forced/notification by re-implementing the vanilla
- * tail (respawn field writes + system message) and cancelling the original
- * body.
+ * Injects at HEAD of the vanilla
+ * {@code ServerPlayer#setRespawnPosition(RespawnConfig, boolean)}: fires
+ * {@link PlayerSetSpawnEvent}, supports plugin-side modification of
+ * location/forced/notification by re-implementing the vanilla body
+ * ({@code respawnConfig} write + system message) and cancelling the original.
  *
  * The CraftBukkit-compat {@code PlayerSpawnChangeEvent} is intentionally NOT
  * fired here — Arclight's {@code @Decorate(method = "setRespawnPosition")}
@@ -48,51 +48,43 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class ServerPlayerSetSpawnMixin {
 
     @Shadow
-    private BlockPos respawnPosition;
-
-    @Shadow
-    private ResourceKey<Level> respawnDimension;
-
-    @Shadow
-    private float respawnAngle;
-
-    @Shadow
-    private boolean respawnForced;
+    private ServerPlayer.RespawnConfig respawnConfig;
 
     @Shadow
     public abstract void sendSystemMessage(net.minecraft.network.chat.Component message);
 
     @Inject(
-        method = "setRespawnPosition(Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/core/BlockPos;FZZ)V",
+        method = "setRespawnPosition(Lnet/minecraft/server/level/ServerPlayer$RespawnConfig;Z)V",
         at = @At("HEAD"),
         cancellable = true
     )
-    private void paperarc$fireSetSpawn(ResourceKey<Level> dimension, BlockPos pos, float angle,
-                                       boolean forced, boolean sendMessage, CallbackInfo ci) {
+    private void paperarc$fireSetSpawn(ServerPlayer.RespawnConfig config, boolean sendMessage, CallbackInfo ci) {
         PlayerSetSpawnEvent.Cause cause = com.ixnah.mc.paperarc.bridge.SpawnCauseSupport.peek();
         com.ixnah.mc.paperarc.bridge.SpawnCauseSupport.clear();
 
         ServerPlayer self = (ServerPlayer) (Object) this;
-        MinecraftServer server = self.server;
-        if (server == null || dimension == null || server.getLevel(dimension) == null) {
+        MinecraftServer server = self.level().getServer();
+        ResourceKey<Level> dimension = config == null ? Level.OVERWORLD : config.respawnData().dimension();
+        if (server == null || server.getLevel(dimension) == null) {
             return; // unloaded dimension: keep vanilla behaviour
         }
         ServerLevel newLevel = server.getLevel(dimension);
 
         Location spawnLoc = null;
         boolean willNotify = false;
-        if (pos != null) {
-            boolean same = pos.equals(this.respawnPosition) && dimension.equals(this.respawnDimension);
+        if (config != null) {
+            BlockPos pos = config.respawnData().pos();
             spawnLoc = new Location(PaperArcBridge.bukkitWorld(newLevel),
-                pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, angle, 0.0F);
-            willNotify = sendMessage && !same;
+                pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5,
+                config.respawnData().yaw(), config.respawnData().pitch());
+            willNotify = sendMessage && !config.isSamePosition(this.respawnConfig);
         }
 
         PlayerSetSpawnEvent event = new PlayerSetSpawnEvent(
             PaperArcBridge.bukkitPlayer(self),
             cause,
             spawnLoc,
-            forced,
+            config != null && config.forced(),
             willNotify,
             willNotify ? Component.translatable("block.minecraft.set_spawn") : null
         );
@@ -105,21 +97,13 @@ public abstract class ServerPlayerSetSpawnMixin {
         if (newLoc != null && newLoc.getWorld() != null) {
             ResourceKey<Level> newDim = ((CraftWorld) newLoc.getWorld()).getHandle().dimension();
             BlockPos newPos = BlockPos.containing(newLoc.getX(), newLoc.getY(), newLoc.getZ());
-            float newAngle = newLoc.getYaw();
-            boolean newForced = event.isForced();
-
             if (event.willNotifyPlayer()) {
                 this.sendSystemMessage(paperarc$adventureToVanilla(event.getNotification()));
             }
-            this.respawnPosition = newPos;
-            this.respawnDimension = newDim;
-            this.respawnAngle = newAngle;
-            this.respawnForced = newForced;
+            this.respawnConfig = new ServerPlayer.RespawnConfig(
+                LevelData.RespawnData.of(newDim, newPos, newLoc.getYaw(), newLoc.getPitch()), event.isForced());
         } else {
-            this.respawnPosition = null;
-            this.respawnDimension = Level.OVERWORLD;
-            this.respawnAngle = 0.0F;
-            this.respawnForced = false;
+            this.respawnConfig = null;
         }
         ci.cancel(); // state applied from the event above; skip the vanilla body
     }

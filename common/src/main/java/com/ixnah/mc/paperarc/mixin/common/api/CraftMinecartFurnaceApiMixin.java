@@ -1,6 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
-import net.minecraft.world.entity.vehicle.MinecartFurnace;
+import net.minecraft.world.entity.vehicle.minecart.MinecartFurnace;
+import net.minecraft.world.phys.Vec3;
 import org.bukkit.craftbukkit.v.entity.CraftMinecartFurnace;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -20,21 +21,25 @@ public abstract class CraftMinecartFurnaceApiMixin {
 
     @Unique
     public double getPushX() {
-        return getHandle().xPush;
+        Vec3 push = getHandle().push;
+        return push != null ? push.x : 0.0;
     }
 
     @Unique
     public double getPushZ() {
-        return getHandle().zPush;
+        Vec3 push = getHandle().push;
+        return push != null ? push.z : 0.0;
     }
 
     @Unique
     public void setPushX(double xPush) {
-        getHandle().xPush = xPush;
+        Vec3 push = getHandle().push;
+        getHandle().push = new Vec3(xPush, push != null ? push.y : 0.0, push != null ? push.z : 0.0);
     }
 
     @Unique
     public void setPushZ(double zPush) {
-        getHandle().zPush = zPush;
+        Vec3 push = getHandle().push;
+        getHandle().push = new Vec3(push != null ? push.x : 0.0, push != null ? push.y : 0.0, zPush);
     }
 }

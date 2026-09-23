@@ -151,11 +151,11 @@ public abstract class CraftBlockApiMixin {
 
     @Unique
     public void fluidTick() {
-        Level level = this.paperarc$asLevel();
+        ServerLevel level = this.paperarc$asServerLevel();
         if (level == null) {
-            return; // 非 Level 世界无法执行流体刻
+            return; // 非 ServerLevel 无法执行流体刻
         }
-        this.getNMS().getFluidState().tick(level, this.position);
+        this.getNMS().getFluidState().tick(level, this.position, this.getNMS());
     }
 
     @Unique

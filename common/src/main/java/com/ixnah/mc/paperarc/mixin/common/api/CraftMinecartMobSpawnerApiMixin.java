@@ -3,10 +3,12 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 import com.google.common.base.Preconditions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.vehicle.MinecartSpawner;
+import net.minecraft.world.entity.vehicle.minecart.MinecartSpawner;
 import net.minecraft.world.level.BaseSpawner;
 import net.minecraft.world.level.SpawnData;
+import net.minecraft.world.level.storage.TagValueOutput;
 import org.bukkit.craftbukkit.v.entity.CraftEntity;
 import org.bukkit.craftbukkit.v.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
@@ -54,9 +56,10 @@ public abstract class CraftMinecartMobSpawnerApiMixin {
         Preconditions.checkArgument(itemStack != null && !itemStack.getType().isAir(),
                 "spawners cannot spawn air");
         net.minecraft.world.item.ItemStack item = CraftItemStack.asNMSCopy(itemStack);
-        CompoundTag entity = new CompoundTag();
-        entity.putString("id", BuiltInRegistries.ENTITY_TYPE.getKey(EntityType.ITEM).toString());
-        entity.put("Item", item.save(this.paperarc$level().registryAccess(), new CompoundTag()));
+        TagValueOutput valueOutput = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, this.paperarc$level().registryAccess());
+        valueOutput.putString("id", BuiltInRegistries.ENTITY_TYPE.getKey(EntityType.ITEM).toString());
+        valueOutput.store("Item", net.minecraft.world.item.ItemStack.CODEC, item);
+        CompoundTag entity = valueOutput.buildResult();
         this.paperarc$spawner().setNextSpawnData(this.paperarc$level(), this.paperarc$pos(),
                 new SpawnData(entity, Optional.empty(), Optional.empty()));
     }

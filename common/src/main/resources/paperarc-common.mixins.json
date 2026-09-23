@@ -6,7 +6,6 @@
   "plugin": "com.ixnah.mc.paperarc.bridge.RuntimeClassConfigPlugin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "api.AbstractProjectileApiMixin",
     "api.EffectEnumMixin",
     "api.BedEnterResultEnumMixin",
     "api.BoatStatusEnumMixin",
@@ -225,7 +224,6 @@
     "api.CraftRaidApiMixin",
     "api.CraftRavagerApiMixin",
     "api.CraftRegionAccessorApiMixin",
-    "api.CraftRotatableApiMixin",
     "api.CraftSchedulerApiMixin",
     "api.CraftScoreApiMixin",
     "api.CraftScoreboardApiMixin",
@@ -534,6 +532,7 @@
     "entity.AttributeMapFieldsMixin",
     "entity.BeeFieldsMixin",
     "entity.BreedGoalAccessor",
+    "entity.DolphinAccessor",
     "entity.CatDyeMixin",
     "entity.CreeperIgniteMixin",
     "entity.CraftEventFactoryEndGatewayMixin",

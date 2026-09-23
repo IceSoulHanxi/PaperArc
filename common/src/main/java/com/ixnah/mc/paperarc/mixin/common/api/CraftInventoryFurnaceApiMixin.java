@@ -36,17 +36,23 @@ public abstract class CraftInventoryFurnaceApiMixin {
 
     @Unique
     public boolean isFuel(ItemStack stack) {
-        return stack != null && stack.getType() != org.bukkit.Material.AIR
-                && AbstractFurnaceBlockEntity.isFuel(CraftItemStack.asNMSCopy(stack));
+        if (stack == null || stack.getType() == org.bukkit.Material.AIR) {
+            return false;
+        }
+        net.minecraft.server.level.ServerLevel world =
+                ((CraftWorld) Bukkit.getWorlds().get(0)).getHandle();
+        return world.fuelValues().isFuel(CraftItemStack.asNMSCopy(stack));
     }
 
     @Unique
     public boolean canSmelt(ItemStack stack) {
+        if (stack == null || stack.getType() == org.bukkit.Material.AIR) {
+            return false;
+        }
         // data packs are always loaded in the main world
         net.minecraft.server.level.ServerLevel world =
                 ((CraftWorld) Bukkit.getWorlds().get(0)).getHandle();
-        return stack != null && stack.getType() != org.bukkit.Material.AIR
-                && world.getRecipeManager().getRecipeFor(
+        return world.recipeAccess().getRecipeFor(
                         paperarc$recipeType(),
                         // 1.21.1 的 getRecipeFor 收的是 RecipeInput 而不是 Container
                         new net.minecraft.world.item.crafting.SingleRecipeInput(

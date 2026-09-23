@@ -28,7 +28,7 @@ import java.util.List;
 public abstract class CraftMushroomCowApiMixin {
 
     @Shadow
-    public abstract net.minecraft.world.entity.animal.MushroomCow getHandle();
+    public abstract net.minecraft.world.entity.animal.cow.MushroomCow getHandle();
 
     @Shadow
     public abstract boolean hasEffectForNextStew(PotionEffectType type);
@@ -45,7 +45,7 @@ public abstract class CraftMushroomCowApiMixin {
         if (!overwrite && this.hasEffectForNextStew(suspiciousEffectEntry.effect())) {
             return false;
         }
-        net.minecraft.world.entity.animal.MushroomCow handle = this.getHandle();
+        net.minecraft.world.entity.animal.cow.MushroomCow handle = this.getHandle();
         SuspiciousStewEffects stewEffects = handle.stewEffects;
         if (stewEffects == null) {
             stewEffects = SuspiciousStewEffects.EMPTY;
@@ -76,7 +76,7 @@ public abstract class CraftMushroomCowApiMixin {
     @Unique
     public void setStewEffects(List<io.papermc.paper.potion.SuspiciousEffectEntry> effects) {
         Preconditions.checkArgument(effects != null, "effects cannot be null");
-        net.minecraft.world.entity.animal.MushroomCow handle = this.getHandle();
+        net.minecraft.world.entity.animal.cow.MushroomCow handle = this.getHandle();
         if (effects.isEmpty()) {
             handle.stewEffects = null;
             return;

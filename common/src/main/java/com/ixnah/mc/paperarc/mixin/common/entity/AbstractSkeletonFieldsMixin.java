@@ -1,7 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.entity;
 
 import com.ixnah.mc.paperarc.bridge.AbstractSkeletonBridge;
-import net.minecraft.world.entity.monster.AbstractSkeleton;
+import net.minecraft.world.entity.monster.skeleton.AbstractSkeleton;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 

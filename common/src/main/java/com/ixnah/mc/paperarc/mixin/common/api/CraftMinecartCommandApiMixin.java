@@ -3,8 +3,9 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 import com.ixnah.mc.paperarc.bridge.api.PaperarcCommandBlockHolder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.minecraft.network.chat.Component.Serializer;
-import net.minecraft.world.entity.vehicle.MinecartCommandBlock;
+import org.bukkit.craftbukkit.v.util.CraftChatMessage.ChatSerializer;
+// alias: ChatSerializer
+import net.minecraft.world.entity.vehicle.minecart.MinecartCommandBlock;
 import org.bukkit.craftbukkit.v.entity.CraftEntity;
 import org.bukkit.craftbukkit.v.entity.CraftMinecartCommand;
 import org.spongepowered.asm.mixin.Mixin;
@@ -37,13 +38,13 @@ public abstract class CraftMinecartCommandApiMixin {
     public Component lastOutput() {
         net.minecraft.network.chat.Component output = paperarc$commandBlock().getLastOutput();
         return output == null ? null : GsonComponentSerializer.gson()
-                .deserialize(Serializer.toJson(output, PaperarcCommandBlockHolder.registryAccess()));
+                .deserialize(ChatSerializer.toJson(output, PaperarcCommandBlockHolder.registryAccess()));
     }
 
     @Unique
     public void lastOutput(Component lastOutput) {
         paperarc$commandBlock().setLastOutput(lastOutput == null ? null
-                : Serializer.fromJson(GsonComponentSerializer.gson().serialize(lastOutput),
+                : ChatSerializer.fromJson(GsonComponentSerializer.gson().serialize(lastOutput),
                         PaperarcCommandBlockHolder.registryAccess()));
     }
 }

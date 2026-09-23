@@ -1,10 +1,10 @@
 accessWidener v2 named
 
 # Fox: package-private defense/faceplanted state (PlayerRiptideAttackEvent-free API: FoxApiMixin)
-accessible class net/minecraft/world/entity/animal/Fox
-accessible method net/minecraft/world/entity/animal/Fox isDefending ()Z
-accessible method net/minecraft/world/entity/animal/Fox setDefending (Z)V
-accessible method net/minecraft/world/entity/animal/Fox setFaceplanted (Z)V
+accessible class net/minecraft/world/entity/animal/fox/Fox
+accessible method net/minecraft/world/entity/animal/fox/Fox isDefending ()Z
+accessible method net/minecraft/world/entity/animal/fox/Fox setDefending (Z)V
+accessible method net/minecraft/world/entity/animal/fox/Fox setFaceplanted (Z)V
 
 # Display$TextDisplay: private text state (TextDisplayApiMixin)
 accessible class net/minecraft/world/entity/Display$TextDisplay
@@ -15,17 +15,15 @@ accessible method net/minecraft/world/entity/Display$TextDisplay setTextOpacity 
 accessible field net/minecraft/nbt/CompoundTag tags Ljava/util/Map;
 
 # Zombie: drowning/conversion state (CraftZombieApiMixin)
-accessible method net/minecraft/world/entity/monster/Zombie supportsBreakDoorGoal ()Z
-accessible method net/minecraft/world/entity/monster/Zombie isSunSensitive ()Z
-accessible field net/minecraft/world/entity/monster/Zombie conversionTime I
-accessible field net/minecraft/world/entity/monster/Zombie DATA_DROWNED_CONVERSION_ID Lnet/minecraft/network/syncher/EntityDataAccessor;
+accessible method net/minecraft/world/entity/monster/zombie/Zombie isSunSensitive ()Z
+accessible field net/minecraft/world/entity/monster/zombie/Zombie conversionTime I
+accessible field net/minecraft/world/entity/monster/zombie/Zombie DATA_DROWNED_CONVERSION_ID Lnet/minecraft/network/syncher/EntityDataAccessor;
 
 # Villager: restock/trade internals (CraftVillagerApiMixin)
-accessible field net/minecraft/world/entity/npc/Villager numberOfRestocksToday I
-accessible method net/minecraft/world/entity/npc/Villager updateTrades ()V
+accessible field net/minecraft/world/entity/npc/villager/Villager numberOfRestocksToday I
+accessible method net/minecraft/world/entity/npc/villager/Villager updateTrades (Lnet/minecraft/server/level/ServerLevel;)V
 
 # Projectile: persistence fields (CraftProjectileApiMixin)
-accessible field net/minecraft/world/entity/projectile/Projectile ownerUUID Ljava/util/UUID;
 accessible field net/minecraft/world/entity/projectile/Projectile leftOwner Z
 
 # Projectile: protected collision helpers (CraftProjectileApiMixin)
@@ -43,16 +41,16 @@ accessible field net/minecraft/server/network/ServerCommonPacketListenerImpl con
 # tools/scripts/aw-from-compile-errors.py 从 javac 的可见性错误生成，描述符经 javap 核对）。
 # 注意 1.20.1 分支的 accesstransformer.cfg 是 srg 名，不能机械搬过来。
 accessible field net/minecraft/world/entity/decoration/ArmorStand disabledSlots I
-accessible method net/minecraft/world/entity/animal/Bee isRolling ()Z
-accessible method net/minecraft/world/entity/animal/Bee setRolling (Z)V
-accessible field net/minecraft/world/entity/animal/Bee numCropsGrownSincePollination I
-accessible field net/minecraft/world/entity/animal/Bee ticksWithoutNectarSinceExitingHive I
+accessible method net/minecraft/world/entity/animal/bee/Bee isRolling ()Z
+accessible method net/minecraft/world/entity/animal/bee/Bee setRolling (Z)V
+accessible field net/minecraft/world/entity/animal/bee/Bee numCropsGrownSincePollination I
+accessible field net/minecraft/world/entity/animal/bee/Bee ticksWithoutNectarSinceExitingHive I
 accessible field net/minecraft/world/entity/ExperienceOrb count I
 accessible field net/minecraft/world/entity/item/ItemEntity age I
 accessible field net/minecraft/world/entity/item/ItemEntity health I
 accessible field net/minecraft/world/entity/item/ItemEntity pickupDelay I
 accessible field net/minecraft/world/entity/monster/Phantom anchorPoint Lnet/minecraft/core/BlockPos;
-accessible field net/minecraft/world/entity/npc/WanderingTrader wanderTarget Lnet/minecraft/core/BlockPos;
+accessible field net/minecraft/world/entity/npc/wanderingtrader/WanderingTrader wanderTarget Lnet/minecraft/core/BlockPos;
 
 # B6：FieldsMixin 需要读 NMS 的 private 泛型字段。**不要用 @Shadow**：
 # mixin 注解处理器不给它们生成 refmap 条目，Fabric 上运行期报
@@ -66,51 +64,50 @@ accessible method net/minecraft/world/level/BaseSpawner delay (Lnet/minecraft/wo
 accessible method net/minecraft/world/level/BaseSpawner isNearPlayer (Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)Z
 accessible field net/minecraft/world/entity/Entity ENTITY_COUNTER Ljava/util/concurrent/atomic/AtomicInteger;
 accessible field net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity openCount I
-accessible field net/minecraft/world/entity/monster/ZombieVillager DATA_CONVERTING_ID Lnet/minecraft/network/syncher/EntityDataAccessor;
-accessible field net/minecraft/world/entity/monster/ZombieVillager conversionStarter Ljava/util/UUID;
-accessible method net/minecraft/world/entity/monster/ZombieVillager startConverting (Ljava/util/UUID;I)V
-accessible field net/minecraft/world/entity/monster/ZombieVillager villagerConversionTime I
+accessible field net/minecraft/world/entity/monster/zombie/ZombieVillager DATA_CONVERTING_ID Lnet/minecraft/network/syncher/EntityDataAccessor;
+accessible field net/minecraft/world/entity/monster/zombie/ZombieVillager conversionStarter Ljava/util/UUID;
+accessible method net/minecraft/world/entity/monster/zombie/ZombieVillager startConverting (Ljava/util/UUID;I)V
+accessible field net/minecraft/world/entity/monster/zombie/ZombieVillager villagerConversionTime I
 accessible method net/minecraft/world/level/BaseSpawner setNextSpawnData (Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/SpawnData;)V
 
 # B2-1：去掉 api mixin 里以 NMS 成员为目标的字符串反射（Fabric 的 intermediary 运行时必失败）。
 # 条目同样由 tools/scripts/aw-from-compile-errors.py 从 javac 的可见性错误生成。
 accessible field net/minecraft/world/entity/ambient/Bat targetPosition Lnet/minecraft/core/BlockPos;
 accessible field net/minecraft/world/entity/monster/Creeper DATA_IS_IGNITED Lnet/minecraft/network/syncher/EntityDataAccessor;
-accessible field net/minecraft/world/entity/animal/Dolphin MOISTNESS_LEVEL Lnet/minecraft/network/syncher/EntityDataAccessor;
+accessible field net/minecraft/world/entity/animal/dolphin/Dolphin MOISTNESS_LEVEL Lnet/minecraft/network/syncher/EntityDataAccessor;
 accessible field net/minecraft/world/entity/monster/EnderMan DATA_CREEPY Lnet/minecraft/network/syncher/EntityDataAccessor;
 accessible field net/minecraft/world/entity/monster/EnderMan DATA_STARED_AT Lnet/minecraft/network/syncher/EntityDataAccessor;
 accessible method net/minecraft/world/entity/monster/EnderMan teleport ()Z
 accessible field net/minecraft/world/entity/monster/Endermite life I
 accessible field net/minecraft/world/entity/monster/Ghast explosionPower I
 accessible field net/minecraft/world/entity/LightningBolt flashes I
-accessible field net/minecraft/world/entity/animal/horse/Llama caravanTail Lnet/minecraft/world/entity/animal/horse/Llama;
-accessible method net/minecraft/world/entity/animal/Panda getEatCounter ()I
-accessible method net/minecraft/world/entity/animal/Panda setEatCounter (I)V
+accessible field net/minecraft/world/entity/animal/equine/Llama caravanTail Lnet/minecraft/world/entity/animal/equine/Llama;
+accessible method net/minecraft/world/entity/animal/panda/Panda getEatCounter ()I
+accessible method net/minecraft/world/entity/animal/panda/Panda setEatCounter (I)V
 accessible method net/minecraft/world/entity/monster/piglin/Piglin isChargingCrossbow ()Z
-accessible field net/minecraft/world/entity/animal/Rabbit moreCarrotTicks I
+accessible field net/minecraft/world/entity/animal/rabbit/Rabbit moreCarrotTicks I
 accessible field net/minecraft/world/entity/raid/Raid raidEvent Lnet/minecraft/server/level/ServerBossEvent;
-accessible field net/minecraft/world/entity/projectile/ThrownTrident ID_FOIL Lnet/minecraft/network/syncher/EntityDataAccessor;
-accessible field net/minecraft/world/entity/projectile/ThrownTrident ID_LOYALTY Lnet/minecraft/network/syncher/EntityDataAccessor;
-accessible field net/minecraft/world/entity/projectile/ThrownTrident dealtDamage Z
+accessible field net/minecraft/world/entity/projectile/arrow/ThrownTrident ID_FOIL Lnet/minecraft/network/syncher/EntityDataAccessor;
+accessible field net/minecraft/world/entity/projectile/arrow/ThrownTrident ID_LOYALTY Lnet/minecraft/network/syncher/EntityDataAccessor;
+accessible field net/minecraft/world/entity/projectile/arrow/ThrownTrident dealtDamage Z
 accessible field net/minecraft/world/entity/monster/Vex hasLimitedLife Z
 accessible field net/minecraft/world/entity/monster/Vex limitedLifeTicks I
 accessible field net/minecraft/world/entity/monster/Witch SPEED_MODIFIER_DRINKING Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;
-accessible field net/minecraft/world/entity/monster/Witch SPEED_MODIFIER_DRINKING_ID Lnet/minecraft/resources/ResourceLocation;
 accessible field net/minecraft/world/entity/monster/Witch usingTime I
-accessible method net/minecraft/world/entity/projectile/AbstractArrow getPickupItem ()Lnet/minecraft/world/item/ItemStack;
-accessible field net/minecraft/world/entity/projectile/AbstractArrow life I
-accessible method net/minecraft/world/entity/projectile/AbstractArrow setPickupItemStack (Lnet/minecraft/world/item/ItemStack;)V
-accessible field net/minecraft/world/entity/projectile/AbstractArrow soundEvent Lnet/minecraft/sounds/SoundEvent;
-accessible field net/minecraft/world/entity/animal/horse/AbstractHorse FLAG_OPEN_MOUTH I
-accessible field net/minecraft/world/entity/animal/horse/AbstractHorse FLAG_STANDING I
-accessible field net/minecraft/world/entity/AreaEffectCloud ownerUUID Ljava/util/UUID;
+accessible method net/minecraft/world/entity/projectile/arrow/AbstractArrow getPickupItem ()Lnet/minecraft/world/item/ItemStack;
+accessible field net/minecraft/world/entity/projectile/arrow/AbstractArrow life I
+accessible method net/minecraft/world/entity/projectile/arrow/AbstractArrow setPickupItemStack (Lnet/minecraft/world/item/ItemStack;)V
+accessible field net/minecraft/world/entity/projectile/arrow/AbstractArrow soundEvent Lnet/minecraft/sounds/SoundEvent;
+accessible field net/minecraft/world/entity/animal/equine/AbstractHorse FLAG_OPEN_MOUTH I
+accessible field net/minecraft/world/entity/animal/equine/AbstractHorse FLAG_STANDING I
+accessible field net/minecraft/world/entity/AreaEffectCloud owner Lnet/minecraft/world/entity/EntityReference;
 accessible method net/minecraft/world/entity/Entity getSharedFlag (I)Z
 accessible method net/minecraft/world/entity/Entity setSharedFlag (IZ)V
 accessible field net/minecraft/world/entity/projectile/FireworkRocketEntity DATA_ID_FIREWORKS_ITEM Lnet/minecraft/network/syncher/EntityDataAccessor;
 accessible field net/minecraft/world/entity/projectile/FireworkRocketEntity life I
 accessible field net/minecraft/world/entity/projectile/FireworkRocketEntity lifetime I
 accessible method net/minecraft/world/entity/Mob isSunBurnTick ()Z
-accessible field net/minecraft/world/entity/animal/MushroomCow stewEffects Lnet/minecraft/world/item/component/SuspiciousStewEffects;
+accessible field net/minecraft/world/entity/animal/cow/MushroomCow stewEffects Lnet/minecraft/world/item/component/SuspiciousStewEffects;
 accessible field net/minecraft/world/entity/monster/Ravager attackTick I
 accessible field net/minecraft/world/entity/monster/Ravager roarTick I
 accessible field net/minecraft/world/entity/monster/Ravager stunnedTick I
@@ -119,29 +116,26 @@ accessible field net/minecraft/world/entity/projectile/ShulkerBullet flightSteps
 accessible field net/minecraft/world/entity/projectile/ShulkerBullet targetDeltaX D
 accessible field net/minecraft/world/entity/projectile/ShulkerBullet targetDeltaY D
 accessible field net/minecraft/world/entity/projectile/ShulkerBullet targetDeltaZ D
-accessible method net/minecraft/world/entity/animal/Turtle getHomePos ()Lnet/minecraft/core/BlockPos;
-accessible method net/minecraft/world/entity/animal/Turtle isGoingHome ()Z
-accessible method net/minecraft/world/entity/animal/Turtle setHasEgg (Z)V
+accessible field net/minecraft/world/entity/animal/turtle/Turtle homePos Lnet/minecraft/core/BlockPos;
+accessible field net/minecraft/world/entity/animal/turtle/Turtle goingHome Z
+accessible method net/minecraft/world/entity/animal/turtle/Turtle setHasEgg (Z)V
 accessible field net/minecraft/world/entity/Entity random Lnet/minecraft/util/RandomSource;
 accessible field net/minecraft/world/entity/projectile/FishingHook fishAngle F
 accessible field net/minecraft/world/entity/projectile/FishingHook lureSpeed I
 accessible field net/minecraft/world/entity/projectile/FishingHook timeUntilHooked I
 accessible field net/minecraft/world/entity/projectile/FishingHook timeUntilLured I
 accessible field net/minecraft/network/chat/numbers/FixedFormat value Lnet/minecraft/network/chat/Component;
-accessible method net/minecraft/world/entity/Mob getEquipmentDropChance (Lnet/minecraft/world/entity/EquipmentSlot;)F
 accessible field net/minecraft/network/chat/numbers/StyledFormat style Lnet/minecraft/network/chat/Style;
 accessible method net/minecraft/world/level/block/entity/SculkCatalystBlockEntity$CatalystListener bloom (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/util/RandomSource;)V
 accessible field net/minecraft/server/level/ChunkMap entityMap Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
-accessible method net/minecraft/world/entity/Entity isInBubbleColumn ()Z
 accessible method net/minecraft/world/entity/Entity isInRain ()Z
 accessible method net/minecraft/world/entity/LivingEntity completeUsingItem ()V
 accessible field net/minecraft/world/entity/LivingEntity jumping Z
-accessible field net/minecraft/world/entity/LivingEntity lastHurtByPlayer Lnet/minecraft/world/entity/player/Player;
 accessible field net/minecraft/world/entity/LivingEntity useItemRemaining I
 accessible class net/minecraft/server/level/ChunkMap$TrackedEntity
 accessible field net/minecraft/server/level/ChunkMap$TrackedEntity seenBy Ljava/util/Set;
 accessible field net/minecraft/server/MinecraftServer tickCount I
-accessible method net/minecraft/server/level/ChunkMap getChunks ()Ljava/lang/Iterable;
+accessible field net/minecraft/server/level/ChunkMap visibleChunkMap Lit/unimi/dsi/fastutil/longs/Long2ObjectLinkedOpenHashMap;
 accessible field net/minecraft/world/level/Level blockEntityTickers Ljava/util/List;
 accessible method net/minecraft/server/level/ServerLevel findLightningTargetAround (Lnet/minecraft/core/BlockPos;)Lnet/minecraft/core/BlockPos;
 accessible field net/minecraft/world/level/block/state/BlockBehaviour hasCollision Z
@@ -154,15 +148,9 @@ accessible field net/minecraft/world/level/dimension/end/EndDragonFight respawnC
 accessible method net/minecraft/world/level/dimension/end/EndDragonFight spawnNewGateway ()V
 accessible method net/minecraft/world/level/dimension/end/EndDragonFight spawnNewGateway (Lnet/minecraft/core/BlockPos;)V
 accessible field net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity cookingTotalTime I
-accessible method net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity getTotalCookTime (Lnet/minecraft/world/level/Level;Lnet/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity;)I
-accessible field net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity recipesUsed Lit/unimi/dsi/fastutil/objects/Object2IntOpenHashMap;
+accessible method net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity getTotalCookTime (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity;)I
+accessible field net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity recipesUsed Lit/unimi/dsi/fastutil/objects/Reference2IntOpenHashMap;
 accessible field net/minecraft/world/entity/Mob goalSelector Lnet/minecraft/world/entity/ai/goal/GoalSelector;
-accessible method net/minecraft/world/entity/player/Player setShoulderEntityLeft (Lnet/minecraft/nbt/CompoundTag;)V
-accessible method net/minecraft/world/entity/player/Player setShoulderEntityRight (Lnet/minecraft/nbt/CompoundTag;)V
-accessible method net/minecraft/world/entity/projectile/ThrownPotion applySplash (Ljava/lang/Iterable;Lnet/minecraft/world/entity/Entity;)V
-accessible method net/minecraft/world/entity/projectile/ThrownPotion applyWater ()V
-accessible method net/minecraft/world/entity/projectile/ThrownPotion isLingering ()Z
-accessible method net/minecraft/world/entity/projectile/ThrownPotion makeAreaOfEffectCloud (Lnet/minecraft/world/item/alchemy/PotionContents;)V
 # net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket.entries 有 2 个同名成员，全部放开：
 accessible field net/minecraft/network/protocol/game/ClientboundPlayerInfoUpdatePacket entries Ljava/util/List;
 accessible method net/minecraft/network/protocol/game/ClientboundPlayerInfoUpdatePacket entries ()Ljava/util/List;
@@ -180,12 +168,12 @@ accessible method net/minecraft/server/level/ChunkMap isChunkTracked (Lnet/minec
 accessible field net/minecraft/world/level/block/entity/BeaconBlockEntity levels I
 accessible field net/minecraft/world/level/block/entity/ChestBlockEntity openersCounter Lnet/minecraft/world/level/block/entity/ContainerOpenersCounter;
 accessible field net/minecraft/world/level/block/entity/EnderChestBlockEntity openersCounter Lnet/minecraft/world/level/block/entity/ContainerOpenersCounter;
-accessible field net/minecraft/world/entity/Mob lootTable Lnet/minecraft/resources/ResourceKey;
+accessible field net/minecraft/world/entity/Mob lootTable Ljava/util/Optional;
 accessible field net/minecraft/world/entity/Mob lootTableSeed J
 
 # AbstractSchoolingFish: private 鱼群状态（io.papermc.paper.entity.SchoolableFish，B3-2）
-accessible field net/minecraft/world/entity/animal/AbstractSchoolingFish leader Lnet/minecraft/world/entity/animal/AbstractSchoolingFish;
-accessible field net/minecraft/world/entity/animal/AbstractSchoolingFish schoolSize I
+accessible field net/minecraft/world/entity/animal/fish/AbstractSchoolingFish leader Lnet/minecraft/world/entity/animal/fish/AbstractSchoolingFish;
+accessible field net/minecraft/world/entity/animal/fish/AbstractSchoolingFish schoolSize I
 
 # BannerBlockEntity: private 自定义名（org.bukkit.Nameable on Banner，B3-2）
 accessible field net/minecraft/world/level/block/entity/BannerBlockEntity name Lnet/minecraft/network/chat/Component;
@@ -209,3 +197,10 @@ accessible field net/minecraft/world/effect/MobEffectInstance hiddenEffect Lnet/
 # AdventureModePredicate: private predicates list —— CanPlaceOn/CanDestroy 读回时要遍历它
 # （B8/Y-4，gaps.md G.1；1.21.1 没有公开的 getter，Paper 那边是靠补丁 publicize 的）
 accessible field net/minecraft/world/item/AdventureModePredicate predicates Ljava/util/List;
+accessible method net/minecraft/world/entity/vehicle/boat/AbstractBoat getDropItem ()Lnet/minecraft/world/item/Item;
+accessible method net/minecraft/server/level/ServerPlayer setShoulderEntityLeft (Lnet/minecraft/nbt/CompoundTag;)V
+accessible method net/minecraft/server/level/ServerPlayer setShoulderEntityRight (Lnet/minecraft/nbt/CompoundTag;)V
+
+# AbstractThrownPotion: ThrownPotion#splash() 回放 onHit 的两个分支（1.21.5 起拆成溅射/滞留子类）
+accessible method net/minecraft/world/entity/projectile/throwableitemprojectile/AbstractThrownPotion onHitAsWater (Lnet/minecraft/server/level/ServerLevel;)V
+accessible method net/minecraft/world/entity/projectile/throwableitemprojectile/AbstractThrownPotion onHitAsPotion (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/phys/HitResult;)V

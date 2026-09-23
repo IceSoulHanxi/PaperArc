@@ -24,7 +24,7 @@ public final class PaperarcInjectionCoverage {
 
     /** NMS 侧：按加载器重映射的类字面量。 */
     private static final Class<?>[] MINECRAFT = {
-            net.minecraft.world.entity.projectile.ThrownEgg.class,
+            net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEgg.class,
             net.minecraft.world.entity.LivingEntity.class,
             net.minecraft.server.level.ServerPlayer.class,
             net.minecraft.server.level.ServerLevel.class,
@@ -42,7 +42,7 @@ public final class PaperarcInjectionCoverage {
             net.minecraft.world.entity.ExperienceOrb.class,
             net.minecraft.world.entity.Entity.class,
             net.minecraft.world.entity.player.Player.class,
-            net.minecraft.world.entity.projectile.AbstractArrow.class,
+            net.minecraft.world.entity.projectile.arrow.AbstractArrow.class,
             net.minecraft.world.food.FoodData.class,
             net.minecraft.world.item.BlockItem.class,
             net.minecraft.world.item.StandingAndWallBlockItem.class,
@@ -60,9 +60,9 @@ public final class PaperarcInjectionCoverage {
             net.minecraft.world.level.block.entity.BeaconBlockEntity.class,
             net.minecraft.world.entity.raid.Raid.class,
             net.minecraft.world.entity.boss.enderdragon.EnderDragon.class,
-            net.minecraft.world.entity.monster.Evoker.class,
+            net.minecraft.world.entity.monster.illager.Evoker.class,
             // B8/Y-4
-            net.minecraft.world.entity.npc.AbstractVillager.class,
+            net.minecraft.world.entity.npc.villager.AbstractVillager.class,
     };
 
     /** CraftBukkit 侧：包名里的 {@code v} 段由构建期任务改成 {@code v1_21_R1}。 */

@@ -20,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * 对照 Paper 补丁：setCenter/setSize/lerpSizeBetween 开头在 world != null 时
  * 发事件，取消则直接 return；非取消时用插件改写后的值继续原逻辑。
  * <p>
- * 实现差异：vanilla 1.21.1 WorldBorder 没有 Paper 的 world 字段（无法 @Shadow），
+ * 实现差异：vanilla WorldBorder 没有 Paper 的 world 字段（无法 @Shadow），
  * 改为遍历 CraftServer#getWorlds() 用 CraftWorldBorder#getHandle() 反查宿主世界
  * （CraftWorld 缓存其 worldBorder 实例，反查 O(世界数)，且这些方法调用频率极低）。
  * 找不到宿主世界时等价于 Paper 的 world == null 分支：不发事件，原逻辑照常。
@@ -91,9 +91,10 @@ public abstract class WorldBorderMixin {
             ci.cancel();
             return;
         }
-        if (event.getType() == WorldBorderBoundsChangeEvent.Type.STARTED_MOVE && event.getDuration() > 0L) {
+        if (event.getType() == WorldBorderBoundsChangeEvent.Type.STARTED_MOVE && event.getDurationTicks() > 0L) {
             // 插件把即时调整改为定时过渡：走 lerpSizeBetween（会再发一次事件，与 Paper 一致）
-            ((WorldBorder) (Object) this).lerpSizeBetween(event.getOldSize(), event.getNewSize(), event.getDuration());
+            ((WorldBorder) (Object) this).lerpSizeBetween(event.getOldSize(), event.getNewSize(), event.getDurationTicks(),
+                    ((org.bukkit.craftbukkit.v.CraftWorld) bukkitWorld).getHandle().getGameTime());
             ci.cancel();
             return;
         }
@@ -106,7 +107,7 @@ public abstract class WorldBorderMixin {
     }
 
     @Inject(method = "lerpSizeBetween", at = @At("HEAD"), cancellable = true)
-    private void paperarc$onLerpSizeBetween(double fromSize, double toSize, long time, CallbackInfo ci) {
+    private void paperarc$onLerpSizeBetween(double fromSize, double toSize, long time, long gameTime, CallbackInfo ci) {
         if (paperarc$silent) {
             paperarc$silent = false;
             return;
@@ -130,10 +131,10 @@ public abstract class WorldBorderMixin {
             return;
         }
         double newTo = event.getNewSize();
-        long newTime = event.getDuration();
+        long newTime = event.getDurationTicks();
         if (newTo != toSize || newTime != time) {
             paperarc$silent = true;
-            ((WorldBorder) (Object) this).lerpSizeBetween(fromSize, newTo, newTime);
+            ((WorldBorder) (Object) this).lerpSizeBetween(fromSize, newTo, newTime, gameTime);
             ci.cancel();
         }
     }

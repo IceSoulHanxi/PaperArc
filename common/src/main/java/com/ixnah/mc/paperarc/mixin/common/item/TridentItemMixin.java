@@ -43,7 +43,7 @@ public abstract class TridentItemMixin {
     )
     private boolean paperarc$launch(Level world, Entity trident, Operation<Boolean> original,
                                     ItemStack stack, Level level, LivingEntity user, int remainingUseTicks) {
-        if (world.isClientSide || !(user instanceof Player)) {
+        if (world.isClientSide() || !(user instanceof Player)) {
             return original.call(world, trident);
         }
         return ProjectileLaunchSupport.callLaunchEvent((Player) user, stack, trident)

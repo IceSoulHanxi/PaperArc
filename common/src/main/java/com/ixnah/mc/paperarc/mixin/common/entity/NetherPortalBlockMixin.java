@@ -7,7 +7,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.NetherPortalBlock;
-import net.minecraft.world.level.portal.DimensionTransition;
+import net.minecraft.world.level.portal.TeleportTransition;
 import org.bukkit.PortalType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,12 +29,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class NetherPortalBlockMixin {
 
     @Inject(
-            method = "getPortalDestination(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/portal/DimensionTransition;",
+            method = "getPortalDestination(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/portal/TeleportTransition;",
             at = @At("HEAD"),
             cancellable = true
     )
     private void paperarc$portalReady(ServerLevel level, Entity entity, net.minecraft.core.BlockPos pos,
-                                      CallbackInfoReturnable<DimensionTransition> cir) {
+                                      CallbackInfoReturnable<TeleportTransition> cir) {
         // getTypeKey() is CraftBukkit-injected and absent at compile time; compare the dimension
         // resource key instead (covers all vanilla dimensions).
         ResourceKey<Level> key = level.dimension() == Level.NETHER ? Level.OVERWORLD : Level.NETHER;

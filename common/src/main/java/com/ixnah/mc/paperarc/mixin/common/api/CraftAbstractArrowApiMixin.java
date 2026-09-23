@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.Unique;
 import com.google.common.base.Preconditions;
 
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 
 /**
  * Adds Paper's More-Projectile-API / Fix-PickupStatus-getting-reset additions to

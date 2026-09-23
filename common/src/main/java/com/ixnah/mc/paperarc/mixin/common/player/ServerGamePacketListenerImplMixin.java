@@ -50,7 +50,7 @@ public abstract class ServerGamePacketListenerImplMixin {
             original.call(instance);
         } else {
             // TODO(v2): Paper 取消时经 internalTeleport 回传，含相对集合语义
-            instance.absMoveTo(from.getX(), from.getY(), from.getZ(), from.getYaw(), from.getPitch());
+            instance.absSnapTo(from.getX(), from.getY(), from.getZ(), from.getYaw(), from.getPitch());
         }
     }
 }

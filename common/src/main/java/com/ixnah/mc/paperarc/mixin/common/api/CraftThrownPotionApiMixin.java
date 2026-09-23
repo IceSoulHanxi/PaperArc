@@ -2,7 +2,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.entity.projectile.ThrownPotion;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.AbstractThrownPotion;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.PotionContents;
 import org.bukkit.craftbukkit.v.inventory.CraftItemStack;
@@ -22,10 +22,9 @@ import java.lang.reflect.Method;
  * Paper's {@code splash()} delegates to a public NMS
  * {@code ThrownPotion#splash(@Nullable HitResult)} extracted from
  * {@code onHit}; this codebase's NMS keeps the logic private, so the same
- * branch structure is replayed via reflection into the private vanilla
- * helpers ({@code applyWater}/{@code isLingering}/
- * {@code makeAreaOfEffectCloud}/{@code applySplash}) with a null hit result,
- * exactly like Paper's {@code splash(null)}. Meta application uses the stock
+ * branch structure is replayed through the widened vanilla helpers
+ * ({@code onHitAsWater}/{@code onHitAsPotion}) with a MISS hit result at the
+ * projectile's own position, matching Paper's {@code splash(null)}. Meta application uses the stock
  * CraftBukkit mirror + setItemMeta path instead of Paper's internal
  * {@code CraftItemStack.applyMetaToItem}.
  */
@@ -33,7 +32,7 @@ import java.lang.reflect.Method;
 public abstract class CraftThrownPotionApiMixin {
 
     @Shadow
-    public abstract ThrownPotion getHandle();
+    public abstract AbstractThrownPotion getHandle();
 
     @Unique
     public PotionMeta getPotionMeta() {
@@ -53,20 +52,19 @@ public abstract class CraftThrownPotionApiMixin {
 
     @Unique
     public void splash() {
-        ThrownPotion handle = this.getHandle();
-        if (!handle.level().isClientSide) {
+        AbstractThrownPotion handle = this.getHandle();
+        if (handle.level() instanceof net.minecraft.server.level.ServerLevel level) {
             ItemStack itemstack = handle.getItem();
             PotionContents potioncontents =
                 itemstack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
-            // 四个 vanilla 私有 helper 由 paperarc.accesswidener 放开
+            // onHitAsWater / onHitAsPotion 由 paperarc.accesswidener 放开；
+            // 溅射/滞留分支由子类的 onHitAsPotion 自行区分（1.21.5 起拆类）
             if (potioncontents.is(net.minecraft.world.item.alchemy.Potions.WATER)) {
-                handle.applyWater();
-            } else if (potioncontents.getAllEffects().iterator().hasNext()) {
-                if (handle.isLingering()) {
-                    handle.makeAreaOfEffectCloud(potioncontents);
-                } else {
-                    handle.applySplash(potioncontents.getAllEffects(), null);
-                }
+                handle.onHitAsWater(level);
+            } else if (potioncontents.hasEffects()) {
+                // Paper 的 splash(null) 以自身位置为落点、无直接命中实体：用 MISS 命中结果表达
+                handle.onHitAsPotion(level, itemstack, net.minecraft.world.phys.BlockHitResult.miss(
+                    handle.position(), net.minecraft.core.Direction.DOWN, handle.blockPosition()));
             }
         }
     }

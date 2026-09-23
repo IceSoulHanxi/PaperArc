@@ -10,10 +10,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.BaseSpawner;
 import net.minecraft.world.level.SpawnData;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
+import net.minecraft.world.level.storage.TagValueOutput;
 
 import org.bukkit.craftbukkit.v.block.CraftCreatureSpawner;
 import org.bukkit.craftbukkit.v.inventory.CraftItemStack;
@@ -73,10 +75,10 @@ public abstract class CraftCreatureSpawnerApiMixin {
             return;
         }
         net.minecraft.world.item.ItemStack item = CraftItemStack.asNMSCopy(itemStack);
-        CompoundTag entity = new CompoundTag();
-        entity.putString("id", BuiltInRegistries.ENTITY_TYPE.getKey(EntityType.ITEM).toString());
-        // 1.21.1：ItemStack.save 需要 HolderLookup.Provider（数据组件）
-        entity.put("Item", item.save(this.paperarc$registries(), new CompoundTag()));
+        TagValueOutput valueOutput = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, this.paperarc$registries());
+        valueOutput.putString("id", BuiltInRegistries.ENTITY_TYPE.getKey(EntityType.ITEM).toString());
+        valueOutput.store("Item", net.minecraft.world.item.ItemStack.CODEC, item);
+        CompoundTag entity = valueOutput.buildResult();
         BaseSpawner spawner = snapshot.getSpawner();
         spawner.setNextSpawnData(((CraftBlockStateBridge) (Object) this).paperarc$isPlaced()
                         ? this.paperarc$world() : null,

@@ -1,7 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.craftbukkit.v.attribute.CraftAttributeInstance;
@@ -25,8 +25,8 @@ public abstract class CraftAttributeInstanceApiMixin {
     private AttributeInstance handle;
 
     @Unique
-    private static ResourceLocation paperarc$asVanilla(net.kyori.adventure.key.Key key) {
-        return ResourceLocation.fromNamespaceAndPath(key.namespace(), key.value());
+    private static Identifier paperarc$asVanilla(net.kyori.adventure.key.Key key) {
+        return Identifier.fromNamespaceAndPath(key.namespace(), key.value());
     }
 
     @Unique

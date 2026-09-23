@@ -61,6 +61,6 @@ public class NameTagItemNameEntityMixin {
         }
         // vanilla tail: consume one name tag, sided success
         stack.shrink(1);
-        cir.setReturnValue(InteractionResult.sidedSuccess(user.level().isClientSide));
+        cir.setReturnValue(InteractionResult.SUCCESS);
     }
 }

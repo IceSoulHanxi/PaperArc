@@ -27,7 +27,7 @@ public abstract class LootTableFillMixin {
     @Inject(method = "fill(Lnet/minecraft/world/Container;Lnet/minecraft/world/level/storage/loot/LootParams;J)V",
             at = @At("HEAD"))
     private void paperarc$recordFill(Container container, LootParams params, long seed, CallbackInfo ci) {
-        Entity looter = params.getParamOrNull(LootContextParams.THIS_ENTITY);
+        Entity looter = params.contextMap().getOptional(LootContextParams.THIS_ENTITY);
         PaperarcLootableData.of(container)
                 .recordFill(looter instanceof Player player ? player.getUUID() : null);
     }

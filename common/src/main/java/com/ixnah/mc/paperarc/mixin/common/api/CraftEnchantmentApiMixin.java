@@ -59,7 +59,7 @@ public abstract class CraftEnchantmentApiMixin {
                 ((org.bukkit.craftbukkit.v.CraftServer) org.bukkit.Bukkit.getServer())
                         .getServer().registryAccess();
         return GsonComponentSerializer.gson().deserialize(
-                net.minecraft.network.chat.Component.Serializer.toJson(vanilla, registries));
+                org.bukkit.craftbukkit.v.util.CraftChatMessage.ChatSerializer.toJson(vanilla, registries));
     }
 
     @Unique
@@ -68,8 +68,8 @@ public abstract class CraftEnchantmentApiMixin {
         if (set != null) {
             for (Holder<net.minecraft.world.item.Item> holder : set) {
                 holder.unwrapKey().ifPresent(rk -> keys.add(TypedKey.create(RegistryKey.ITEM,
-                        net.kyori.adventure.key.Key.key(rk.location().getNamespace(),
-                                rk.location().getPath()))));
+                        net.kyori.adventure.key.Key.key(rk.identifier().getNamespace(),
+                                rk.identifier().getPath()))));
             }
         }
         return RegistrySet.keySet(RegistryKey.ITEM, keys);
@@ -80,8 +80,8 @@ public abstract class CraftEnchantmentApiMixin {
         net.minecraft.core.RegistryAccess registries =
                 ((org.bukkit.craftbukkit.v.CraftServer) org.bukkit.Bukkit.getServer())
                         .getServer().registryAccess();
-        return registries.registryOrThrow(Registries.ENCHANTMENT)
-                .getHolder(registries.registryOrThrow(Registries.ENCHANTMENT)
+        return registries.lookupOrThrow(Registries.ENCHANTMENT)
+                .get(registries.lookupOrThrow(Registries.ENCHANTMENT)
                         .getId(this.getHandle()))
                 .map(h -> h.is(tag))
                 .orElse(false);
@@ -98,7 +98,7 @@ public abstract class CraftEnchantmentApiMixin {
                 ((org.bukkit.craftbukkit.v.CraftServer) org.bukkit.Bukkit.getServer())
                         .getServer().registryAccess();
         Holder<net.minecraft.world.item.enchantment.Enchantment> holder =
-                registries.registryOrThrow(Registries.ENCHANTMENT).wrapAsHolder(this.getHandle());
+                registries.lookupOrThrow(Registries.ENCHANTMENT).wrapAsHolder(this.getHandle());
         return paperarc$adventure(
                 net.minecraft.world.item.enchantment.Enchantment.getFullname(holder, level));
     }
@@ -137,7 +137,7 @@ public abstract class CraftEnchantmentApiMixin {
         List<TypedKey<org.bukkit.enchantments.Enchantment>> keys = new ArrayList<>();
         for (Holder<net.minecraft.world.item.enchantment.Enchantment> holder : this.getHandle().exclusiveSet()) {
             holder.unwrapKey().ifPresent(rk -> keys.add(TypedKey.create(RegistryKey.ENCHANTMENT,
-                    net.kyori.adventure.key.Key.key(rk.location().getNamespace(), rk.location().getPath()))));
+                    net.kyori.adventure.key.Key.key(rk.identifier().getNamespace(), rk.identifier().getPath()))));
         }
         return RegistrySet.keySet(RegistryKey.ENCHANTMENT, keys);
     }

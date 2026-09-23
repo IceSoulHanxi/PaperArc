@@ -34,8 +34,8 @@ public final class PaperarcOfflinePlayerPdc extends CraftPersistentDataContainer
     public PaperarcOfflinePlayerPdc(File dataFile, CompoundTag root, CraftPersistentDataTypeRegistry registry) {
         super(registry);
         this.dataFile = dataFile;
-        if (root != null && root.contains(BUKKIT_VALUES)) {
-            this.putAll(root.getCompound(BUKKIT_VALUES));
+        if (root != null) {
+            root.getCompound(BUKKIT_VALUES).ifPresent(this::putAll);
         }
     }
 

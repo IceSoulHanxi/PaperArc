@@ -1,7 +1,9 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.raid.Raid;
+import net.minecraft.world.level.Level;
 import org.bukkit.boss.BossBar;
 import org.bukkit.craftbukkit.v.CraftRaid;
 import org.bukkit.craftbukkit.v.boss.CraftBossBar;
@@ -20,9 +22,15 @@ public abstract class CraftRaidApiMixin {
     @Shadow
     private Raid handle;
 
+    @Shadow
+    private Level world;
+
     @Unique
     public int getId() {
-        return this.handle.getId();
+        if (this.world instanceof ServerLevel serverLevel) {
+            return serverLevel.getRaids().getId(this.handle).orElse(-1);
+        }
+        return -1;
     }
 
     /**

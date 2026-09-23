@@ -2,7 +2,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 
 import java.util.Collections;
 
-import org.bukkit.craftbukkit.v.block.impl.CraftPinkPetals;
+import org.bukkit.craftbukkit.v.block.impl.CraftFlowerBed;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -13,7 +13,7 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
  * Adds getMinimumFlowerAmount missing from Arclight CraftBukkit.
  * Paper ref: patches/server/Add-missing-block-data-API.patch (getMin(FLOWER_AMOUNT)).
  */
-@Mixin(CraftPinkPetals.class)
+@Mixin(CraftFlowerBed.class)
 public abstract class CraftPinkPetalsApiMixin {
 
     @Shadow

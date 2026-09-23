@@ -12,9 +12,10 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.util.TriState;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component.Serializer;
+import org.bukkit.craftbukkit.v.util.CraftChatMessage.ChatSerializer;
+// alias: ChatSerializer
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundCustomChatCompletionsPacket;
@@ -71,7 +72,7 @@ import java.util.Set;
  * mixin —— 拆成 Part1/Part2 只是当初为了并行写代码）。
  *
  * <p>PaperAdventure is unavailable in Arclight, so Adventure components are
- * converted via a Gson round-trip through {@code Component.Serializer};
+ * converted via a Gson round-trip through {@code Component.ChatSerializer};
  * bungee-chat components are serialized to JSON and parsed the same way.
  * State that vanilla 1.21.1 does not store per-player (Paper-side flags such
  * as affectsSpawning / flyingFallDamage / view-distance overrides) lives in
@@ -162,7 +163,7 @@ public abstract class CraftPlayerApiMixin {
             if (stack.isEmpty() || !stack.isDamaged()) {
                 break;
             }
-            int want = EnchantmentHelper.modifyDurabilityToRepairFromXp(sp.serverLevel(), stack, remaining * 2);
+            int want = EnchantmentHelper.modifyDurabilityToRepairFromXp(sp.level(), stack, remaining * 2);
             int heal = Math.min(want, stack.getDamageValue());
             if (heal <= 0) {
                 break;
@@ -362,7 +363,7 @@ public abstract class CraftPlayerApiMixin {
         if (adventure == null) {
             return null;
         }
-        return Serializer.fromJson(GsonComponentSerializer.gson().serialize(adventure),
+        return ChatSerializer.fromJson(GsonComponentSerializer.gson().serialize(adventure),
                 paperarc$nmsServer().registryAccess());
     }
 
@@ -372,7 +373,7 @@ public abstract class CraftPlayerApiMixin {
             return Component.empty();
         }
         return GsonComponentSerializer.gson().deserialize(
-                Serializer.toJson(vanilla, paperarc$nmsServer().registryAccess()));
+                ChatSerializer.toJson(vanilla, paperarc$nmsServer().registryAccess()));
     }
 
     @Unique
@@ -380,7 +381,7 @@ public abstract class CraftPlayerApiMixin {
         if (comps == null || comps.length == 0) {
             return null;
         }
-        return Serializer.fromJson(ComponentSerializer.toString(comps), paperarc$nmsServer().registryAccess());
+        return ChatSerializer.fromJson(ComponentSerializer.toString(comps), paperarc$nmsServer().registryAccess());
     }
 
     @Unique
@@ -627,13 +628,12 @@ public abstract class CraftPlayerApiMixin {
             }
         }
         // Refresh the target client: Paper's refreshPlayer() respawn pipeline.
-        net.minecraft.server.level.ServerLevel worldserver = self.serverLevel();
+        net.minecraft.server.level.ServerLevel worldserver = self.level();
         self.connection.send(new ClientboundRespawnPacket(
                 self.createCommonSpawnInfo(worldserver), ClientboundRespawnPacket.KEEP_ALL_DATA));
         self.onUpdateAbilities();
         Location loc = ((CraftPlayer) (Object) this).getLocation();
-        self.connection.teleport(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch(),
-                java.util.Collections.emptySet());
+        self.connection.teleport(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
         net.minecraft.server.players.PlayerList playerList = paperarc$nmsServer().getPlayerList();
         playerList.sendPlayerPermissionLevel(self);
         playerList.sendLevelInfo(self, worldserver);
@@ -806,7 +806,7 @@ public abstract class CraftPlayerApiMixin {
             // rebuild the sole entry with listed=false (packet ctor always sets true)
             ClientboundPlayerInfoUpdatePacket.Entry old = entries.get(0);
             entries.set(0, new ClientboundPlayerInfoUpdatePacket.Entry(old.profileId(), old.profile(),
-                    false, old.latency(), old.gameMode(), old.displayName(), old.chatSession()));
+                    false, old.latency(), old.gameMode(), old.displayName(), old.showHat(), old.listOrder(), old.chatSession()));
             // entries 是 private final，由 paperarc.accesswidener 的 accessible + mutable 放开
             packet.entries = entries;
             paperarc$send(packet);
@@ -872,7 +872,7 @@ public abstract class CraftPlayerApiMixin {
 
     @Unique
     public Component name() {
-        return Component.text(getHandle().getGameProfile().getName());
+        return Component.text(getHandle().getGameProfile().name());
     }
 
     @Unique
@@ -967,8 +967,8 @@ public abstract class CraftPlayerApiMixin {
         if (sound == null) {
             return;
         }
-        net.minecraft.resources.ResourceLocation id =
-                net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+        net.minecraft.resources.Identifier id =
+                net.minecraft.resources.Identifier.fromNamespaceAndPath(
                         sound.name().namespace(), sound.name().value());
         long seed = sound.seed().isPresent() ? sound.seed().getAsLong() : getHandle().getRandom().nextLong();
         paperarc$send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(
@@ -984,7 +984,7 @@ public abstract class CraftPlayerApiMixin {
         net.kyori.adventure.key.Key key = stop.sound();
         paperarc$send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(
                 key == null ? null
-                        : net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(key.namespace(), key.value()),
+                        : net.minecraft.resources.Identifier.fromNamespaceAndPath(key.namespace(), key.value()),
                 paperarc$soundSource(stop.source())));
     }
 
@@ -1143,7 +1143,7 @@ public abstract class CraftPlayerApiMixin {
             return false;
         }
         // chunkKey 的低 32 位是 x、高 32 位是 z（与 Chunk.getChunkKey 一致）
-        return handle.serverLevel().getChunkSource().chunkMap.isChunkTracked(
+        return handle.level().getChunkSource().chunkMap.isChunkTracked(
                 handle, (int) chunkKey, (int) (chunkKey >> 32));
     }
 

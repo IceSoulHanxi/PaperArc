@@ -1,8 +1,7 @@
 package com.ixnah.mc.paperarc.bridge.craft;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,22 +11,6 @@ import java.util.WeakHashMap;
 /**
  * Paper 的 {@code PaperLootableInventoryData} 的等价实现，支撑
  * {@code com.destroystokyo.paper.loottable.LootableInventory} 那组 API。
- *
- * <p>按 <b>NMS 容器对象</b>（方块实体 / 矿车 / 箱船）弱引用存一份状态：Bukkit 侧的
- * {@code CraftLootable} 是每次 {@code getState()} 新建的快照包装，用它当键会立刻丢状态。
- *
- * <p><b>与 Paper 的差异（都记在 docs/gaps.md）：</b>
- * <ul>
- *   <li>~~不做 NBT 持久化~~ —— <b>B8/Y-3 已补</b>：与 Paper 用同一组键
- *       （{@code Paper.LootableData} / {@code lastFill} / {@code nextRefill} /
- *       {@code lootedPlayers}）写进方块实体与实体的 NBT，见 {@link #saveIfPresent}；</li>
- *   <li>{@code isRefillEnabled()} 恒为 {@code false} —— 自动补货是 paper-world.yml 的
- *       {@code lootables.auto-replenish} 特性，Arclight 没有这套配置，默认值本身也是关；</li>
- *   <li>{@code canPlayerLoot()} 恒为 {@code true} —— 同理，对应
- *       {@code lootables.restrict-player-reloot} 的默认值（关）。</li>
- * </ul>
- * 其余方法（lastFilled / nextRefill / 已搜刮玩家表）语义与 Paper 一致，
- * {@code lastFilled} 与"哪个玩家搜刮过"由 {@code LootTableFillMixin} 在真的开箱填充时记录。
  */
 public final class PaperarcLootableData {
 
@@ -105,12 +88,6 @@ public final class PaperarcLootableData {
         return prev;
     }
 
-    // ---- NBT 落盘（B8/Y-3）----
-    //
-    // 键名与 Paper 的 PaperLootableInventoryData 一致，方便与真 Paper 存档互读。
-    // 只在真有记账时才写：绝大多数方块实体/实体一辈子也不会碰这套状态，
-    // 给它们都塞一个空标签既浪费存档也拖慢区块保存。
-
     private static final String NBT_KEY = "Paper.LootableData";
     private static final String NBT_LAST_FILL = "lastFill";
     private static final String NBT_NEXT_REFILL = "nextRefill";
@@ -118,7 +95,7 @@ public final class PaperarcLootableData {
     private static final String NBT_UUID = "UUID";
     private static final String NBT_TIME = "Time";
 
-    public static void saveIfPresent(Object owner, CompoundTag nbt) {
+    public static void saveIfPresent(Object owner, ValueOutput out) {
         PaperarcLootableData data;
         synchronized (BY_OWNER) {
             data = BY_OWNER.get(owner);
@@ -126,52 +103,41 @@ public final class PaperarcLootableData {
         if (data == null || data.isEmpty()) {
             return;
         }
-        nbt.put(NBT_KEY, data.save());
+        ValueOutput child = out.child(NBT_KEY);
+        child.putLong(NBT_LAST_FILL, data.lastFill);
+        child.putLong(NBT_NEXT_REFILL, data.nextRefill);
+        if (data.lootedPlayers != null && !data.lootedPlayers.isEmpty()) {
+            ValueOutput.ValueOutputList list = child.childrenList(NBT_LOOTED);
+            data.lootedPlayers.forEach((uuid, time) -> {
+                ValueOutput entry = list.addChild();
+                entry.store(NBT_UUID, net.minecraft.core.UUIDUtil.CODEC, uuid);
+                entry.putLong(NBT_TIME, time);
+            });
+        }
     }
 
-    public static void loadIfPresent(Object owner, CompoundTag nbt) {
-        if (!nbt.contains(NBT_KEY, Tag.TAG_COMPOUND)) {
-            return;
-        }
-        of(owner).load(nbt.getCompound(NBT_KEY));
+    public static void loadIfPresent(Object owner, ValueInput in) {
+        in.child(NBT_KEY).ifPresent(child -> {
+            PaperarcLootableData data = of(owner);
+            data.lastFill = child.getLongOr(NBT_LAST_FILL, -1L);
+            data.nextRefill = child.getLongOr(NBT_NEXT_REFILL, -1L);
+            data.lootedPlayers = null;
+            child.childrenList(NBT_LOOTED).ifPresent(list -> {
+                list.stream().forEach(entry -> {
+                    entry.read(NBT_UUID, net.minecraft.core.UUIDUtil.CODEC).ifPresent(uuid -> {
+                        if (data.lootedPlayers == null) {
+                            data.lootedPlayers = new HashMap<>();
+                        }
+                        data.lootedPlayers.put(uuid, entry.getLongOr(NBT_TIME, 0L));
+                    });
+                });
+            });
+        });
     }
 
     private boolean isEmpty() {
         return this.lastFill == -1L && this.nextRefill == -1L
                 && (this.lootedPlayers == null || this.lootedPlayers.isEmpty());
-    }
-
-    private CompoundTag save() {
-        CompoundTag tag = new CompoundTag();
-        tag.putLong(NBT_LAST_FILL, this.lastFill);
-        tag.putLong(NBT_NEXT_REFILL, this.nextRefill);
-        ListTag list = new ListTag();
-        if (this.lootedPlayers != null) {
-            this.lootedPlayers.forEach((uuid, time) -> {
-                CompoundTag entry = new CompoundTag();
-                entry.putUUID(NBT_UUID, uuid);
-                entry.putLong(NBT_TIME, time);
-                list.add(entry);
-            });
-        }
-        tag.put(NBT_LOOTED, list);
-        return tag;
-    }
-
-    private void load(CompoundTag tag) {
-        this.lastFill = tag.contains(NBT_LAST_FILL) ? tag.getLong(NBT_LAST_FILL) : -1L;
-        this.nextRefill = tag.contains(NBT_NEXT_REFILL) ? tag.getLong(NBT_NEXT_REFILL) : -1L;
-        this.lootedPlayers = null;
-        ListTag list = tag.getList(NBT_LOOTED, Tag.TAG_COMPOUND);
-        for (int i = 0; i < list.size(); i++) {
-            CompoundTag entry = list.getCompound(i);
-            if (entry.hasUUID(NBT_UUID)) {
-                if (this.lootedPlayers == null) {
-                    this.lootedPlayers = new HashMap<>();
-                }
-                this.lootedPlayers.put(entry.getUUID(NBT_UUID), entry.getLong(NBT_TIME));
-            }
-        }
     }
 
     private void setPlayerLootedState(UUID player, boolean looted) {

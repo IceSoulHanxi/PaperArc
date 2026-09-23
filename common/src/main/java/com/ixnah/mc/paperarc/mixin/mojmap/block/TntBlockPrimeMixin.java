@@ -12,10 +12,13 @@ import org.bukkit.craftbukkit.v.block.CraftBlock;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * NeoForge twin of the fabric TntBlockPrimeMixin (Paper TNTPrimeEvent).
+ *
+ * <p>TODO(1.21.11): 私有三参 {@code explode(Level, BlockPos, LivingEntity)V} 已改名为
+ * {@code prime(...)Z}（返回是否点燃），本锚点需在 C2 改挂并换成 CallbackInfoReturnable。
  *
  * Fabric keeps the four vanilla prime paths (onPlace / neighborChanged /
  * onProjectileHit / wasExploded) calling the two-arg static explode, so each

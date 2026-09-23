@@ -28,16 +28,19 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(ItemCooldowns.class)
 public abstract class ServerItemCooldownsItemCooldownMixin {
 
-    @WrapMethod(method = "addCooldown(Lnet/minecraft/world/item/Item;I)V")
-    private void paperarc$onAddCooldown(Item item, int duration, Operation<Void> original) {
+    @WrapMethod(method = "addCooldown(Lnet/minecraft/world/item/ItemStack;I)V")
+    private void paperarc$onAddCooldown(net.minecraft.world.item.ItemStack item, int duration, Operation<Void> original) {
         if (!((Object) this instanceof ServerItemCooldowns)) {
             original.call(item, duration); // 客户端等：原版路径
             return;
         }
         ServerPlayer player = ((ServerItemCooldownsPlayerAccessor) (Object) this).paperarc$player();
+        net.minecraft.resources.Identifier group = ((ItemCooldowns) (Object) this).getCooldownGroup(item);
+        org.bukkit.NamespacedKey groupKey = org.bukkit.craftbukkit.v.util.CraftNamespacedKey.fromMinecraft(group);
         PlayerItemCooldownEvent event = new PlayerItemCooldownEvent(
             PaperArcBridge.bukkitPlayer(player),
-            CraftItemType.minecraftToBukkit(item),
+            CraftItemType.minecraftToBukkit(item.getItem()),
+            groupKey,
             duration
         );
         if (event.callEvent()) {

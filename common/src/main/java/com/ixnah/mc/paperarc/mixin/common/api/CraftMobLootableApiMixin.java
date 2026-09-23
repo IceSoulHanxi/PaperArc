@@ -24,7 +24,7 @@ public abstract class CraftMobLootableApiMixin {
 
     public void setLootTable(LootTable table, long seed) {
         Mob handle = this.getHandle();
-        handle.lootTable = CraftLootTable.bukkitToMinecraft(table);
+        handle.lootTable = java.util.Optional.ofNullable(CraftLootTable.bukkitToMinecraft(table));
         handle.lootTableSeed = seed;
     }
 }

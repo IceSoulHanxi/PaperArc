@@ -63,9 +63,9 @@ public abstract class LivingEntityMoveEventMixin {
         final EntityMoveEvent event = new EntityMoveEvent(
             (org.bukkit.entity.LivingEntity) PaperArcBridge.bukkitEntity(self), from, to.clone());
         if (!event.callEvent()) {
-            self.absMoveTo(from.getX(), from.getY(), from.getZ(), from.getYaw(), from.getPitch());
+            self.absSnapTo(from.getX(), from.getY(), from.getZ(), from.getYaw(), from.getPitch());
         } else if (!to.equals(event.getTo())) {
-            self.absMoveTo(event.getTo().getX(), event.getTo().getY(), event.getTo().getZ(),
+            self.absSnapTo(event.getTo().getX(), event.getTo().getY(), event.getTo().getZ(),
                 event.getTo().getYaw(), event.getTo().getPitch());
         }
     }

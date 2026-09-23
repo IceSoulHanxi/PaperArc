@@ -1,6 +1,6 @@
 package com.ixnah.mc.paperarc.bridge;
 
-import net.minecraft.world.entity.animal.Sheep;
+import net.minecraft.world.entity.animal.sheep.Sheep;
 
 /**
  * Paper 给 NMS {@code Evoker} 加的 {@code wololoTarget} 字段。

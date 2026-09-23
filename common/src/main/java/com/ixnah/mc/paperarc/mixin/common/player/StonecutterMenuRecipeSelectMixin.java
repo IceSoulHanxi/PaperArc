@@ -2,7 +2,7 @@ package com.ixnah.mc.paperarc.mixin.common.player;
 
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import io.papermc.paper.event.player.PlayerStonecutterRecipeSelectEvent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.DataSlot;
@@ -79,7 +79,7 @@ public abstract class StonecutterMenuRecipeSelectMixin {
             return;
         }
 
-        ResourceLocation key = CraftNamespacedKey.toMinecraft(event.getStonecuttingRecipe().getKey());
+        Identifier key = CraftNamespacedKey.toMinecraft(event.getStonecuttingRecipe().getKey());
         int recipeIndex = id;
         if (!recipes.get(recipeIndex).id().equals(key)) { // recipe did NOT stay the same
             for (int i = 0; i < recipes.size(); i++) {

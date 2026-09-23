@@ -23,20 +23,16 @@ public abstract class CraftAreaEffectCloudApiMixin {
 
     @Unique
     public UUID getOwnerUniqueId() {
-        LivingEntity owner = getHandle().getOwner();
-        UUID cached = getHandle().ownerUUID;
-        if (cached != null) {
-            return cached;
+        net.minecraft.world.entity.EntityReference<LivingEntity> ref = getHandle().owner;
+        if (ref != null) {
+            return ref.getUUID();
         }
+        LivingEntity owner = getHandle().getOwner();
         return owner != null ? owner.getUUID() : null;
     }
 
     @Unique
     public void setOwnerUniqueId(UUID ownerUuid) {
-        // Mirror Paper: clear any resolved entity reference first, then store the raw UUID.
-        getHandle().setOwner((LivingEntity) null);
-        if (ownerUuid != null) {
-            getHandle().ownerUUID = ownerUuid;
-        }
+        getHandle().owner = ownerUuid != null ? net.minecraft.world.entity.EntityReference.of(ownerUuid) : null;
     }
 }

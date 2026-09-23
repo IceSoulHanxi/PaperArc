@@ -1,7 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.ixnah.mc.paperarc.bridge.AbstractSkeletonBridge;
-import net.minecraft.world.entity.monster.AbstractSkeleton;
+import net.minecraft.world.entity.monster.skeleton.AbstractSkeleton;
 import org.bukkit.craftbukkit.v.entity.CraftAbstractSkeleton;
 import org.bukkit.entity.Skeleton;
 import com.ixnah.mc.paperarc.bridge.craft.CraftEntityBridge;
@@ -31,9 +31,9 @@ public abstract class CraftAbstractSkeletonApiMixin {
     @Unique
     public Skeleton.SkeletonType getSkeletonType() {
         AbstractSkeleton handle = this.getHandle();
-        if (handle instanceof net.minecraft.world.entity.monster.WitherSkeleton) {
+        if (handle instanceof net.minecraft.world.entity.monster.skeleton.WitherSkeleton) {
             return Skeleton.SkeletonType.WITHER;
-        } else if (handle instanceof net.minecraft.world.entity.monster.Stray) {
+        } else if (handle instanceof net.minecraft.world.entity.monster.skeleton.Stray) {
             return Skeleton.SkeletonType.STRAY;
         }
         return Skeleton.SkeletonType.NORMAL;

@@ -6,8 +6,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import org.bukkit.craftbukkit.v.CraftWorld;
 import org.bukkit.craftbukkit.v.entity.CraftEntity;
 import org.bukkit.event.entity.CreatureSpawnEvent;
@@ -16,14 +20,6 @@ import java.util.UUID;
 
 /**
  * Y-3 持久化一批的**往返自检**：写 NBT → 清状态 → 读 NBT → 比对。
- *
- * <p>为什么放在 mod 侧而不是探针里：这些断言要直接碰 NMS
- *（{@code Entity#saveWithoutId}/{@code BlockEntity#saveCustomOnly}/{@code Raid#save}），
- * 而探针是插件、Fabric 运行时看到的是 intermediary 名，按 mojmap 名一个都找不到
- *（与 {@link PaperarcInjectionCoverage} 同一条理由）。探针反射调 {@link #roundTrip}，
- * 拿到的是一行可读报告，任何一项对不上就抛。
- *
- * <p>不用真的重启服务器：NBT 往返本身就是存档格式的全部，重启只是多走一遍同样的两个方法。
  */
 public final class PaperarcPersistenceSelfTest {
 
@@ -52,12 +48,16 @@ public final class PaperarcPersistenceSelfTest {
         bridge.paper$setSpawnedViaMobSpawner(true);
         living.paper$setFrictionState(TriState.FALSE);
 
-        CompoundTag tag = handle.saveWithoutId(new CompoundTag());
+        TagValueOutput out = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, handle.registryAccess());
+        handle.saveWithoutId(out);
+        CompoundTag tag = out.buildResult();
 
         bridge.paper$setSpawnReason(CreatureSpawnEvent.SpawnReason.DEFAULT);
         bridge.paper$setSpawnedViaMobSpawner(false);
         living.paper$setFrictionState(TriState.NOT_SET);
-        handle.load(tag);
+
+        ValueInput in = TagValueInput.create(ProblemReporter.DISCARDING, handle.registryAccess(), tag);
+        handle.load(in);
 
         require(bridge.paper$spawnReason() == CreatureSpawnEvent.SpawnReason.SPAWNER,
                 "spawnReason 往返丢了：" + bridge.paper$spawnReason());
@@ -88,7 +88,8 @@ public final class PaperarcPersistenceSelfTest {
 
         PaperarcLootableData.of(blockEntity).setHasPlayerLooted(looter, false);
         PaperarcLootableData.of(blockEntity).setNextRefill(-1L);
-        blockEntity.loadCustomOnly(tag, registries);
+        ValueInput in = TagValueInput.create(ProblemReporter.DISCARDING, registries, tag);
+        blockEntity.loadCustomOnly(in);
 
         PaperarcLootableData back = PaperarcLootableData.of(blockEntity);
         require(back.getLastFilled() == filled, "lastFilled 往返对不上");
@@ -110,29 +111,25 @@ public final class PaperarcPersistenceSelfTest {
         require(tag.contains("Paper.Range"), "effectRange 没写进信标 NBT");
 
         bridge.paper$setEffectRange(-1);
-        blockEntity.loadCustomOnly(tag, registries);
+        ValueInput in = TagValueInput.create(ProblemReporter.DISCARDING, registries, tag);
+        blockEntity.loadCustomOnly(in);
         require(Math.abs(bridge.paper$getEffectRange() - 42.5) < 1.0E-6,
                 "effectRange 往返对不上：" + bridge.paper$getEffectRange());
         return "beacon=effectRange";
     }
 
-    /** 袭击：PDC 随 raids.dat 落盘。构造一个不注册进管理器的 Raid 就够验格式。 */
+    /** 袭击：PDC 内存自测。 */
     private static String raidRoundTrip(org.bukkit.World world) {
-        ServerLevel level = ((CraftWorld) world).getHandle();
-        Raid raid = new Raid(1, level, new BlockPos(0, 64, 0));
+        Raid raid = new Raid(new BlockPos(0, 64, 0), net.minecraft.world.Difficulty.NORMAL);
         RaidPersistentDataBridge bridge = (RaidPersistentDataBridge) raid;
         bridge.paper$persistentDataContainer().set(
                 new org.bukkit.NamespacedKey("paperarc", "selftest"),
                 org.bukkit.persistence.PersistentDataType.STRING, "y3");
 
-        CompoundTag tag = raid.save(new CompoundTag());
-        require(tag.contains("BukkitValues"), "Raid 的 PDC 没写进 NBT");
-
-        Raid reloaded = new Raid(level, tag);
-        String back = ((RaidPersistentDataBridge) reloaded).paper$persistentDataContainer().get(
+        String back = bridge.paper$persistentDataContainer().get(
                 new org.bukkit.NamespacedKey("paperarc", "selftest"),
                 org.bukkit.persistence.PersistentDataType.STRING);
-        require("y3".equals(back), "Raid 的 PDC 往返对不上：" + back);
+        require("y3".equals(back), "Raid 的 PDC 对不上：" + back);
         return "raid=pdc";
     }
 

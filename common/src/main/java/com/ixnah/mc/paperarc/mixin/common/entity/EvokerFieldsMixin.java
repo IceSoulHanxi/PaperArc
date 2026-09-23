@@ -1,8 +1,8 @@
 package com.ixnah.mc.paperarc.mixin.common.entity;
 
 import com.ixnah.mc.paperarc.bridge.EvokerWololoBridge;
-import net.minecraft.world.entity.animal.Sheep;
-import net.minecraft.world.entity.monster.Evoker;
+import net.minecraft.world.entity.animal.sheep.Sheep;
+import net.minecraft.world.entity.monster.illager.Evoker;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 

@@ -1,7 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -33,6 +33,13 @@ public abstract class CraftWitchApiMixin {
     public abstract Witch getHandle();
 
     @Unique
+    private static final Identifier PAPERARC$SPEED_MODIFIER_DRINKING_ID = Identifier.withDefaultNamespace("drinking");
+    @Unique
+    private static final AttributeModifier PAPERARC$SPEED_MODIFIER_DRINKING = new AttributeModifier(
+            PAPERARC$SPEED_MODIFIER_DRINKING_ID, -0.25D, AttributeModifier.Operation.ADD_VALUE
+    );
+
+    @Unique
     public ItemStack getDrinkingPotion() {
         return CraftItemStack.asCraftMirror(getHandle().getMainHandItem());
     }
@@ -52,8 +59,8 @@ public abstract class CraftWitchApiMixin {
                 SoundEvents.WITCH_DRINK, witch.getSoundSource(), 1.0F, 0.8F + witch.getRandom().nextFloat() * 0.4F);
         }
         AttributeInstance movementSpeed = witch.getAttribute(Attributes.MOVEMENT_SPEED);
-        movementSpeed.removeModifier(Witch.SPEED_MODIFIER_DRINKING_ID);
-        movementSpeed.addTransientModifier(Witch.SPEED_MODIFIER_DRINKING);
+        movementSpeed.removeModifier(PAPERARC$SPEED_MODIFIER_DRINKING_ID);
+        movementSpeed.addTransientModifier(PAPERARC$SPEED_MODIFIER_DRINKING);
     }
 
     @Unique

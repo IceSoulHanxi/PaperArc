@@ -1,8 +1,8 @@
 package com.ixnah.mc.paperarc.mixin.common.block;
 
 import com.ixnah.mc.paperarc.bridge.SculkSensorRangeBridge;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.block.entity.SculkSensorBlockEntity;
 import net.minecraft.world.level.gameevent.vibrations.VibrationSystem;
 import org.spongepowered.asm.mixin.Mixin;
@@ -47,18 +47,17 @@ public abstract class SculkSensorBlockEntityFieldsMixin implements SculkSensorRa
     }
 
     @Inject(method = "loadAdditional", at = @At("RETURN"))
-    private void paperarc$loadRangeOverride(CompoundTag nbt, HolderLookup.Provider registries, CallbackInfo ci) {
-        this.paperarc$setRangeOverride(
-                nbt.contains(PAPERARC$LISTENER_RANGE_NBT_KEY) ? nbt.getInt(PAPERARC$LISTENER_RANGE_NBT_KEY) : null);
+    private void paperarc$loadRangeOverride(ValueInput in, CallbackInfo ci) {
+        this.paperarc$setRangeOverride(in.getInt(PAPERARC$LISTENER_RANGE_NBT_KEY).orElse(null));
     }
 
     @Inject(method = "saveAdditional", at = @At("RETURN"))
-    private void paperarc$saveRangeOverride(CompoundTag nbt, HolderLookup.Provider registries, CallbackInfo ci) {
+    private void paperarc$saveRangeOverride(ValueOutput out, CallbackInfo ci) {
         // Paper 只在"与该类型传感器的默认半径不同"时写盘；这里的 getListenerRadius()
         // 已经被覆盖值改写，比不出默认值，所以只要设过就写（多写一个 int，语义等价）。
         Integer override = this.rangeOverride;
         if (override != null) {
-            nbt.putInt(PAPERARC$LISTENER_RANGE_NBT_KEY, override);
+            out.putInt(PAPERARC$LISTENER_RANGE_NBT_KEY, override);
         }
     }
 }

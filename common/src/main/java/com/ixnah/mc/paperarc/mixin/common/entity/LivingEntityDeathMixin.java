@@ -142,7 +142,7 @@ public abstract class LivingEntityDeathMixin implements LivingEntityDeathBridge 
     @Inject(method = "die", at = @At("HEAD"))
     private void paperarc$snapshotEquipment(DamageSource source, CallbackInfo ci) {
         LivingEntity self = (LivingEntity) (Object) this;
-        if (!self.level().isClientSide) {
+        if (!self.level().isClientSide()) {
             this.paperarc$deathEquipment = PaperarcDeathEvents.snapshotEquipment(self);
         }
     }

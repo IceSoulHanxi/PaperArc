@@ -20,9 +20,10 @@ public abstract class CraftMetaSkullPaperApiMixin {
         if (owner == null) {
             return null;
         }
-        return new CraftPlayerProfile(new com.mojang.authlib.GameProfile(
-                owner.getUniqueId() == null ? new java.util.UUID(0L, 0L) : owner.getUniqueId(),
-                owner.getName()));
+        if (owner instanceof org.bukkit.craftbukkit.v.profile.CraftPlayerProfile cb) {
+            return new CraftPlayerProfile(cb.buildGameProfile());
+        }
+        return new CraftPlayerProfile(owner.getUniqueId(), owner.getName());
     }
 
     @Unique

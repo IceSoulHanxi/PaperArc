@@ -1,7 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.entity;
 
 import com.ixnah.mc.paperarc.bridge.ZombieBridge;
-import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 

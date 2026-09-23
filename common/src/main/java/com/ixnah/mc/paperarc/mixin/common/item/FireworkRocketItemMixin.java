@@ -37,7 +37,7 @@ public abstract class FireworkRocketItemMixin {
     private boolean paperarc$launch(Level world, Entity projectile, Operation<Boolean> original,
                                     UseOnContext context) {
         Level level = context.getLevel();
-        if (level.isClientSide || context.getPlayer() == null) {
+        if (level.isClientSide() || context.getPlayer() == null) {
             return original.call(world, projectile);
         }
         ItemStack itemStack = context.getItemInHand();

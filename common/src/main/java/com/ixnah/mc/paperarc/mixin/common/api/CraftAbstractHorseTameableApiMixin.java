@@ -1,6 +1,6 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import org.bukkit.craftbukkit.v.entity.CraftAbstractHorse;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -15,10 +15,10 @@ import org.spongepowered.asm.mixin.Unique;
 public abstract class CraftAbstractHorseTameableApiMixin {
 
     @Shadow
-    public abstract AbstractHorse getHandle();
+    public abstract java.util.UUID getOwnerUUID();
 
     @Unique
     public java.util.UUID getOwnerUniqueId() {
-        return this.getHandle().getOwnerUUID();
+        return this.getOwnerUUID();
     }
 }

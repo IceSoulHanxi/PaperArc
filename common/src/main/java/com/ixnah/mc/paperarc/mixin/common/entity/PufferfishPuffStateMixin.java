@@ -6,7 +6,7 @@ import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import io.papermc.paper.event.entity.PufferFishStateChangeEvent;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.entity.animal.Pufferfish;
+import net.minecraft.world.entity.animal.fish.Pufferfish;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;

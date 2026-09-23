@@ -5,9 +5,9 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import io.papermc.paper.event.block.PlayerShearBlockEvent;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -46,7 +46,7 @@ public abstract class PumpkinBlockMixin {
     @Inject(method = "useItemOn", at = @At("HEAD"), cancellable = true)
     private void paperarc$playerShearBlock(ItemStack stack, BlockState state, Level level, BlockPos pos,
                                            Player player, InteractionHand hand, BlockHitResult hit,
-                                           CallbackInfoReturnable<ItemInteractionResult> cir) {
+                                           CallbackInfoReturnable<InteractionResult> cir) {
         if (level.isClientSide() || player == null) {
             return;
         }
@@ -59,7 +59,7 @@ public abstract class PumpkinBlockMixin {
                 PaperArcBridge.bukkitPlayer(player), CraftBlock.at(level, pos),
                 CraftItemStack.asCraftMirror(stack), CraftEquipmentSlot.getHand(hand), drops);
         if (!event.callEvent()) {
-            cir.setReturnValue(ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION);
+            cir.setReturnValue(InteractionResult.FAIL);
             return;
         }
         paperarc$shearDrops.set(event.getDrops());

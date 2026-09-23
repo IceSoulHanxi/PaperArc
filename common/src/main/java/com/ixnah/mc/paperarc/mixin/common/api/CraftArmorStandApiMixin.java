@@ -79,7 +79,7 @@ public abstract class CraftArmorStandApiMixin {
     @Unique
     public boolean isSlotDisabled(EquipmentSlot slot) {
         // vanilla ArmorStand#isDisabled is private; replicate its formula on the reflected field
-        return (this.paperarc$getRawDisabledSlots() & (1 << CraftEquipmentSlot.getNMS(slot).getFilterFlag())) != 0;
+        return (this.paperarc$getRawDisabledSlots() & (1 << CraftEquipmentSlot.getNMS(slot).getFilterBit(0))) != 0;
     }
 
     @Unique
@@ -88,7 +88,7 @@ public abstract class CraftArmorStandApiMixin {
         for (EquipmentSlot slot : slots) {
             if (slot == EquipmentSlot.OFF_HAND) continue;
             net.minecraft.world.entity.EquipmentSlot nmsSlot = CraftEquipmentSlot.getNMS(slot);
-            disabled += (1 << nmsSlot.getFilterFlag()) + (1 << (nmsSlot.getFilterFlag() + 8)) + (1 << (nmsSlot.getFilterFlag() + 16));
+            disabled += (1 << nmsSlot.getFilterBit(0)) + (1 << nmsSlot.getFilterBit(8)) + (1 << nmsSlot.getFilterBit(16));
         }
         this.getHandle().disabledSlots = disabled;
     }
@@ -192,7 +192,7 @@ public abstract class CraftArmorStandApiMixin {
 
     @Unique
     private static io.papermc.paper.math.Rotations paperarc$fromNMS(net.minecraft.core.Rotations old) {
-        return io.papermc.paper.math.Rotations.ofDegrees(old.getX(), old.getY(), old.getZ());
+        return io.papermc.paper.math.Rotations.ofDegrees(old.x(), old.y(), old.z());
     }
 
     @Unique

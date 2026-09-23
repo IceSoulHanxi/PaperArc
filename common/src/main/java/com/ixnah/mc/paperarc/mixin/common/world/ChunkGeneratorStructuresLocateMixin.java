@@ -46,7 +46,7 @@ public abstract class ChunkGeneratorStructuresLocateMixin {
         if (!event.callEvent()) {
             return null;
         }
-        final Registry<Structure> registry = world.registryAccess().registryOrThrow(Registries.STRUCTURE);
+        final Registry<Structure> registry = world.registryAccess().lookupOrThrow(Registries.STRUCTURE);
         final StructuresLocateEvent.Result result = event.getResult();
         if (result != null) {
             final BlockPos pos = new BlockPos(result.pos().blockX(), result.pos().blockY(), result.pos().blockZ());

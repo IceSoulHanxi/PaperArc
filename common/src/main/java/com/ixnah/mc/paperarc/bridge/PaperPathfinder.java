@@ -5,7 +5,9 @@ import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
 import org.bukkit.Location;
+import org.bukkit.craftbukkit.v.entity.CraftEntity;
 import org.bukkit.craftbukkit.v.entity.CraftLivingEntity;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 
@@ -63,10 +65,15 @@ public class PaperPathfinder implements com.destroystokyo.paper.entity.Pathfinde
     }
 
     @Override
-    public PathResult findPath(LivingEntity target) {
+    public PathResult findPath(Entity target) {
         Preconditions.checkNotNull(target, "Target can not be null");
-        Path path = navigation().createPath(((CraftLivingEntity) target).getHandle(), 0);
+        Path path = navigation().createPath(((CraftEntity) target).getHandle(), 0);
         return path != null ? new PaperPathResult(path) : null;
+    }
+
+    @Override
+    public PathResult findPath(LivingEntity target) {
+        return findPath((Entity) target);
     }
 
     @Override

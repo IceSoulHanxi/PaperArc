@@ -26,7 +26,7 @@ import java.util.function.Consumer;
  * EntityDamageItemEvent: cancelled drops the damage entirely, otherwise the
  * (possibly modified) amount is applied.
  */
-@Mixin(net.minecraft.world.item.enchantment.effects.DamageItem.class)
+@Mixin(net.minecraft.world.item.enchantment.effects.ChangeItemDamage.class)
 public abstract class DamageItemMixin {
 
     @WrapOperation(

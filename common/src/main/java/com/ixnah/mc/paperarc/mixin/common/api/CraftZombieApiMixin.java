@@ -1,7 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.ixnah.mc.paperarc.bridge.ZombieBridge;
-import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import org.bukkit.craftbukkit.v.entity.CraftZombie;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -26,8 +26,8 @@ import org.spongepowered.asm.mixin.Unique;
  *       {@link ZombieBridge} (Paper adds NMS accessors under those names).
  *       {@code shouldBurnInDay()} falls back to {@code isSunSensitive()} when
  *       unset, mirroring vanilla semantics.</li>
- *   <li>{@code supportsBreakingDoors()} → protected NMS
- *       {@code Zombie#supportsBreakDoorGoal()} via AT.</li>
+ *   <li>{@code supportsBreakingDoors()} → public NMS
+ *       {@code Zombie#canBreakDoors()}.</li>
  * </ul>
  */
 @Mixin(CraftZombie.class)
@@ -81,6 +81,6 @@ public abstract class CraftZombieApiMixin {
 
     @Unique
     public boolean supportsBreakingDoors() {
-        return this.getHandle().supportsBreakDoorGoal();
+        return this.getHandle().canBreakDoors();
     }
 }

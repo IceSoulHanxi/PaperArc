@@ -21,8 +21,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.dedicated.DedicatedServer;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import org.bukkit.NamespacedKey;
@@ -59,7 +63,6 @@ import org.spongepowered.asm.mixin.Unique;
  *       module in Arclight); raw NBT round-trip is preserved.</li>
  *   <li>{@code getDefaultEntityAttributes} returns {@code null} (no Paper
  *       {@code UnmodifiableAttributeMap}).</li>
- *   <li>{@code getTimingsServerName/reportTimings} degrade to server motd / no-op.</li>
  * </ul>
  */
 @Mixin(CraftMagicNumbers.class)
@@ -72,7 +75,7 @@ public abstract class CraftMagicNumbersApiMixin {
     @Unique
     public boolean hasDefaultEntityAttributes(NamespacedKey bukkitEntityKey) {
         return net.minecraft.world.entity.ai.attributes.DefaultAttributes.hasSupplier(
-                BuiltInRegistries.ENTITY_TYPE.get(CraftNamespacedKey.toMinecraft(bukkitEntityKey)));
+                BuiltInRegistries.ENTITY_TYPE.getValue(CraftNamespacedKey.toMinecraft(bukkitEntityKey)));
     }
 
     @Unique
@@ -93,9 +96,8 @@ public abstract class CraftMagicNumbersApiMixin {
         if (!itemToBeRepaired.getType().isItem() || !repairMaterial.getType().isItem()) {
             return false;
         }
-        return CraftMagicNumbers.getItem(itemToBeRepaired.getType())
-                .isValidRepairItem(CraftItemStack.asNMSCopy(itemToBeRepaired),
-                        CraftItemStack.asNMSCopy(repairMaterial));
+        return CraftItemStack.asNMSCopy(itemToBeRepaired).isValidRepairItem(
+                CraftItemStack.asNMSCopy(repairMaterial));
     }
 
     @Unique
@@ -103,26 +105,29 @@ public abstract class CraftMagicNumbersApiMixin {
         Preconditions.checkNotNull(item, "null cannot be serialized");
         Preconditions.checkArgument(item.getType() != org.bukkit.Material.AIR, "air cannot be serialized");
         net.minecraft.world.item.ItemStack nms = CraftItemStack.asNMSCopy(item);
-        // 1.21.1：ItemStack.save/parse 都要 HolderLookup.Provider（数据组件需要注册表）
-        return serializeNbtToBytes((CompoundTag) nms.save(paperarc$registries(), new CompoundTag()));
+        TagValueOutput out = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, paperarc$registries());
+        out.store("Item", net.minecraft.world.item.ItemStack.CODEC, nms);
+        return serializeNbtToBytes(out.buildResult());
     }
 
     @Unique
     public ItemStack deserializeItem(byte[] data) {
         Preconditions.checkNotNull(data, "null cannot be deserialized");
         Preconditions.checkArgument(data.length > 0, "cannot deserialize nothing");
+        CompoundTag compound = deserializeNbtFromBytes(data);
+        ValueInput in = TagValueInput.create(ProblemReporter.DISCARDING, paperarc$registries(), compound);
         return CraftItemStack.asCraftMirror(
-                net.minecraft.world.item.ItemStack.parseOptional(
-                        paperarc$registries(), deserializeNbtFromBytes(data)));
+                in.read("Item", net.minecraft.world.item.ItemStack.CODEC).orElse(net.minecraft.world.item.ItemStack.EMPTY));
     }
 
     @Unique
     public byte[] serializeEntity(Entity entity) {
         Preconditions.checkNotNull(entity, "null cannot be serialized");
         Preconditions.checkArgument(entity instanceof CraftEntity, "only CraftEntities can be serialized");
-        CompoundTag compound = new CompoundTag();
-        ((CraftEntity) entity).getHandle().saveWithoutId(compound);
-        return serializeNbtToBytes(compound);
+        net.minecraft.world.entity.Entity nms = ((CraftEntity) entity).getHandle();
+        TagValueOutput out = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, nms.registryAccess());
+        nms.saveWithoutId(out);
+        return serializeNbtToBytes(out.buildResult());
     }
 
     @Unique
@@ -134,16 +139,17 @@ public abstract class CraftMagicNumbersApiMixin {
         if (!preserveUUID) {
             compound.remove("UUID");
         }
+        net.minecraft.server.level.ServerLevel serverLevel = ((org.bukkit.craftbukkit.v.CraftWorld) world).getHandle();
+        ValueInput in = TagValueInput.create(ProblemReporter.DISCARDING, serverLevel.registryAccess(), compound);
         return PaperArcBridge.bukkitEntity(
-                net.minecraft.world.entity.EntityType.create(compound,
-                                ((org.bukkit.craftbukkit.v.CraftWorld) world).getHandle())
+                net.minecraft.world.entity.EntityType.create(in, serverLevel, net.minecraft.world.entity.EntitySpawnReason.LOAD)
                         .orElseThrow(() -> new IllegalArgumentException(
                                 "An ID was not found for the data. Did you downgrade?")));
     }
 
     @Unique
     public int getProtocolVersion() {
-        return net.minecraft.SharedConstants.getCurrentVersion().getProtocolVersion();
+        return net.minecraft.SharedConstants.getCurrentVersion().protocolVersion();
     }
 
     @Unique
@@ -169,16 +175,10 @@ public abstract class CraftMagicNumbersApiMixin {
     }
 
     @Unique
-    public String getTimingsServerName() {
-        net.minecraft.server.MinecraftServer server = paperarc$server();
-        return server != null ? server.getMotd() : "PaperArc";
-    }
-
-    @Unique
     public NamespacedKey getBiomeKey(org.bukkit.RegionAccessor accessor, int x, int y, int z) {
         CraftRegionAccessor cra = (CraftRegionAccessor) accessor;
         return CraftNamespacedKey.fromMinecraft(cra.getHandle().registryAccess()
-                .registryOrThrow(Registries.BIOME)
+                .lookupOrThrow(Registries.BIOME)
                 .getKey(cra.getHandle().getBiome(new BlockPos(x, y, z)).value()));
     }
 
@@ -186,15 +186,10 @@ public abstract class CraftMagicNumbersApiMixin {
     public void setBiomeKey(org.bukkit.RegionAccessor accessor, int x, int y, int z, NamespacedKey biomeKey) {
         CraftRegionAccessor cra = (CraftRegionAccessor) accessor;
         net.minecraft.core.Holder<Biome> biomeBase = cra.getHandle().registryAccess()
-                .registryOrThrow(Registries.BIOME)
-                .getHolderOrThrow(ResourceKey.create(Registries.BIOME,
+                .lookupOrThrow(Registries.BIOME)
+                .getOrThrow(ResourceKey.create(Registries.BIOME,
                         CraftNamespacedKey.toMinecraft(biomeKey)));
         cra.setBiome(x, y, z, biomeBase);
-    }
-
-    @Unique
-    public void reportTimings() {
-        // Arclight has no Paper Timings; no-op.
     }
 
     // -------------------------------------------------------------------
@@ -258,7 +253,7 @@ public abstract class CraftMagicNumbersApiMixin {
             // 1.21.1 的 readCompressed 需要 NbtAccounter 限额；用 unlimitedHeap 保持旧行为
             CompoundTag compound = NbtIo.readCompressed(new ByteArrayInputStream(data),
                     net.minecraft.nbt.NbtAccounter.unlimitedHeap());
-            int dataVersion = compound.getInt("DataVersion");
+            int dataVersion = compound.getIntOr("DataVersion", -1);
             Preconditions.checkArgument(dataVersion <= CraftMagicNumbers.INSTANCE.getDataVersion(),
                     "Newer version! Server downgrades are not supported!");
             return compound;
@@ -292,13 +287,14 @@ public abstract class CraftMagicNumbersApiMixin {
                 net.minecraft.world.item.ItemStack.EMPTY);
     }
 
-    /** paper {@code UnsafeValues#getSpawnEggLayerColor}：刷怪蛋两层颜色，直接问 NMS。 */
+    /**
+     * paper {@code UnsafeValues#getSpawnEggLayerColor}：1.21.4 起刷怪蛋颜色改由客户端物品模型着色，
+     * 服务端（{@code SpawnEggItem}）不再有颜色数据；paper-api 同版本起把它标为 {@code @Deprecated}
+     * 且返回 {@code @Nullable}，这里返回 {@code null} 就是该语义下唯一可给出的结果。
+     */
     @Unique
     public org.bukkit.Color getSpawnEggLayerColor(org.bukkit.entity.EntityType entityType, int layer) {
-        net.minecraft.world.entity.EntityType<?> nms =
-                org.bukkit.craftbukkit.v.entity.CraftEntityType.bukkitToMinecraft(entityType);
-        net.minecraft.world.item.SpawnEggItem egg = net.minecraft.world.item.SpawnEggItem.byId(nms);
-        return egg == null ? null : org.bukkit.Color.fromRGB(egg.getColor(layer) & 0xFFFFFF);
+        return null;
     }
 
     /** paper {@code UnsafeValues#serializeItemAsJson}：走 vanilla 的 ItemStack CODEC。 */
@@ -351,7 +347,7 @@ public abstract class CraftMagicNumbersApiMixin {
         java.util.List<net.kyori.adventure.text.Component> out = new java.util.ArrayList<>();
         for (net.minecraft.network.chat.Component line : nms.getTooltipLines(ctx, handle, flag)) {
             out.add(net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson()
-                    .deserialize(net.minecraft.network.chat.Component.Serializer
+                    .deserialize(org.bukkit.craftbukkit.v.util.CraftChatMessage.ChatSerializer
                             .toJson(line, paperarc$registries())));
         }
         return out;
@@ -371,20 +367,6 @@ public abstract class CraftMagicNumbersApiMixin {
             org.bukkit.entity.Entity scoreboardSubject, boolean bypassPermissions) {
         return com.ixnah.mc.paperarc.bridge.api.PaperarcComponents.resolveWithContext(
                 component, context, scoreboardSubject, bypassPermissions);
-    }
-
-    /**
-     * paper {@code UnsafeValues#getTag}：按 {@code TagKey} 取注册表标签。
-     *
-     * <p>paper 的 {@code RegistryKey} 与 vanilla 注册表 id 是同一套命名空间键，
-     * 所以不需要 paper 那套 RegistryAccess，按键名反查 vanilla 注册表的同名标签即可
-     * （实现见 {@code bridge/api/PaperarcRegistryTag}）。查不到注册表或标签仍返回
-     * {@code null} —— 那是 paper 的契约，不是占位。
-     */
-    @Unique
-    public <A extends org.bukkit.Keyed, M> io.papermc.paper.registry.tag.Tag<A> getTag(
-            io.papermc.paper.registry.tag.TagKey<A> tagKey) {
-        return com.ixnah.mc.paperarc.bridge.api.PaperarcRegistryTag.of(tagKey);
     }
 
     /**

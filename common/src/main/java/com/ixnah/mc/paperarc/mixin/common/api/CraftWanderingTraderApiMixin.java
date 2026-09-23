@@ -1,7 +1,7 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.npc.WanderingTrader;
+import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v.entity.CraftWanderingTrader;
 import org.bukkit.craftbukkit.v.util.CraftLocation;

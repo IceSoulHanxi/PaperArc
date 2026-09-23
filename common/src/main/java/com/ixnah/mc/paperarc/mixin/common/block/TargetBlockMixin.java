@@ -81,7 +81,7 @@ public abstract class TargetBlockMixin {
     @WrapOperation(method = "onProjectileHit",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;awardStat(Lnet/minecraft/resources/ResourceLocation;)V"))
     private void paperarc$skipAwardStat(net.minecraft.server.level.ServerPlayer player,
-                                        net.minecraft.resources.ResourceLocation stat, Operation<Void> original) {
+                                        net.minecraft.resources.Identifier stat, Operation<Void> original) {
         if (Boolean.TRUE.equals(paperarc$skipAward.get())) {
             return;
         }
@@ -90,7 +90,7 @@ public abstract class TargetBlockMixin {
 
     @WrapOperation(method = "onProjectileHit",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/advancements/critereon/TargetBlockTrigger;trigger(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;I)V"))
-    private void paperarc$skipAwardTrigger(net.minecraft.advancements.critereon.TargetBlockTrigger trigger,
+    private void paperarc$skipAwardTrigger(net.minecraft.advancements.criterion.TargetBlockTrigger trigger,
                                            net.minecraft.server.level.ServerPlayer player, Entity entity, Vec3 location, int i,
                                            Operation<Void> original) {
         boolean cancelled = Boolean.TRUE.equals(paperarc$skipAward.get());

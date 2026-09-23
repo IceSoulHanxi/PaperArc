@@ -18,7 +18,7 @@ import java.util.UUID;
  *
  * <p>Mappings to this codebase's NMS (mojmap 1.21.1 {@code Projectile}):
  * <ul>
- *   <li>{@code getOwnerUniqueId()} → private field {@code ownerUUID} (@Shadow).</li>
+ *   <li>{@code getOwnerUniqueId()} → {@code ProjectileBridge#paper$getOwnerUniqueId()}.</li>
  *   <li>{@code hasLeftShooter()} / {@code setHasLeftShooter(boolean)} → private
  *       field {@code leftOwner} (@Shadow).</li>
  *   <li>{@code hasBeenShot()} / {@code setHasBeenShot(boolean)} → Paper keeps
@@ -45,7 +45,7 @@ public abstract class CraftProjectileApiMixin {
 
     @Unique
     public UUID getOwnerUniqueId() {
-        return this.getHandle().ownerUUID;
+        return ((com.ixnah.mc.paperarc.bridge.ProjectileBridge) this.getHandle()).paper$getOwnerUniqueId();
     }
 
     @Unique

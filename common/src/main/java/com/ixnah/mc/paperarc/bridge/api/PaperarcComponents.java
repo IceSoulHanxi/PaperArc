@@ -2,7 +2,8 @@ package com.ixnah.mc.paperarc.bridge.api;
 
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.minecraft.network.chat.Component.Serializer;
+import org.bukkit.craftbukkit.v.util.CraftChatMessage.ChatSerializer;
+// alias: ChatSerializer
 
 /**
  * vanilla {@code Component} ↔ adventure {@code Component} 的 gson 往返转换。
@@ -14,13 +15,13 @@ public final class PaperarcComponents {
     }
 
     public static net.kyori.adventure.text.Component fromVanilla(net.minecraft.network.chat.Component vanilla) {
-        String json = Serializer.toJson(vanilla, registries());
+        String json = ChatSerializer.toJson(vanilla, registries());
         return GsonComponentSerializer.gson().deserialize(json);
     }
 
     public static net.minecraft.network.chat.Component toVanilla(net.kyori.adventure.text.Component component) {
         String json = GsonComponentSerializer.gson().serialize(component);
-        return Serializer.fromJson(json, registries());
+        return ChatSerializer.fromJson(json, registries());
     }
 
     /**
@@ -42,7 +43,7 @@ public final class PaperarcComponents {
             return component;
         }
         if (bypassPermissions) {
-            stack = stack.withPermission(2);
+            stack = stack.withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER);
         }
         net.minecraft.world.entity.Entity subject = scoreboardSubject == null ? null
                 : ((org.bukkit.craftbukkit.v.entity.CraftEntity) scoreboardSubject).getHandle();

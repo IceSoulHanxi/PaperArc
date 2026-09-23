@@ -3,7 +3,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-import net.minecraft.world.entity.npc.AbstractVillager;
+import net.minecraft.world.entity.npc.villager.AbstractVillager;
 
 /**
  * Exposes protected AbstractVillager#updateTrades for CraftAbstractVillagerApiMixin#resetOffers.

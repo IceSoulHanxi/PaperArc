@@ -20,7 +20,7 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerLevel;
@@ -115,12 +115,12 @@ public abstract class CraftWorldApiMixin {
 
     @Unique
     public boolean isFixedTime() {
-        return this.getHandle().dimensionType().fixedTime().isPresent();
+        return this.getHandle().dimensionType().hasFixedTime();
     }
 
     @Unique
     public boolean isDayTime() {
-        return this.getHandle().isDay();
+        return this.getHandle().isBrightOutside();
     }
 
     @Unique
@@ -153,9 +153,9 @@ public abstract class CraftWorldApiMixin {
     @Unique
     public Collection<Material> getInfiniburn() {
         Registry<net.minecraft.world.level.block.Block> blocks =
-                this.getHandle().registryAccess().registryOrThrow(Registries.BLOCK);
+                this.getHandle().registryAccess().lookupOrThrow(Registries.BLOCK);
         Collection<Material> materials = new ArrayList<>();
-        blocks.getTag(this.getHandle().dimensionType().infiniburn())
+        blocks.get(this.getHandle().dimensionType().infiniburn())
                 .ifPresent(named -> {
                     for (Holder<net.minecraft.world.level.block.Block> holder : named) {
                         materials.add(CraftMagicNumbers.getMaterial(holder.value()));
@@ -167,7 +167,7 @@ public abstract class CraftWorldApiMixin {
     @Unique
     public org.bukkit.Raid getRaid(int id) {
         net.minecraft.world.entity.raid.Raid nms = this.getHandle().getRaids().get(id);
-        return nms == null ? null : new CraftRaid(nms);
+        return nms == null ? null : new CraftRaid(nms, this.getHandle());
     }
 
     /**
@@ -263,9 +263,9 @@ public abstract class CraftWorldApiMixin {
 
     @Unique
     public int getTileEntityCount() {
-        // ChunkMap#getChunks() 是 protected，由 paperarc.accesswidener 放开
+        // ChunkMap#visibleChunkMap 是 private，由 paperarc.accesswidener 放开（同 CraftWorld#getLoadedChunks）
         int count = 0;
-        for (ChunkHolder holder : this.getHandle().getChunkSource().chunkMap.getChunks()) {
+        for (ChunkHolder holder : this.getHandle().getChunkSource().chunkMap.visibleChunkMap.values()) {
             net.minecraft.world.level.chunk.LevelChunk chunk = holder.getTickingChunk();
             if (chunk != null) {
                 count += chunk.getBlockEntitiesPos().size();
@@ -414,7 +414,7 @@ public abstract class CraftWorldApiMixin {
         }
         ParticleOptions options = CraftParticle.createParticleParam(particle, data);
         ClientboundLevelParticlesPacket packet = new ClientboundLevelParticlesPacket(
-                options, forceOverride, x, y, z,
+                options, forceOverride, false, x, y, z,
                 (float) offsetX, (float) offsetY, (float) offsetZ, (float) extra, count);
         for (Player receiver : receivers) {
             if (receiver instanceof CraftPlayer craftPlayer && craftPlayer.getWorld() == (Object) this) {

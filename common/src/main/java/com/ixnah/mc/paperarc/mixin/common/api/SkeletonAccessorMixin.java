@@ -3,7 +3,7 @@ package com.ixnah.mc.paperarc.mixin.common.api;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-import net.minecraft.world.entity.monster.Skeleton;
+import net.minecraft.world.entity.monster.skeleton.Skeleton;
 
 /**
  * Exposes private Skeleton#inPowderSnowTime for CraftSkeletonApiMixin#inPowderedSnowTime.

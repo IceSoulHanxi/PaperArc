@@ -250,7 +250,7 @@ public abstract class LocationApiMixin {
     }
 
     @Unique
-    public <T extends Entity> Collection<T> getNearbyEntitiesByType(Class<? extends Entity> clazz, double xRadius,
+    public <T extends Entity> Collection<T> getNearbyEntitiesByType(Class<? extends T> clazz, double xRadius,
                                                                     double yRadius, double zRadius,
                                                                     Predicate<? super T> predicate) {
         return this.paperarc$requireWorld()

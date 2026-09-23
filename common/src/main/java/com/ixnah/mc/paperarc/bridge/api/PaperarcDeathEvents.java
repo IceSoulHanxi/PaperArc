@@ -31,7 +31,7 @@ public final class PaperarcDeathEvents {
 
     /** {@code populateFields} 的数值来源：Paper 用 GENERIC_MAX_HEALTH 属性当默认复活血量。 */
     public static double maxHealth(org.bukkit.entity.LivingEntity entity) {
-        AttributeInstance attribute = entity.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+        AttributeInstance attribute = entity.getAttribute(Attribute.MAX_HEALTH);
         return attribute == null ? entity.getHealth() : attribute.getValue();
     }
 
