@@ -1,11 +1,44 @@
 plugins {
     id 'architectury-plugin' version '3.4-SNAPSHOT'
-    id 'dev.architectury.loom' version '1.9-SNAPSHOT' apply false
+    id 'dev.architectury.loom' version '1.14-SNAPSHOT' apply false
     id 'com.gradleup.shadow' version '8.3.+' apply false
 }
 
 architectury {
     minecraft = rootProject.minecraft_version
+}
+
+// 门禁脚本所在的 PaperArc/tools：主树 PaperArc/paperarc 下是 ../tools，
+// worktree PaperArc/worktrees/<slug> 下是 ../../tools；也可用 -PpaperarcTools=<dir> 指定。
+ext.paperarcToolsDir = [findProperty('paperarcTools'), '../tools', '../../tools']
+        .findAll { it != null }
+        .collect { rootProject.file(it) }
+        .find { new File(it, 'scripts').isDirectory() } ?: rootProject.file('../tools')
+
+// 门禁比对用的运行时 jar：spigot-deobf + Arclight 运行时 mod jar（带 org.bukkit.*）。
+// mod jar 依次取 -ParclightModJar=<jar>、GoS run_prod 解包出的 mod_file、GoS 本地构建的
+// fabric mod jar；任一侧缺失返回空表，门禁只警告跳过。不回落到 1.21.1 的 jar（口径会错）。
+// deobf 必须排在前面：脚本按"先见到的同名类为准"，而未解包的 mod jar 里 CraftBukkit 还在
+// craftbukkit/v 包下、NMS 是 intermediary 名，排前面会遮住 deobf 里 mojmap 描述符的同名类。
+ext.paperarcRuntimeJars = { ->
+    def modJars = []
+    def explicit = findProperty('arclightModJar')
+    if (explicit != null) {
+        modJars = [rootProject.file(explicit)].findAll { it.isFile() }
+    }
+    def modFileDir = rootProject.file('../arclight-gos/bootstrap/run_prod/fabric/.arclight/mod_file')
+    if (modJars.isEmpty() && modFileDir.isDirectory()) {
+        modJars = modFileDir.listFiles().findAll { it.name.startsWith('arclight-') && it.name.endsWith('.jar') }
+    }
+    def libsDir = rootProject.file('../arclight-gos/arclight-fabric/build/libs')
+    if (modJars.isEmpty() && libsDir.isDirectory()) {
+        modJars = libsDir.listFiles().findAll { it.name ==~ /arclight-fabric-[0-9.]+(-SNAPSHOT)?\.jar/ }
+    }
+    def spigotDeobf = [
+            rootProject.file('vendor/maven-flat/spigot-1.21.11-deobf.jar'),
+            rootProject.file('../arclight-gos/.gradle/arclight/arclight_repo/io/izzel/arclight/generated/spigot/1.21.11/spigot-1.21.11-deobf.jar')
+    ].find { it.isFile() }
+    return (modJars.isEmpty() || spigotDeobf == null) ? [] : [spigotDeobf] + modJars
 }
 
 subprojects {
@@ -38,6 +71,7 @@ subprojects {
         maven { url = 'https://maven.neoforged.net/releases' }
         // Arclight 本地构建产出（io.izzel.arclight.generated:spigot 等），不发布远端
         maven { url = uri("${rootDir}/../Arclight/.gradle/arclight/arclight_repo") }
+        maven { url = uri("${rootDir}/../arclight-gos/.gradle/arclight/arclight_repo") }
     }
 
     java {
@@ -45,6 +79,12 @@ subprojects {
             languageVersion = JavaLanguageVersion.of(21)
         }
         withSourcesJar()
+    }
+
+    configurations.configureEach {
+        resolutionStrategy.capabilitiesResolution.withCapability("org.spigotmc:spigot-api") {
+            select("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+        }
     }
 
     tasks.withType(JavaCompile).configureEach {
@@ -118,7 +158,7 @@ subprojects {
     // 所以脚本或 jar 不可用时只警告不失败（CI 里退化为 no-op）。
     if (project.name == 'common') {
         tasks.register('checkIfaceImplPairing') {
-            def script = rootProject.file('../tools/scripts/check-iface-impl-pairing.py')
+            def script = new File(rootProject.paperarcToolsDir, 'scripts/check-iface-impl-pairing.py')
             def repoRoot = rootProject.projectDir
             inputs.dir(file('src/main/java')).optional()
             outputs.upToDateWhen { false }
@@ -127,9 +167,21 @@ subprojects {
                     logger.warn("checkIfaceImplPairing: 找不到 ${script}，跳过")
                     return
                 }
+                def runtimeJars = rootProject.paperarcRuntimeJars()
+                if (runtimeJars.isEmpty()) {
+                    logger.warn("checkIfaceImplPairing: 运行时 jar 不可用，跳过")
+                    return
+                }
+                def apiJars = project.configurations.compileClasspath.files.findAll {
+                    it.name.startsWith('paper-api-') || it.name.startsWith('adventure-api-')
+                }
+                def cmd = ['python3', script.absolutePath, repoRoot.absolutePath, '--jars']
+                cmd.addAll(runtimeJars.collect { it.absolutePath })
+                cmd << '--api-jars'
+                cmd.addAll(apiJars.collect { it.absolutePath })
                 def out = new ByteArrayOutputStream()
                 def result = project.exec {
-                    commandLine 'python3', script.absolutePath, repoRoot.absolutePath
+                    commandLine cmd
                     ignoreExitValue = true
                     standardOutput = out
                     errorOutput = out
@@ -152,7 +204,7 @@ subprojects {
     // refmap 都发现不了。给 org.bukkit.Bukkit / ItemStack 补 paper 的 static 门面
     // 方法时真机踩过一次，立门禁。
     tasks.register('checkMixinStaticMethods') {
-        def script = rootProject.file('../tools/scripts/check-mixin-static-methods.py')
+        def script = new File(rootProject.paperarcToolsDir, 'scripts/check-mixin-static-methods.py')
         def srcDir = file('src/main/java')
         inputs.dir(srcDir).optional()
         outputs.upToDateWhen { false }
@@ -215,18 +267,14 @@ subprojects {
     // ——「编译期有（我们针对 paper-api 编译）、运行时没有」的调用点，例如
     // ItemStack#isEmpty()/Location#x()。判定同样要仓库外的运行时 jar，取不到就只警告。
     tasks.register('checkRuntimeApiCalls') {
-        def script = rootProject.file('../tools/scripts/check-runtime-api-calls.py')
+        def script = new File(rootProject.paperarcToolsDir, 'scripts/check-runtime-api-calls.py')
         def repoRoot = rootProject.projectDir
-        def arclightDir = rootProject.file('../Arclight/bootstrap/run_prod/fabric/.arclight/mod_file')
-        def spigotDeobf = rootProject.file('../Arclight/.gradle/arclight/arclight_repo/io/izzel/arclight/generated/spigot/1.21.1/spigot-1.21.1-deobf.jar')
         def classesDir = file("${buildDir}/classes/java/main")
         dependsOn tasks.named('classes')
         outputs.upToDateWhen { false }
         doLast {
-            def arclight = arclightDir.isDirectory()
-                    ? arclightDir.listFiles().findAll { it.name.startsWith('arclight-1.21.1-') }
-                    : []
-            if (!script.isFile() || arclight.isEmpty() || !spigotDeobf.isFile() || !classesDir.isDirectory()) {
+            def runtimeJars = rootProject.paperarcRuntimeJars()
+            if (!script.isFile() || runtimeJars.isEmpty() || !classesDir.isDirectory()) {
                 logger.warn("checkRuntimeApiCalls(${project.name}): 脚本或运行时 jar 不可用，跳过")
                 return
             }
@@ -234,8 +282,7 @@ subprojects {
                 it.name.startsWith('paper-api-') || it.name.startsWith('adventure-api-')
             }
             def cmd = ['python3', script.absolutePath, classesDir.absolutePath, repoRoot.absolutePath, '--jars']
-            cmd.addAll(arclight.collect { it.absolutePath })
-            cmd.add(spigotDeobf.absolutePath)
+            cmd.addAll(runtimeJars.collect { it.absolutePath })
             if (!apiJars.isEmpty()) {
                 cmd.add('--api-jars')
                 cmd.addAll(apiJars.collect { it.absolutePath })
@@ -263,19 +310,15 @@ subprojects {
     // **完整描述符**：--decls 声明必须在 paper-api 上真的存在；--calls 调用点必须在运行时
     // （或我们自己的 mixin / @Widen 成员）上真的存在。故意提前实现的下版本方法放基线文件。
     tasks.register('checkApiDescriptors') {
-        def script = rootProject.file('../tools/scripts/check-api-descriptors.py')
-        def arclightDir = rootProject.file('../Arclight/bootstrap/run_prod/fabric/.arclight/mod_file')
-        def spigotDeobf = rootProject.file('../Arclight/.gradle/arclight/arclight_repo/io/izzel/arclight/generated/spigot/1.21.1/spigot-1.21.1-deobf.jar')
+        def script = new File(rootProject.paperarcToolsDir, 'scripts/check-api-descriptors.py')
         def baseline = rootProject.file('gradle/api-descriptor-baseline.txt')
         def classesDir = file("${buildDir}/classes/java/main")
         dependsOn tasks.named('classes')
         inputs.file(baseline).optional()
         outputs.upToDateWhen { false }
         doLast {
-            def arclight = arclightDir.isDirectory()
-                    ? arclightDir.listFiles().findAll { it.name.startsWith('arclight-1.21.1-') }
-                    : []
-            if (!script.isFile() || arclight.isEmpty() || !spigotDeobf.isFile() || !classesDir.isDirectory()) {
+            def runtimeJars = rootProject.paperarcRuntimeJars()
+            if (!script.isFile() || runtimeJars.isEmpty() || !classesDir.isDirectory()) {
                 logger.warn("checkApiDescriptors(${project.name}): 脚本或运行时 jar 不可用，跳过")
                 return
             }
@@ -287,8 +330,7 @@ subprojects {
                 return
             }
             def cmd = ['python3', script.absolutePath, classesDir.absolutePath, '--jars']
-            cmd.addAll(arclight.collect { it.absolutePath })
-            cmd.add(spigotDeobf.absolutePath)
+            cmd.addAll(runtimeJars.collect { it.absolutePath })
             cmd << '--api-jars'
             cmd.addAll(apiJars.collect { it.absolutePath })
             cmd << '--baseline' << baseline.absolutePath
@@ -328,7 +370,7 @@ subprojects {
     // 结果是 paperarc.accesswidener 里的每一条在 Forge/NeoForge 生产服上都没生效，
     // 一访问被放开的 NMS 成员就 IllegalAccessError（B4 在 CompoundTag.tags 上实测）。
     // 这里从同一份 AW 生成 AT，保证三端访问权限一致、单一事实来源。
-    if (project.name in ['forge', 'neoforge']) {
+    if (project.name == 'neoforge') {
         def awFile = rootProject.file('common/src/main/resources/paperarc.accesswidener')
         def atDir = layout.buildDirectory.dir('generated/accesstransformer')
         def genAt = tasks.register('generateAccessTransformer') {

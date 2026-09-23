@@ -10,6 +10,6 @@ pluginManagement {
 rootProject.name = 'paperarc'
 
 include 'common'
-include 'forge'
+// 1.21.11 的 Arclight GoS 只有 NeoForge 与 Fabric 两端，forge 模块已删除
 include 'neoforge'
 include 'fabric'

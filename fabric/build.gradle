@@ -22,10 +22,10 @@ dependencies {
     compileOnly libs.spigot.api
     compileOnly libs.paper.api
     // deobf spigot：CB 类引用（CraftBlock 等）编译需要，运行时由 versionCraftBukkit 版本化
-    def arclightSpigotDeobf = file("${rootDir}/../Arclight/.gradle/arclight/arclight_repo/io/izzel/arclight/generated/spigot/1.21.1").isDirectory()
-            || file("${rootDir}/vendor/maven-flat/spigot-1.21.1-deobf.jar").isFile()
+    def arclightSpigotDeobf = file("${rootDir}/../arclight-gos/.gradle/arclight/arclight_repo/io/izzel/arclight/generated/spigot/1.21.11").isDirectory()
+            || file("${rootDir}/vendor/maven-flat/spigot-1.21.11-deobf.jar").isFile()
     if (arclightSpigotDeobf) {
-        compileOnly "io.izzel.arclight.generated:spigot:1.21.1:deobf"
+        compileOnly "io.izzel.arclight.generated:spigot:1.21.11:deobf"
     }
 
     // MixinExtras：loom include 自动嵌套 jar 并引导初始化
@@ -96,10 +96,10 @@ components.java {
     }
 }
 
-// CraftBukkit 包版本化：deobf v/ -> 运行时 v1_21_R1（含 mixin refmap）
+// CraftBukkit 包版本化：deobf v/ -> 运行时 v1_21_R7（含 mixin refmap）
 tasks.register('versionCraftBukkit', com.ixnah.mc.paperarc.build.VersionCraftBukkitTask) {
     jar.set(remapJar.archiveFile)
-    revision.set('v1_21_R1')
+    revision.set('v1_21_R7')
     mixinConfigs.set('')
 }
 tasks.matching { it.name == 'versionCraftBukkit' }.configureEach {
