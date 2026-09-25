@@ -19,13 +19,11 @@ import org.spongepowered.asm.mixin.injection.At;
  * Port of Paper's PlayerLaunchProjectileEvent launch point for {@link SnowballItem}
  * (patches/server/PlayerLaunchProjectileEvent.patch).
  *
- * <p>Vanilla 1.21.1 {@code SnowballItem#use} contains exactly one
- * {@code Level#addFreshEntity} and one {@code ItemStack#shrink(1)} call
- * (javap-verified), so the event gate and the {@code shouldConsume()} handling
- * each need a single wrap.
- *
- * <p>Deviation from Paper: Paper moves {@code awardStat} inside the success
- * branch; here the vanilla stat award still runs on a cancelled launch.
+ * <p>In Arclight GoS 1.21.11, {@code SnowballItem#use} is overwritten by Arclight's
+ * {@code SnowballItemMixin} to construct a {@code Snowball} entity directly and invoke
+ * {@code Level#addFreshEntity(Entity)}, followed by {@code ItemStack#consume(1, player)}.
+ * We wrap {@code Level#addFreshEntity} to fire the event and control spawning,
+ * and wrap {@code consume} to honor {@code shouldConsume()}.
  */
 @Mixin(SnowballItem.class)
 public abstract class SnowballItemMixin {
@@ -45,7 +43,6 @@ public abstract class SnowballItemMixin {
 
     @WrapOperation(
             method = "use",
-            // 1.21.1 把 shrink(1) 换成了 consume(1, player)（1.20.1 是 shrink）
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;consume(ILnet/minecraft/world/entity/LivingEntity;)V")
     )
     private void paperarc$consume(ItemStack stack, int amount, net.minecraft.world.entity.LivingEntity holder,
@@ -63,7 +60,7 @@ public abstract class SnowballItemMixin {
 
     @ModifyReturnValue(method = "use", at = @At("RETURN"))
     private InteractionResult paperarc$result(InteractionResult original,
-                                                               Level level, Player user, InteractionHand hand) {
+                                              Level level, Player user, InteractionHand hand) {
         if (LaunchState.takeCancelled()) {
             ProjectileLaunchSupport.updateInventory(user);
             return InteractionResult.FAIL;

@@ -31,7 +31,7 @@ public abstract class AbstractVillagerPurchaseMixin {
 
     @WrapWithCondition(method = "notifyTrade",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/world/entity/npc/AbstractVillager;rewardTradeXp(Lnet/minecraft/world/item/trading/MerchantOffer;)V"))
+                    target = "Lnet/minecraft/world/entity/npc/villager/AbstractVillager;rewardTradeXp(Lnet/minecraft/world/item/trading/MerchantOffer;)V"))
     private boolean paperarc$shouldRewardExp(AbstractVillager villager, MerchantOffer offer) {
         PlayerPurchaseEvent event = PaperarcEventCauses.purchaseEvent();
         return event == null || event.isRewardingExp();

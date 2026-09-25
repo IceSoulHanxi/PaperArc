@@ -3,7 +3,7 @@ package com.ixnah.mc.paperarc.mixin.common.entity;
 import com.ixnah.mc.paperarc.bridge.api.PaperarcEventCauses;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.food.FoodData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,12 +22,12 @@ import org.spongepowered.asm.mixin.injection.Slice;
 @Mixin(FoodData.class)
 public abstract class FoodDataFastRegenMixin {
 
-    @WrapOperation(method = "tick",
+    @WrapOperation(method = "tick(Lnet/minecraft/server/level/ServerPlayer;)V",
             slice = @Slice(
                     from = @At(value = "INVOKE", target = "Ljava/lang/Math;min(FF)F", remap = false),
                     to = @At(value = "INVOKE", target = "Lnet/minecraft/world/food/FoodData;addExhaustion(F)V")),
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;heal(F)V"))
-    private void paperarc$markFastRegen(Player player, float amount, Operation<Void> original) {
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;heal(F)V"))
+    private void paperarc$markFastRegen(ServerPlayer player, float amount, Operation<Void> original) {
         PaperarcEventCauses.pushFastRegen(true);
         try {
             original.call(player, amount);

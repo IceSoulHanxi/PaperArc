@@ -48,7 +48,7 @@ public abstract class AnvilMenuAnvilDamagedMixin {
         PAPERARC$MENU.remove();
     }
 
-    @WrapOperation(method = "lambda$onTake$2(Lnet/minecraft/world/entity/player/Player;FLnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V",
+    @WrapOperation(method = "lambda$onTake$2(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V",
             remap = false,
             at = @At(value = "INVOKE", remap = false,
             target = "Lnet/minecraft/world/level/block/AnvilBlock;damage(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/world/level/block/state/BlockState;"))

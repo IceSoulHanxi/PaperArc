@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.Mixin;
 @Mixin(EnderMan.class)
 public abstract class EnderManAttackPlayerMixin {
 
-    @ModifyReturnValue(method = "isLookingAtMe", at = @org.spongepowered.asm.mixin.injection.At("RETURN"))
+    @ModifyReturnValue(method = "isBeingStaredBy", at = @org.spongepowered.asm.mixin.injection.At("RETURN"))
     private boolean paperarc$attackPlayerEvent(boolean shouldAttack, Player player) {
         EndermanAttackPlayerEvent event = new EndermanAttackPlayerEvent(
                 (Enderman) PaperArcBridge.bukkitEntity((Entity) (Object) this),

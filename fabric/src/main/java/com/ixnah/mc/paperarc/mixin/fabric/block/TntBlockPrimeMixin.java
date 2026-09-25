@@ -3,6 +3,7 @@ package com.ixnah.mc.paperarc.mixin.fabric.block;
 import com.destroystokyo.paper.event.block.TNTPrimeEvent;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
@@ -13,6 +14,7 @@ import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.TntBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import org.bukkit.craftbukkit.v.block.CraftBlock;
 import org.spongepowered.asm.mixin.Mixin;
@@ -44,20 +46,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class TntBlockPrimeMixin {
 
     @Inject(method = "onPlace", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/world/level/block/TntBlock;explode(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V"),
+            target = "Lnet/minecraft/world/level/block/TntBlock;prime(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)Z"),
             cancellable = true)
     private void paperarc$primeRedstoneOnPlace(BlockState state, Level level, BlockPos pos, BlockState oldState,
-                                               boolean notify, CallbackInfo ci) {
+                                                boolean notify, CallbackInfo ci) {
         if (!new TNTPrimeEvent(CraftBlock.at(level, pos), TNTPrimeEvent.PrimeReason.REDSTONE, null).callEvent()) {
             ci.cancel();
         }
     }
 
     @Inject(method = "neighborChanged", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/world/level/block/TntBlock;explode(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V"),
+            target = "Lnet/minecraft/world/level/block/TntBlock;prime(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)Z"),
             cancellable = true)
     private void paperarc$primeRedstoneNeighbor(BlockState state, Level level, BlockPos pos,
-                                                net.minecraft.world.level.block.Block sourceBlock, BlockPos sourcePos,
+                                                net.minecraft.world.level.block.Block sourceBlock, Orientation orientation,
                                                 boolean notify, CallbackInfo ci) {
         if (!new TNTPrimeEvent(CraftBlock.at(level, pos), TNTPrimeEvent.PrimeReason.REDSTONE, null).callEvent()) {
             ci.cancel();
@@ -65,7 +67,7 @@ public abstract class TntBlockPrimeMixin {
     }
 
     @Inject(method = "useItemOn", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/world/level/block/TntBlock;explode(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/LivingEntity;)V"),
+            target = "Lnet/minecraft/world/level/block/TntBlock;prime(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/LivingEntity;)Z"),
             cancellable = true)
     private void paperarc$primeItem(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
                                     InteractionHand hand, BlockHitResult hit,
@@ -77,7 +79,7 @@ public abstract class TntBlockPrimeMixin {
     }
 
     @Inject(method = "onProjectileHit", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/world/level/block/TntBlock;explode(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/LivingEntity;)V"),
+            target = "Lnet/minecraft/world/level/block/TntBlock;prime(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/LivingEntity;)Z"),
             cancellable = true)
     private void paperarc$primeProjectile(Level level, BlockState state, BlockHitResult hit, Projectile projectile,
                                           CallbackInfo ci) {
@@ -88,7 +90,7 @@ public abstract class TntBlockPrimeMixin {
     }
 
     @Inject(method = "wasExploded", at = @At("HEAD"), cancellable = true)
-    private void paperarc$primeExplosion(Level level, BlockPos pos, Explosion explosion, CallbackInfo ci) {
+    private void paperarc$primeExplosion(ServerLevel level, BlockPos pos, Explosion explosion, CallbackInfo ci) {
         org.bukkit.entity.Entity source = explosion.getDirectSourceEntity() != null ? PaperArcBridge.bukkitEntity(explosion.getDirectSourceEntity()) : null;
         if (!new TNTPrimeEvent(CraftBlock.at(level, pos), TNTPrimeEvent.PrimeReason.EXPLOSION, source).callEvent()) {
             ci.cancel();

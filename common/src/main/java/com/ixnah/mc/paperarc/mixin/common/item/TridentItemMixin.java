@@ -1,87 +1,101 @@
 package com.ixnah.mc.paperarc.mixin.common.item;
 
+import com.destroystokyo.paper.event.player.PlayerLaunchProjectileEvent;
 import com.ixnah.mc.paperarc.bridge.LaunchState;
-import com.ixnah.mc.paperarc.bridge.ProjectileLaunchSupport;
+import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TridentItem;
 import net.minecraft.world.level.Level;
+import org.bukkit.craftbukkit.v.inventory.CraftItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * Port of Paper's PlayerLaunchProjectileEvent launch point for tridents
  * (patches/server/PlayerLaunchProjectileEvent.patch -> TridentItem#releaseUsing).
- *
- * <p>Vanilla 1.20.1 {@code releaseUsing} has exactly one
- * {@code Level#addFreshEntity} and one {@code Inventory#removeItem}
- * (javap-verified); the throw sound is the first of the two
- * {@code Level#playSound(Player,Entity,SoundEvent,SoundSource,FF)} calls.
- *
- * <p><b>Deviation from Paper</b>: Paper moves {@code stack.hurtAndBreak(1, …)}
- * below the event so a cancelled throw costs no durability. That call sits
- * <i>before</i> the trident entity exists, so the event cannot be fired early
- * enough to gate it with an injector; a cancelled throw therefore still consumes
- * one point of durability, and {@code awardStat} still runs. Recorded in
- * docs/gaps.md.
  */
 @Mixin(TridentItem.class)
 public abstract class TridentItemMixin {
 
     @WrapOperation(
             method = "releaseUsing",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;addFreshEntity(Lnet/minecraft/world/entity/Entity;)Z")
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/entity/projectile/Projectile;spawnProjectileFromRotation(Lnet/minecraft/world/entity/projectile/Projectile$ProjectileFactory;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;FFF)Lnet/minecraft/world/entity/projectile/Projectile;"
+            )
     )
-    private boolean paperarc$launch(Level world, Entity trident, Operation<Boolean> original,
-                                    ItemStack stack, Level level, LivingEntity user, int remainingUseTicks) {
-        if (world.isClientSide() || !(user instanceof Player)) {
-            return original.call(world, trident);
+    private <T extends Projectile> T paperarc$launch(Projectile.ProjectileFactory<T> factory, ServerLevel serverLevel,
+                                                     ItemStack itemStack, LivingEntity user, float z, float velocity, float inaccuracy,
+                                                     Operation<T> original,
+                                                     ItemStack stack, Level level, LivingEntity methodUser, int remainingUseTicks) {
+        if (!(user instanceof Player player)) {
+            return original.call(factory, serverLevel, itemStack, user, z, velocity, inaccuracy);
         }
-        return ProjectileLaunchSupport.callLaunchEvent((Player) user, stack, trident)
-                && original.call(world, trident);
+        T projectile = factory.create(serverLevel, user, itemStack);
+        PlayerLaunchProjectileEvent event = new PlayerLaunchProjectileEvent(
+                PaperArcBridge.bukkitPlayer(player),
+                CraftItemStack.asCraftMirror(stack),
+                PaperArcBridge.bukkitEntity(projectile));
+        if (!event.callEvent()) {
+            LaunchState.cancelled(true);
+            return projectile;
+        }
+        T spawned = original.call(factory, serverLevel, itemStack, user, z, velocity, inaccuracy);
+        if (spawned.isRemoved()) {
+            LaunchState.cancelled(true);
+        } else {
+            LaunchState.noConsume(!event.shouldConsume());
+        }
+        return spawned;
     }
 
     @WrapOperation(
             method = "releaseUsing",
-            at = @At(value = "INVOKE", ordinal = 0,
-                    target = "Lnet/minecraft/world/level/Level;playSound(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundSource;FF)V")
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/level/Level;playSound(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundSource;FF)V"
+            )
     )
-    private void paperarc$throwSound(Level world, Player near, Entity source, SoundEvent sound, SoundSource category,
-                                     float volume, float pitch, Operation<Void> original,
-                                     ItemStack stack, Level level, LivingEntity user, int remainingUseTicks) {
-        if (LaunchState.isCancelled()) {
-            return;
+    private void paperarc$playSound(Level instance, Entity source, Entity target, SoundEvent sound, SoundSource source2,
+                                    float volume, float pitch, Operation<Void> original) {
+        if (!LaunchState.isCancelled()) {
+            original.call(instance, source, target, sound, source2, volume, pitch);
         }
-        original.call(world, near, source, sound, category, volume, pitch);
     }
 
-    @WrapOperation(
-            method = "releaseUsing",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Inventory;removeItem(Lnet/minecraft/world/item/ItemStack;)V")
-    )
-    private void paperarc$consume(Inventory inventory, ItemStack stack, Operation<Void> original,
-                                  ItemStack usedStack, Level level, LivingEntity user, int remainingUseTicks) {
-        if (ProjectileLaunchSupport.suppressConsume()) {
-            if (user instanceof Player) {
-                ProjectileLaunchSupport.updateInventory((Player) user);
-            }
-            return;
-        }
-        original.call(inventory, stack);
-    }
-
-    @Inject(method = "releaseUsing", at = @At("RETURN"))
-    private void paperarc$clearLaunchState(ItemStack stack, Level level, LivingEntity user, int remainingUseTicks,
-                                           CallbackInfo ci) {
+    @ModifyReturnValue(method = "releaseUsing", at = @At("RETURN"))
+    private boolean paperarc$result(boolean original, ItemStack stack, Level level, LivingEntity user, int remainingUseTicks) {
+        boolean cancelled = LaunchState.isCancelled();
+        boolean noConsume = LaunchState.isNoConsume();
         LaunchState.takeCancelled();
+        if (cancelled) {
+            if (user instanceof Player player && !player.hasInfiniteMaterials()) {
+                stack.grow(1);
+            }
+            if (user instanceof ServerPlayer serverPlayer) {
+                PaperArcBridge.bukkitPlayer(serverPlayer).updateInventory();
+            }
+            return false;
+        }
+        if (noConsume) {
+            if (user instanceof Player player && !player.hasInfiniteMaterials()) {
+                stack.grow(1);
+            }
+            if (user instanceof ServerPlayer serverPlayer) {
+                PaperArcBridge.bukkitPlayer(serverPlayer).updateInventory();
+            }
+        }
+        return original;
     }
 }

@@ -15,13 +15,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * 不经过任何 CraftBukkit 转换表（要么由触发点产生、而 Arclight 的触发点本来就不产生它，
  * 要么纯粹是声明性的）。配方与 {@link PaperarcEnumConstants} 一致：
  * {@code @Unique} 静态字段 + {@code @Widen} 放宽 + {@code <clinit>} TAIL 扩 {@code $VALUES}。
+ *
+ * <p>{@code BUNDLE}：1.21.2 收纳袋转正，paper-api 1.21.11 已删该常量，不再补。
  */
 @Mixin(org.bukkit.MinecraftExperimental.Requires.class)
 public abstract class MinecraftExperimentalRequiresEnumMixin {
-
-    @Unique
-    @Widen(because = "paper-api: public static final Requires BUNDLE")
-    private static org.bukkit.MinecraftExperimental.Requires BUNDLE;
 
     @Unique
     @Widen(because = "paper-api: public static final Requires TRADE_REBALANCE")
@@ -29,7 +27,6 @@ public abstract class MinecraftExperimentalRequiresEnumMixin {
 
     @Inject(method = "<clinit>", at = @At("TAIL"))
     private static void paperarc$addPaperConstants(CallbackInfo ci) {
-        BUNDLE = PaperarcEnumConstants.add(org.bukkit.MinecraftExperimental.Requires.class, "BUNDLE");
         TRADE_REBALANCE = PaperarcEnumConstants.add(org.bukkit.MinecraftExperimental.Requires.class, "TRADE_REBALANCE");
     }
 }

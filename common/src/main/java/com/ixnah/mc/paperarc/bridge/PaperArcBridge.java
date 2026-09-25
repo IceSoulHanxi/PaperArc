@@ -58,6 +58,12 @@ public final class PaperArcBridge {
                 throw new IllegalStateException("Entity#getBukkitEntity() failed", t);
             }
         }
+        if (GET_BUKKIT_ENTITY_METHOD != null) {
+            try {
+                return (T) GET_BUKKIT_ENTITY_METHOD.invoke(nms);
+            } catch (Throwable ignored) {
+            }
+        }
         return (T) org.bukkit.craftbukkit.v.entity.CraftEntity.getEntity((CraftServer) getServer(), nms);
     }
 
@@ -65,17 +71,33 @@ public final class PaperArcBridge {
         return (org.bukkit.entity.Player) bukkitEntity(player);
     }
 
-    /** {@code Entity#getBukkitEntity()}；解析不到时退回工厂（行为与本次修复前一致）。 */
+    /** {@code Entity#getBukkitEntity()}；解析不到时退回反射/工厂。 */
     private static final MethodHandle GET_BUKKIT_ENTITY = buildBukkitEntityHandle();
+    private static final Method GET_BUKKIT_ENTITY_METHOD = findBukkitEntityMethod();
+
+    private static Method findBukkitEntityMethod() {
+        try {
+            Method m = Entity.class.getMethod("getBukkitEntity");
+            m.setAccessible(true);
+            return m;
+        } catch (Throwable t) {
+            return null;
+        }
+    }
 
     private static MethodHandle buildBukkitEntityHandle() {
         try {
-            return MethodHandles.publicLookup().findVirtual(
-                    Entity.class,
-                    "getBukkitEntity",
-                    MethodType.methodType(org.bukkit.craftbukkit.v.entity.CraftEntity.class));
-        } catch (ReflectiveOperationException e) {
-            return null;
+            Method m = Entity.class.getMethod("getBukkitEntity");
+            return MethodHandles.lookup().unreflect(m);
+        } catch (Throwable e) {
+            try {
+                return MethodHandles.publicLookup().findVirtual(
+                        Entity.class,
+                        "getBukkitEntity",
+                        MethodType.methodType(org.bukkit.craftbukkit.v.entity.CraftEntity.class));
+            } catch (Throwable t) {
+                return null;
+            }
         }
     }
 

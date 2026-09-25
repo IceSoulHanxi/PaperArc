@@ -26,7 +26,7 @@ public abstract class CampfireBlockEntityCookRecipeMixin {
 
     @ModifyExpressionValue(method = "cookTick",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/world/item/crafting/RecipeManager$CachedCheck;getRecipeFor(Lnet/minecraft/world/item/crafting/RecipeInput;Lnet/minecraft/world/level/Level;)Ljava/util/Optional;"))
+                    target = "Lnet/minecraft/world/item/crafting/RecipeManager$CachedCheck;getRecipeFor(Lnet/minecraft/world/item/crafting/RecipeInput;Lnet/minecraft/server/level/ServerLevel;)Ljava/util/Optional;"))
     private static Optional<RecipeHolder<CampfireCookingRecipe>> paperarc$captureCookRecipe(
             Optional<RecipeHolder<CampfireCookingRecipe>> recipe) {
         PaperarcEventCauses.pushBlockCookRecipe(recipe

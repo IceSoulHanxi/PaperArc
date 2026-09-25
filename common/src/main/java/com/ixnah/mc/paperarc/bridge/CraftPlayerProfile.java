@@ -63,7 +63,7 @@ public class CraftPlayerProfile implements com.destroystokyo.paper.profile.Playe
     /** authlib 7 的 GameProfile 是不可变 Record：id/name/属性自持，按需 build（同 CB 的 buildGameProfile）。 */
     private UUID id;
     private String name;
-    private final PropertyMap properties = new PropertyMap(LinkedHashMultimap.create());
+    private final Multimap<String, Property> properties = LinkedHashMultimap.create();
 
     public CraftPlayerProfile(UUID id, String name) {
         this.id = id;
@@ -74,7 +74,9 @@ public class CraftPlayerProfile implements com.destroystokyo.paper.profile.Playe
         Preconditions.checkNotNull(gameProfile, "gameProfile");
         this.id = Util.NIL_UUID.equals(gameProfile.id()) ? null : gameProfile.id();
         this.name = gameProfile.name().isEmpty() ? null : gameProfile.name();
-        this.properties.putAll(gameProfile.properties());
+        if (gameProfile.properties() != null) {
+            this.properties.putAll(gameProfile.properties());
+        }
     }
 
     /** Wraps the given GameProfile (authlib 7 profiles are immutable, so this is a copy). */
@@ -360,7 +362,7 @@ public class CraftPlayerProfile implements com.destroystokyo.paper.profile.Playe
     @Override
     public void setTextures(PlayerTextures textures) {
         Preconditions.checkNotNull(textures, "textures");
-        PropertyMap props = this.properties;
+        Multimap<String, Property> props = this.properties;
         props.removeAll(TEXTURES_PROPERTY);
         if (textures.isEmpty()) {
             return;

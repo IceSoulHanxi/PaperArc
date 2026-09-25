@@ -133,7 +133,6 @@ public final class PaperarcInjectionCoverage {
             org.bukkit.plugin.RegisteredListener.class,
             // Y-5 补了枚举常量的目标枚举（<clinit> TAIL 注入；不显式加载就验不到）
             org.bukkit.PortalType.class,
-            org.bukkit.Fluid.class,
             org.bukkit.entity.Boat.Status.class,
             org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.class,
             org.bukkit.event.entity.EntityRemoveEvent.Cause.class,

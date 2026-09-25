@@ -61,20 +61,22 @@ public abstract class BeehiveBlockMixin {
                 PaperArcBridge.bukkitPlayer(player), CraftBlock.at(level, pos),
                 CraftItemStack.asCraftMirror(stack), CraftEquipmentSlot.getHand(hand), drops);
         if (!event.callEvent()) {
-            cir.setReturnValue(InteractionResult.FAIL);
+            cir.setReturnValue(InteractionResult.PASS);
             return;
         }
         paperarc$shearDrops.set(event.getDrops());
     }
 
     @WrapOperation(method = "useItemOn",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/BeehiveBlock;dropHoneycomb(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V"))
-    private void paperarc$dropEventDrops(Level level, BlockPos pos,
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/BeehiveBlock;dropHoneycomb(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/core/BlockPos;)V"))
+    private void paperarc$dropEventDrops(net.minecraft.server.level.ServerLevel level, ItemStack stack, BlockState state,
+                                         net.minecraft.world.level.block.entity.BlockEntity blockEntity,
+                                         net.minecraft.world.entity.Entity entity, BlockPos pos,
                                          Operation<Void> original) {
         java.util.List<org.bukkit.inventory.ItemStack> drops = paperarc$shearDrops.get();
         paperarc$shearDrops.remove();
         if (drops == null) {
-            original.call(level, pos);
+            original.call(level, stack, state, blockEntity, entity, pos);
             return;
         }
         for (org.bukkit.inventory.ItemStack bukkitStack : drops) {

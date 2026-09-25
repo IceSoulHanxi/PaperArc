@@ -36,6 +36,7 @@ ext.paperarcRuntimeJars = { ->
     }
     def spigotDeobf = [
             rootProject.file('vendor/maven-flat/spigot-1.21.11-deobf.jar'),
+            rootProject.file('../Arclight/.gradle/arclight/arclight_repo/io/izzel/arclight/generated/spigot/1.21.11/spigot-1.21.11-deobf.jar'),
             rootProject.file('../arclight-gos/.gradle/arclight/arclight_repo/io/izzel/arclight/generated/spigot/1.21.11/spigot-1.21.11-deobf.jar')
     ].find { it.isFile() }
     return (modJars.isEmpty() || spigotDeobf == null) ? [] : [spigotDeobf] + modJars
@@ -47,6 +48,9 @@ subprojects {
 
     loom {
         silentMojangMappingsLicense()
+        mixin {
+            useLegacyMixinAp = true
+        }
     }
 
     dependencies {

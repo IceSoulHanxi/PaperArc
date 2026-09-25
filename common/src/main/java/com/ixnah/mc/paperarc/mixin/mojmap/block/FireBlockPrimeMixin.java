@@ -2,7 +2,7 @@ package com.ixnah.mc.paperarc.mixin.mojmap.block;
 
 import com.destroystokyo.paper.event.block.TNTPrimeEvent;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.FireBlock;
@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * NeoForge twin of the fabric FireBlockPrimeMixin (Paper TNTPrimeEvent on
  * fire-caused priming).
  *
- * Fabric's vanilla runtime primes TNT via the static TntBlock#explode call at
+ * Fabric's vanilla runtime primes TNT via the static TntBlock#prime call at
  * the tail of checkBurnOut. The NeoForge pipeline replaces that call with
  * BlockState#onCaughtFire(Level, BlockPos, Direction, LivingEntity) — so this
  * twin anchors there instead and cancels the burn-out when Paper's event is
@@ -27,12 +27,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(FireBlock.class)
 public abstract class FireBlockPrimeMixin {
 
-    @Inject(method = "checkBurnOut", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/world/level/block/state/BlockState;onCaughtFire(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Lnet/minecraft/world/entity/LivingEntity;)V",
-            remap = false),
-            cancellable = true)
-    private void paperarc$primeFire(Level level, BlockPos pos, int chance, RandomSource random, int age,
-                                    net.minecraft.core.Direction direction, CallbackInfo ci) {
+    @Inject(method = "checkBurnOut(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;ILnet/minecraft/util/RandomSource;ILnet/minecraft/core/Direction;)V",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/world/level/block/state/BlockState;onCaughtFire(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Lnet/minecraft/world/entity/LivingEntity;)Z",
+                    remap = false),
+            cancellable = true,
+            remap = false)
+    private void paperarc$primeFire(Level level, BlockPos pos, int chance, RandomSource random, int age, Direction face,
+                                    CallbackInfo ci) {
         BlockState state = level.getBlockState(pos);
         if (!(state.getBlock() instanceof TntBlock)) {
             return;

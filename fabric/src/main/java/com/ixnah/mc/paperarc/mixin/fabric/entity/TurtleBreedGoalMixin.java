@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * (parent class, not shadowable from a subclass mixin), so both are read via
  * the {@link BreedGoalAccessor} duck interface.
  */
-@Mixin(targets = "net.minecraft.world.entity.animal.Turtle$TurtleBreedGoal")
+@Mixin(targets = "net.minecraft.world.entity.animal.turtle.Turtle$TurtleBreedGoal")
 public abstract class TurtleBreedGoalMixin {
 
     @Unique

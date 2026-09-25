@@ -38,16 +38,17 @@ public abstract class PlayerAttackPreMixin {
             method = "attack(Lnet/minecraft/world/entity/Entity;)V",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/entity/Entity;skipAttackInteraction(Lnet/minecraft/world/entity/Entity;)Z"
+                    target = "Lnet/minecraft/world/entity/player/Player;cannotAttack(Lnet/minecraft/world/entity/Entity;)Z"
             )
     )
-    private boolean paperarc$preAttack(Entity target, Entity attacker, Operation<Boolean> original) {
-        boolean willAttack = original.call(target, attacker);
+    private boolean paperarc$preAttack(Player player, Entity target, Operation<Boolean> original) {
+        boolean cannot = original.call(player, target);
+        boolean willAttack = !cannot;
         PrePlayerAttackEntityEvent event = new PrePlayerAttackEntityEvent(
-                PaperArcBridge.bukkitPlayer((Player) attacker),
+                PaperArcBridge.bukkitPlayer(player),
                 PaperArcBridge.bukkitEntity(target),
                 willAttack
         );
-        return willAttack && event.callEvent();
+        return !event.callEvent() || cannot;
     }
 }

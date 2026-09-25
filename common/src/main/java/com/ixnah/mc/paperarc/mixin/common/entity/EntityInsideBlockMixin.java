@@ -74,7 +74,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class EntityInsideBlockMixin {
 
     @Inject(method = "entityInside", at = @At("HEAD"), cancellable = true)
-    private void paperarc$insideBlock(BlockState state, Level world, BlockPos pos, Entity entity, CallbackInfo ci) {
+    private void paperarc$insideBlock(BlockState state, Level world, BlockPos pos, Entity entity,
+                                      net.minecraft.world.entity.InsideBlockEffectApplier applier, boolean flag,
+                                      CallbackInfo ci) {
         if (!new EntityInsideBlockEvent(
                 PaperArcBridge.bukkitEntity(entity),
                 CraftBlock.at(world, pos)).callEvent()) {

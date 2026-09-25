@@ -47,12 +47,18 @@ abstract class VersionCraftBukkitTask extends DefaultTask {
     @Input
     abstract Property<String> getMixinConfigs()
 
+    /** When true (e.g. NeoForge in Mojang mappings runtime), strips refmap JSONs and refmap declarations in mixin configs. */
+    @Input
+    @org.gradle.api.tasks.Optional
+    abstract Property<Boolean> getStripRefmaps()
+
     private static final String SLASH = 'org/bukkit/craftbukkit/v/'
     private static final String DOT = 'org.bukkit.craftbukkit.v.'
 
     @TaskAction
     void run() {
         def rev = revision.get()
+        def strip = stripRefmaps.getOrElse(false)
         def src = jar.get().asFile.toPath()
         def dst = Files.createTempFile('paperarc-cb', '.jar')
         int classes = 0, refmaps = 0
@@ -63,9 +69,17 @@ abstract class VersionCraftBukkitTask extends DefaultTask {
                 def buffer = new byte[1 << 16]
                 while ((e = zin.nextJarEntry) != null) {
                     def data = zin.readAllBytes()
+                    if (strip && e.name.endsWith('-refmap.json')) {
+                        // Skip refmap in Mojang-mappings runtime
+                        continue
+                    }
                     if (e.name.endsWith('.class')) {
                         def rw = rewriteClass(data, rev)
                         if (rw != null) { data = rw; classes++ }
+                    } else if (e.name.endsWith('.mixins.json') && strip) {
+                        def text = new String(data, java.nio.charset.StandardCharsets.UTF_8)
+                        text = text.replaceAll(/\"refmap\"\s*:\s*\"[^\"]*\"\s*,?/, '')
+                        data = text.getBytes(java.nio.charset.StandardCharsets.UTF_8)
                     } else if (e.name == 'META-INF/MANIFEST.MF') {
                         // 必须置位：否则下面会再追加一个 MANIFEST.MF。
                         // JarInputStream 只在清单是**第一个**条目时自己吞掉它；本任务把清单

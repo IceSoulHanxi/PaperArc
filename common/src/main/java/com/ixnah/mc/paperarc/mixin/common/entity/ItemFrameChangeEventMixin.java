@@ -2,6 +2,7 @@ package com.ixnah.mc.paperarc.mixin.common.entity;
 
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -36,7 +37,7 @@ public abstract class ItemFrameChangeEventMixin {
     public abstract void setItem(net.minecraft.world.item.ItemStack stack, boolean updateComparator);
 
     @Inject(
-        method = "hurt",
+        method = "hurtServer",
         at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/world/damagesource/DamageSource;getEntity()Lnet/minecraft/world/entity/Entity;",
@@ -44,7 +45,7 @@ public abstract class ItemFrameChangeEventMixin {
         ),
         cancellable = true
     )
-    private void paperarc$onRemove(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+    private void paperarc$onRemove(ServerLevel level, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if (source.getEntity() instanceof Player player) {
             PlayerItemFrameChangeEvent event = new PlayerItemFrameChangeEvent(
                 PaperArcBridge.bukkitPlayer(player),

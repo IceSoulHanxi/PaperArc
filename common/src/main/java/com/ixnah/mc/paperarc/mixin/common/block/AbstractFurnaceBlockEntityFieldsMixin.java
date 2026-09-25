@@ -4,6 +4,7 @@ import com.ixnah.mc.paperarc.bridge.AbstractFurnaceBlockEntityBridge;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -35,6 +36,7 @@ public abstract class AbstractFurnaceBlockEntityFieldsMixin implements AbstractF
     }
 
     @Shadow
+    @Final
     private it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap<ResourceKey<Recipe<?>>> recipesUsed;
 
     @Override

@@ -18,11 +18,11 @@ import org.spongepowered.asm.mixin.injection.At;
  * {@code LivingEntity#knockback(DDD)} call site inside {@code Mob.doHurtTarget}; cancel
  * suppresses the vanilla impulse. See EntityKnockbackByEntityEventHelper for shared logic.
  */
-@Mixin(Mob.class)
+@Mixin(LivingEntity.class)
 public abstract class MobKnockbackMixin {
 
     @WrapOperation(
-            method = "doHurtTarget(Lnet/minecraft/world/entity/Entity;)Z",
+            method = "causeExtraKnockback(Lnet/minecraft/world/entity/Entity;FLnet/minecraft/world/phys/Vec3;)V",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"
@@ -30,6 +30,6 @@ public abstract class MobKnockbackMixin {
     )
     private void paperarc$mobKnockback(LivingEntity target, double strength, double x, double z,
                                        Operation<Void> original) {
-        EntityKnockbackByEntityEventHelper.fire(target, strength, x, z, (Mob) (Object) this, original);
+        EntityKnockbackByEntityEventHelper.fire(target, strength, x, z, (LivingEntity) (Object) this, original);
     }
 }

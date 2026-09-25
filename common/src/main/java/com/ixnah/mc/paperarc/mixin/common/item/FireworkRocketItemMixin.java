@@ -6,8 +6,9 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.ixnah.mc.paperarc.bridge.LaunchState;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.FireworkRocketItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
@@ -18,35 +19,38 @@ import org.spongepowered.asm.mixin.injection.At;
 
 /**
  * Port of Paper's PlayerLaunchProjectileEvent for FireworkRocketItem.useOn
- * (PlayerLaunchProjectileEvent.patch — Paper 1.21.1 fires the event only in
- * useOn, i.e. right-clicking a block with a rocket; useOn cancel returns PASS).
+ * (PlayerLaunchProjectileEvent.patch — Paper fires the event in useOn,
+ * i.e. right-clicking a block with a rocket; useOn cancel returns PASS).
  *
- * Vanilla 1.21.1 useOn: addFreshEntity then unconditional itemStack.shrink(1)
- * then sidedSuccess. Paper gates shrink with shouldConsume && !instabuild and
- * otherwise resyncs inventory (the inventory resync is omitted here — minor
- * documented deviation). Bytecode-verified: one addFreshEntity + one shrink
- * call site in useOn.
+ * In 1.21.11 useOn: Projectile.spawnProjectile(...) then itemStack.shrink(1)
+ * then SUCCESS. Paper gates shrink with shouldConsume && !hasInfiniteMaterials
+ * and otherwise resyncs inventory.
  */
 @Mixin(FireworkRocketItem.class)
 public abstract class FireworkRocketItemMixin {
 
     @WrapOperation(
             method = "useOn",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;addFreshEntity(Lnet/minecraft/world/entity/Entity;)Z")
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/entity/projectile/Projectile;spawnProjectile(Lnet/minecraft/world/entity/projectile/Projectile;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/entity/projectile/Projectile;"
+            )
     )
-    private boolean paperarc$launch(Level world, Entity projectile, Operation<Boolean> original,
-                                    UseOnContext context) {
-        Level level = context.getLevel();
-        if (level.isClientSide() || context.getPlayer() == null) {
-            return original.call(world, projectile);
+    private Projectile paperarc$launch(Projectile projectile, ServerLevel serverLevel, ItemStack itemStack,
+                                       Operation<Projectile> original, UseOnContext context) {
+        if (context.getPlayer() == null) {
+            return original.call(projectile, serverLevel, itemStack);
         }
-        ItemStack itemStack = context.getItemInHand();
         PlayerLaunchProjectileEvent event = new PlayerLaunchProjectileEvent(
                 PaperArcBridge.bukkitPlayer(context.getPlayer()),
                 CraftItemStack.asCraftMirror(itemStack),
                 PaperArcBridge.bukkitEntity(projectile));
-        boolean spawned = event.callEvent() && original.call(world, projectile);
-        if (!spawned) {
+        if (!event.callEvent()) {
+            LaunchState.cancelled(true);
+            return projectile;
+        }
+        Projectile spawned = original.call(projectile, serverLevel, itemStack);
+        if (spawned.isRemoved()) {
             LaunchState.cancelled(true);
         } else {
             LaunchState.noConsume(!event.shouldConsume());

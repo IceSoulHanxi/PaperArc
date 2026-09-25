@@ -19,7 +19,7 @@ public abstract class AbstractArrowCriticalMixin {
 
     @WrapOperation(method = "onHitEntity(Lnet/minecraft/world/phys/EntityHitResult;)V",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
+                    target = "Lnet/minecraft/world/entity/Entity;hurtOrSimulate(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
     private boolean paperarc$markCriticalArrow(Entity target, DamageSource source, float damage,
                                                Operation<Boolean> original) {
         PaperarcEventCauses.pushDamageCritical(((AbstractArrow) (Object) this).isCritArrow());

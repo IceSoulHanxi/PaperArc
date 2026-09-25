@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 public interface StonecutterMenuInvoker {
 
     @Invoker("setupResultSlot")
-    void paperarc$invokeSetupResultSlot();
+    void paperarc$invokeSetupResultSlot(int id);
 
     @Invoker("isValidRecipeIndex")
     boolean paperarc$isValidRecipeIndex(int index);

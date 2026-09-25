@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  ARCLIGHT_REF: 166b9877e40eeec405097f416fc0ff2d23986313
+  ARCLIGHT_REF: GroupOfSoldiers
 
 jobs:
   build:
@@ -41,7 +41,7 @@ jobs:
         with:
           save-always: true
           path: Arclight/.gradle
-          key: arclight-spigotdeps-${{ env.ARCLIGHT_REF }}-v1
+          key: arclight-spigotdeps-${{ env.ARCLIGHT_REF }}-1.21.11-v1
 
       - name: Generate spigot-deobf (BuildTools, skipped when cached)
         working-directory: Arclight

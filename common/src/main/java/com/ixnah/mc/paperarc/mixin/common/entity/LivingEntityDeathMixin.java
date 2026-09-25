@@ -122,7 +122,7 @@ public abstract class LivingEntityDeathMixin implements LivingEntityDeathBridge 
      * {@code checkTotemDeathProtection} 是死亡分支里无条件先走的一步（默认置"不响"），
      * {@code makeSound} 只在 {@code flag1} 为真时才到（置回"会响"）。
      */
-    @WrapOperation(method = "hurt",
+    @WrapOperation(method = "hurtServer",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/world/entity/LivingEntity;checkTotemDeathProtection(Lnet/minecraft/world/damagesource/DamageSource;)Z"))
     private boolean paperarc$markSilentDeath(LivingEntity self, DamageSource source, Operation<Boolean> original) {
@@ -131,7 +131,7 @@ public abstract class LivingEntityDeathMixin implements LivingEntityDeathBridge 
     }
 
     /** vanilla 的死亡音效：掐掉，改由事件之后放（见类注释第 1 条）；同时记下"本来会响"。 */
-    @WrapOperation(method = "hurt",
+    @WrapOperation(method = "hurtServer",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/world/entity/LivingEntity;makeSound(Lnet/minecraft/sounds/SoundEvent;)V"))
     private void paperarc$suppressVanillaDeathSound(LivingEntity self, SoundEvent sound, Operation<Void> original) {

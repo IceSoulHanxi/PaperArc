@@ -4,6 +4,7 @@ import com.ixnah.mc.paperarc.bridge.api.PaperarcEventCauses;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import io.izzel.arclight.common.bridge.core.world.item.crafting.RecipeHolderBridge;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
@@ -35,7 +36,7 @@ public abstract class AbstractFurnaceSmeltRecipeMixin {
 
     @ModifyExpressionValue(method = "serverTick",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/world/item/crafting/RecipeManager$CachedCheck;getRecipeFor(Lnet/minecraft/world/item/crafting/RecipeInput;Lnet/minecraft/world/level/Level;)Ljava/util/Optional;"))
+                    target = "Lnet/minecraft/world/item/crafting/RecipeManager$CachedCheck;getRecipeFor(Lnet/minecraft/world/item/crafting/RecipeInput;Lnet/minecraft/server/level/ServerLevel;)Ljava/util/Optional;"))
     private static Optional<RecipeHolder<AbstractCookingRecipe>> paperarc$captureSmeltRecipe(
             Optional<RecipeHolder<AbstractCookingRecipe>> recipe) {
         PaperarcEventCauses.pushBlockCookRecipe(recipe
@@ -47,7 +48,7 @@ public abstract class AbstractFurnaceSmeltRecipeMixin {
     }
 
     @Inject(method = "serverTick", at = @At("RETURN"))
-    private static void paperarc$clearSmeltRecipe(Level level, BlockPos pos, BlockState state,
+    private static void paperarc$clearSmeltRecipe(ServerLevel level, BlockPos pos, BlockState state,
                                                   AbstractFurnaceBlockEntity blockEntity, CallbackInfo ci) {
         PaperarcEventCauses.popBlockCookRecipe();
     }

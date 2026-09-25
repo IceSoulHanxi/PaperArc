@@ -22,6 +22,8 @@ public abstract class CraftAbstractVillagerApiMixin {
     public void resetOffers() {
         AbstractVillager handle = this.getHandle();
         handle.overrideOffers(new MerchantOffers());
-        ((AbstractVillagerInvokerMixin) handle).paperarc$invokerUpdateTrades();
+        if (handle.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            ((AbstractVillagerInvokerMixin) handle).paperarc$invokerUpdateTrades(serverLevel);
+        }
     }
 }

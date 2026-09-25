@@ -131,6 +131,11 @@ public abstract class CraftServerApiMixin {
     @Shadow
     public abstract net.minecraft.server.dedicated.DedicatedPlayerList getHandle();
 
+    @Shadow(remap = false)
+    private void loadCustomPermissions() {
+        throw new AssertionError();
+    }
+
     @Unique
     public boolean addRecipe(org.bukkit.inventory.Recipe recipe, boolean resetRegistry) {
         // Paper reloads the recipe registry before adding when resetRegistry is
@@ -578,16 +583,11 @@ public abstract class CraftServerApiMixin {
     @Unique
     public void reloadPermissions() {
         // Paper reloads its PermissionsConfig then forces recalcs; here we
-        // re-run CraftBukkit's private loadCustomPermissions() reflectively
+        // re-run CraftBukkit's loadCustomPermissions() via @Shadow
         // and recalculate every online player's effective permissions.
-        // 目标是 CraftBukkit 类的成员（三端类名/成员名一致、不参与重映射），
-        // 按 B2-1 的分类保留反射。
         try {
-            Method loadCustomPermissions = CraftServer.class.getDeclaredMethod("loadCustomPermissions");
-            loadCustomPermissions.setAccessible(true);
-            loadCustomPermissions.invoke(this);
-        } catch (ReflectiveOperationException e) {
-            return;
+            this.loadCustomPermissions();
+        } catch (Throwable ignored) {
         }
         for (org.bukkit.entity.Player player : ((org.bukkit.Server) (Object) this).getOnlinePlayers()) {
             player.recalculatePermissions();

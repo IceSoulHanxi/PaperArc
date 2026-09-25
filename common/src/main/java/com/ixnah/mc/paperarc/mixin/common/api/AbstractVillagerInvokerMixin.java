@@ -13,5 +13,5 @@ import net.minecraft.world.entity.npc.villager.AbstractVillager;
 public interface AbstractVillagerInvokerMixin {
 
     @Invoker("updateTrades")
-    void paperarc$invokerUpdateTrades();
+    void paperarc$invokerUpdateTrades(net.minecraft.server.level.ServerLevel level);
 }

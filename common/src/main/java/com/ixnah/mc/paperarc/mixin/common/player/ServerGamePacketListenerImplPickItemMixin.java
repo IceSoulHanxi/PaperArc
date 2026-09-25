@@ -7,7 +7,6 @@ import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import io.papermc.paper.event.player.PlayerPickBlockEvent;
 import io.papermc.paper.event.player.PlayerPickEntityEvent;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundSetHeldSlotPacket;
 import net.minecraft.network.protocol.game.ServerboundPickItemFromBlockPacket;
 import net.minecraft.network.protocol.game.ServerboundPickItemFromEntityPacket;
@@ -23,8 +22,6 @@ import org.spongepowered.asm.mixin.injection.At;
 public abstract class ServerGamePacketListenerImplPickItemMixin {
 
     @Shadow public ServerPlayer player;
-
-    @Shadow public abstract void send(Packet<?> packet);
 
     @WrapOperation(
         method = "handlePickItemFromBlock",
@@ -51,7 +48,7 @@ public abstract class ServerGamePacketListenerImplPickItemMixin {
         }
         if (event.getSourceSlot() != sourceSlot || event.getTargetSlot() != targetSlot) {
             ((InventoryPickSlotBridge) (Object) inventory).paperarc$pickSlot(event.getSourceSlot(), event.getTargetSlot());
-            this.send(new ClientboundSetHeldSlotPacket(inventory.getSelectedSlot()));
+            this.player.connection.send(new ClientboundSetHeldSlotPacket(inventory.getSelectedSlot()));
             this.player.inventoryMenu.broadcastChanges();
             return;
         }
@@ -86,7 +83,7 @@ public abstract class ServerGamePacketListenerImplPickItemMixin {
         }
         if (event.getSourceSlot() != sourceSlot || event.getTargetSlot() != targetSlot) {
             ((InventoryPickSlotBridge) (Object) inventory).paperarc$pickSlot(event.getSourceSlot(), event.getTargetSlot());
-            this.send(new ClientboundSetHeldSlotPacket(inventory.getSelectedSlot()));
+            this.player.connection.send(new ClientboundSetHeldSlotPacket(inventory.getSelectedSlot()));
             this.player.inventoryMenu.broadcastChanges();
             return;
         }

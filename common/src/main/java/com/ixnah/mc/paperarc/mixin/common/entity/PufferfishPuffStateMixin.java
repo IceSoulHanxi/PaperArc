@@ -49,7 +49,7 @@ public abstract class PufferfishPuffStateMixin {
     }
 
     @WrapOperation(method = "tick", at = @At(value = "INVOKE",
-        target = "Lnet/minecraft/world/entity/animal/Pufferfish;makeSound(Lnet/minecraft/sounds/SoundEvent;)V"))
+        target = "Lnet/minecraft/world/entity/animal/fish/Pufferfish;makeSound(Lnet/minecraft/sounds/SoundEvent;)V"))
     private void paperarc$wrapMakeSound(Pufferfish instance, SoundEvent sound, Operation<Void> original) {
         if (sound == SoundEvents.PUFFER_FISH_BLOW_UP) {
             if (!paperarc$fireStateChangeEvent(true)) {
@@ -66,7 +66,7 @@ public abstract class PufferfishPuffStateMixin {
     }
 
     @WrapOperation(method = "tick", at = @At(value = "INVOKE",
-        target = "Lnet/minecraft/world/entity/animal/Pufferfish;setPuffState(I)V"))
+        target = "Lnet/minecraft/world/entity/animal/fish/Pufferfish;setPuffState(I)V"))
     private void paperarc$wrapSetPuffState(Pufferfish instance, int state, Operation<Void> original) {
         if (!this.paperarc$stateChangeCancelled) {
             original.call(instance, state);
@@ -74,7 +74,7 @@ public abstract class PufferfishPuffStateMixin {
     }
 
     @WrapOperation(method = "tick", at = @At(value = "FIELD",
-        target = "Lnet/minecraft/world/entity/animal/Pufferfish;inflateCounter:I", opcode = Opcodes.PUTFIELD))
+        target = "Lnet/minecraft/world/entity/animal/fish/Pufferfish;inflateCounter:I", opcode = Opcodes.PUTFIELD))
     private void paperarc$wrapInflateIncrement(Pufferfish instance, int newValue, Operation<Void> original) {
         if (!this.paperarc$stateChangeCancelled) {
             original.call(instance, newValue);
@@ -82,7 +82,7 @@ public abstract class PufferfishPuffStateMixin {
     }
 
     @WrapOperation(method = "tick", at = @At(value = "FIELD",
-        target = "Lnet/minecraft/world/entity/animal/Pufferfish;deflateTimer:I", opcode = Opcodes.PUTFIELD))
+        target = "Lnet/minecraft/world/entity/animal/fish/Pufferfish;deflateTimer:I", opcode = Opcodes.PUTFIELD))
     private void paperarc$wrapDeflateIncrement(Pufferfish instance, int newValue, Operation<Void> original) {
         if (!this.paperarc$stateChangeCancelled) {
             original.call(instance, newValue);

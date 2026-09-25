@@ -3,6 +3,7 @@ package com.ixnah.mc.paperarc.mixin.common.block;
 import com.ixnah.mc.paperarc.bridge.api.PaperarcEventCauses;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
@@ -25,7 +26,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class AbstractFurnaceConsumeFuelMixin {
 
     @Inject(method = "serverTick", at = @At("HEAD"))
-    private static void paperarc$resetBurnEvent(Level level, BlockPos pos, BlockState state,
+    private static void paperarc$resetBurnEvent(ServerLevel level, BlockPos pos, BlockState state,
                                                 AbstractFurnaceBlockEntity furnace, CallbackInfo ci) {
         PaperarcEventCauses.popFurnaceBurnEvent();
     }

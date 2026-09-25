@@ -21,7 +21,7 @@ public abstract class PandaJumpMixin {
 
     @WrapOperation(
             method = "afterSneeze",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/animal/Panda;jumpFromGround()V", remap = false)
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/animal/panda/Panda;jumpFromGround()V", remap = false)
     )
     private void paperarc$entityJump(Panda instance, Operation<Void> original) {
         EntityJumpEvent event = new EntityJumpEvent(

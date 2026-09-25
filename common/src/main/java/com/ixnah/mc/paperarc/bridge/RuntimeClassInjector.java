@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
  * not by {@code Class.forName}. A {@code defineClass}-ed class has no
  * {@code .class} resource, so mixin would still fail with
  * {@code ClassMetadataNotFoundException}. {@link #hookTransformerLoader(Map)}
- * therefore wraps the modlauncher {@code ITransformerLoader} owned by the mixin
+ * therefore wraps the modlauncher {@code ITransformerLoader} (FML 10: {@code BytecodeProvider}) owned by the mixin
  * service's bytecode provider and serves the embedded bytes for any configured
  * class name (dotted, as {@code buildTransformedClassNodeFor} receives).</p>
  *
@@ -431,10 +431,16 @@ public final class RuntimeClassInjector {
     }
 
     /**
-     * Wraps the modlauncher ITransformerLoader owned by the mixin service's
-     * bytecode provider (MixinLaunchPlugin / MixinLaunchPluginLegacy) with a
-     * dynamic proxy that serves embedded bytes for any configured class name,
-     * delegating everything else to the original loader.
+     * Wraps the object the mixin service's bytecode provider reads class bytes from with a
+     * dynamic proxy that serves embedded bytes for any configured class name, delegating
+     * everything else to the original. Two shapes are supported:
+     * <ul>
+     *   <li>modlauncher (NeoForge 21.1 / Forge): field {@code transformerLoader} of type
+     *       {@code ILaunchPluginService$ITransformerLoader}, method {@code buildTransformedClassNodeFor};</li>
+     *   <li>FML 10 without modlauncher (NeoForge 21.11): {@code FMLClassBytecodeProvider} field
+     *       {@code bytecodeProvider} of type {@code neoforgespi.transformation.BytecodeProvider},
+     *       method {@code getByteCode}. Both receive the dotted class name.</li>
+     * </ul>
      */
     private static void hookTransformerLoader(Map<String, byte[]> classes) {
         try {
@@ -442,32 +448,34 @@ public final class RuntimeClassInjector {
                     org.spongepowered.asm.service.MixinService.getService();
             Object provider = service.getBytecodeProvider();
             java.lang.reflect.Field field = findField(provider.getClass(), "transformerLoader");
+            String method = "buildTransformedClassNodeFor";
             if (field == null) {
-                trace("[PaperArc] RuntimeClassInjector: transformerLoader not found on "
+                field = findField(provider.getClass(), "bytecodeProvider");
+                method = "getByteCode";
+            }
+            if (field == null || !field.getType().isInterface()) {
+                trace("[PaperArc] RuntimeClassInjector: neither transformerLoader nor bytecodeProvider on "
                         + provider.getClass().getName() + " nor any superclass");
                 return;
             }
             field.setAccessible(true);
             Object original = field.get(provider);
             if (original == null) {
-                trace("[PaperArc] RuntimeClassInjector: transformerLoader is null; skipped");
+                trace("[PaperArc] RuntimeClassInjector: " + field.getName() + " is null; skipped");
                 return;
             }
-            ClassLoader providerCl = provider.getClass().getClassLoader();
-            Class<?> iface = Class.forName(
-                    "cpw.mods.modlauncher.serviceapi.ILaunchPluginService$ITransformerLoader",
-                    false, providerCl);
-            Object proxy = java.lang.reflect.Proxy.newProxyInstance(providerCl,
-                    new Class<?>[]{iface}, (p, method, args) -> {
-                        if (method.getName().equals("buildTransformedClassNodeFor")
-                                && args != null && args.length == 1) {
+            Class<?> iface = field.getType();
+            String served = method;
+            Object proxy = java.lang.reflect.Proxy.newProxyInstance(iface.getClassLoader(),
+                    new Class<?>[]{iface}, (p, m, args) -> {
+                        if (m.getName().equals(served) && args != null && args.length == 1) {
                             byte[] embedded = classes.get(args[0]);
                             if (embedded != null) {
                                 return embedded;
                             }
                         }
                         try {
-                            return method.invoke(original, args);
+                            return m.invoke(original, args);
                         } catch (java.lang.reflect.InvocationTargetException e) {
                             // 必须解包：Mixin 用 ClassNotFoundException 表示"这个类不归我管"，
                             // 原样抛 InvocationTargetException 会被代理转成 UndeclaredThrowableException，
@@ -477,10 +485,10 @@ public final class RuntimeClassInjector {
                         }
                     });
             field.set(provider, proxy);
-            trace("[PaperArc] RuntimeClassInjector: hooked transformerLoader; "
+            trace("[PaperArc] RuntimeClassInjector: hooked " + field.getName() + "; "
                     + classes.keySet() + " served via bytecode provider");
         } catch (Throwable t) {
-            trace("[PaperArc] RuntimeClassInjector: hook transformerLoader failed: " + t);
+            trace("[PaperArc] RuntimeClassInjector: hook bytecode provider failed: " + t);
         }
     }
 

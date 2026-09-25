@@ -3,6 +3,7 @@ package com.ixnah.mc.paperarc.mixin.common.entity;
 import com.ixnah.mc.paperarc.bridge.api.PaperarcEventCauses;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.level.ItemLike;
@@ -41,21 +42,9 @@ public interface LeashableUnleashMixin {
      * {@code leashTooFarBehaviour} 的 HEAD 派发 {@code EntityUnleashEvent}
      * （`javap` 核对它的 {@code @Decorate} 注解），这里是唯一稳定的"一轮开始"边界。
      */
-    @Inject(method = "tickLeash", at = @At("HEAD"))
-    private static void paperarc$resetUnleashEvent(Entity entity, CallbackInfo ci) {
+    @Inject(method = "tickLeash(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/Entity;)V", at = @At("HEAD"))
+    private static void paperarc$resetUnleashEvent(ServerLevel serverLevel, Entity entity, CallbackInfo ci) {
         PaperarcEventCauses.popUnleashEvent();
-    }
-
-    /**
-     * {@code isDropLeash()} 的默认值就是这次调用真实传进来的 {@code dropLead}。
-     * 挂在公共 default 方法的 HEAD —— {@code leashTooFarBehaviour} 走的是这一条，
-     * 且早于 Arclight 在静态重载上的 decorate，事件构造器一定取得到。
-     * {@code tickLeash} 直接调静态重载、绕过这里，那一路的实参本来就是 {@code true}，
-     * 与 {@code takeUnleashDropLeash()} 的默认值一致。
-     */
-    @Inject(method = "dropLeash(ZZ)V", at = @At("HEAD"))
-    private void paperarc$captureDropLeash(boolean sendPacket, boolean dropLead, CallbackInfo ci) {
-        PaperarcEventCauses.pushUnleashDropLeash(dropLead);
     }
 
     @WrapWithCondition(method = "dropLeash(Lnet/minecraft/world/entity/Entity;ZZ)V",
@@ -68,15 +57,15 @@ public interface LeashableUnleashMixin {
 
     @WrapWithCondition(method = "dropLeash(Lnet/minecraft/world/entity/Entity;ZZ)V",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/world/entity/Entity;spawnAtLocation(Lnet/minecraft/world/level/ItemLike;)Lnet/minecraft/world/entity/item/ItemEntity;"))
-    private static boolean paperarc$applyDropLeash(Entity entity, ItemLike item) {
+                    target = "Lnet/minecraft/world/entity/Entity;spawnAtLocation(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/ItemLike;)Lnet/minecraft/world/entity/item/ItemEntity;"))
+    private static boolean paperarc$applyDropLeash(Entity entity, ServerLevel serverLevel, ItemLike item) {
         EntityUnleashEvent event = PaperarcEventCauses.unleashEvent();
         return event == null || (!event.isCancelled() && event.isDropLeash());
     }
 
     @WrapWithCondition(method = "dropLeash(Lnet/minecraft/world/entity/Entity;ZZ)V",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/server/level/ServerChunkCache;broadcast(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/network/protocol/Packet;)V"))
+                    target = "Lnet/minecraft/server/level/ServerChunkCache;sendToTrackingPlayers(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/network/protocol/Packet;)V"))
     private static boolean paperarc$applyUnleashBroadcast(ServerChunkCache chunkSource, Entity entity,
                                                           net.minecraft.network.protocol.Packet<?> packet) {
         EntityUnleashEvent event = PaperarcEventCauses.unleashEvent();

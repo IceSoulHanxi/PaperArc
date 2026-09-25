@@ -29,7 +29,7 @@ public abstract class TurtleBreedGoalMixin {
     @Unique
     private int paperarc$fertilizeExperience = -1;
 
-    @Inject(method = "breed", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "breed", at = @At("HEAD"), cancellable = true, remap = false)
     private void paperarc$fertilize(CallbackInfo ci) {
         BreedGoalAccessor self = (BreedGoalAccessor) this;
         EntityFertilizeEggEvent event = FertilizeEggState.call(self.paperarc$getAnimal(), self.paperarc$getPartner());
@@ -42,6 +42,7 @@ public abstract class TurtleBreedGoalMixin {
 
     @WrapOperation(
             method = "breed",
+            remap = false,
             at = @At(value = "NEW", target = "Lnet/minecraft/world/entity/ExperienceOrb;", remap = false)
     )
     private ExperienceOrb paperarc$fertilizeXp(Level level, double x, double y, double z, int amount,

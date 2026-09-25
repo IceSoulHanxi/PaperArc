@@ -35,6 +35,7 @@ public abstract class PortalBlockEnterCancelMixin {
                     target = "Lnet/minecraft/world/entity/Entity;setAsInsidePortal(Lnet/minecraft/world/level/block/Portal;Lnet/minecraft/core/BlockPos;)V"),
             cancellable = true)
     private void paperarc$consumePortalEnterCancel(BlockState state, Level level, BlockPos pos, Entity entity,
+                                                   net.minecraft.world.entity.InsideBlockEffectApplier applier, boolean inside,
                                                    CallbackInfo ci) {
         EntityPortalEnterEvent event = PaperarcEventCauses.takePortalEnterEvent();
         if (event != null && event.isCancelled()) {

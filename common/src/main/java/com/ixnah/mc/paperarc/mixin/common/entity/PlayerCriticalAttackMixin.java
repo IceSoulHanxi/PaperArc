@@ -32,7 +32,7 @@ public abstract class PlayerCriticalAttackMixin {
 
     @WrapOperation(method = "attack",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
+                    target = "Lnet/minecraft/world/entity/Entity;hurtOrSimulate(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
     private boolean paperarc$markCriticalHit(Entity target, DamageSource source, float damage,
                                              Operation<Boolean> original, @Local(ordinal = 2) boolean critical) {
         PaperarcEventCauses.pushDamageCritical(critical);

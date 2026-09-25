@@ -31,11 +31,20 @@ public final class PaperarcOfflinePlayerPdc extends CraftPersistentDataContainer
 
     private final File dataFile;
 
-    public PaperarcOfflinePlayerPdc(File dataFile, CompoundTag root, CraftPersistentDataTypeRegistry registry) {
+    /**
+     * 直接读 {@code .dat}：1.21.11 的 {@code CraftOfflinePlayer#getData()} 改为返回 {@code ValueInput}，
+     * 不再给出根 {@code CompoundTag}，这里自己读同一个文件（写回路径本来就是这么做的）。
+     */
+    public PaperarcOfflinePlayerPdc(File dataFile, CraftPersistentDataTypeRegistry registry) {
         super(registry);
         this.dataFile = dataFile;
-        if (root != null) {
-            root.getCompound(BUKKIT_VALUES).ifPresent(this::putAll);
+        if (dataFile != null && dataFile.isFile()) {
+            try {
+                CompoundTag root = NbtIo.readCompressed(dataFile.toPath(), NbtAccounter.unlimitedHeap());
+                root.getCompound(BUKKIT_VALUES).ifPresent(this::putAll);
+            } catch (Exception ex) {
+                throw new IllegalStateException("无法读取离线玩家的 PersistentDataContainer：" + dataFile, ex);
+            }
         }
     }
 

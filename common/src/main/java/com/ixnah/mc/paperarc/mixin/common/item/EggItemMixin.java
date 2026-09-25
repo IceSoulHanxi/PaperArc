@@ -5,10 +5,13 @@ import com.ixnah.mc.paperarc.bridge.ProjectileLaunchSupport;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.EggItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -19,28 +22,36 @@ import org.spongepowered.asm.mixin.injection.At;
  * Port of Paper's PlayerLaunchProjectileEvent launch point for {@link EggItem}
  * (patches/server/PlayerLaunchProjectileEvent.patch).
  *
- * <p>Vanilla 1.21.1 {@code EggItem#use} contains exactly one
- * {@code Level#addFreshEntity} and one {@code ItemStack#shrink(1)} call
- * (javap-verified), so the event gate and the {@code shouldConsume()} handling
- * each need a single wrap.
- *
- * <p>Deviation from Paper: Paper moves {@code awardStat} inside the success
- * branch; here the vanilla stat award still runs on a cancelled launch.
+ * <p>In 1.21.11, {@code EggItem#use} delegates projectile spawning to
+ * {@code Projectile#spawnProjectileFromRotation}, followed by {@code ItemStack#consume(1, player)}.
+ * We wrap {@code spawnProjectileFromRotation} to fire the event and control spawning,
+ * and wrap {@code consume} to honor {@code shouldConsume()}.
  */
 @Mixin(EggItem.class)
 public abstract class EggItemMixin {
 
     @WrapOperation(
             method = "use",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;addFreshEntity(Lnet/minecraft/world/entity/Entity;)Z")
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/Projectile;spawnProjectileFromRotation(Lnet/minecraft/world/entity/projectile/Projectile$ProjectileFactory;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;FFF)Lnet/minecraft/world/entity/projectile/Projectile;")
     )
-    private boolean paperarc$launch(Level world, Entity projectile, Operation<Boolean> original,
-                                    Level level, Player user, InteractionHand hand) {
-        if (world.isClientSide()) {
-            return original.call(world, projectile);
+    private <T extends Projectile> T paperarc$launch(
+            Projectile.ProjectileFactory<T> factory,
+            ServerLevel serverLevel,
+            ItemStack stack,
+            LivingEntity shooter,
+            float z,
+            float velocity,
+            float inaccuracy,
+            Operation<T> original,
+            Level level,
+            Player user,
+            InteractionHand hand) {
+        T projectile = factory.create(serverLevel, shooter, stack);
+        if (!ProjectileLaunchSupport.callLaunchEvent(user, user.getItemInHand(hand), projectile)) {
+            return projectile;
         }
-        return ProjectileLaunchSupport.callLaunchEvent(user, user.getItemInHand(hand), projectile)
-                && original.call(world, projectile);
+        return Projectile.spawnProjectile(projectile, serverLevel, stack,
+                p -> p.shootFromRotation(shooter, shooter.getXRot(), shooter.getYRot(), z, velocity, inaccuracy));
     }
 
     @WrapOperation(

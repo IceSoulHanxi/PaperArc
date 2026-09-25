@@ -21,7 +21,8 @@ dependencies {
     compileOnly libs.spigot.api
     compileOnly libs.paper.api
     // deobf spigot：CB 类引用（CraftBlock 等）编译需要，运行时由 versionCraftBukkit 版本化
-    def arclightSpigotDeobf = file("${rootDir}/../arclight-gos/.gradle/arclight/arclight_repo/io/izzel/arclight/generated/spigot/1.21.11").isDirectory()
+    def arclightSpigotDeobf = file("${rootDir}/../Arclight/.gradle/arclight/arclight_repo/io/izzel/arclight/generated/spigot/1.21.11").isDirectory()
+            || file("${rootDir}/../arclight-gos/.gradle/arclight/arclight_repo/io/izzel/arclight/generated/spigot/1.21.11").isDirectory()
             || file("${rootDir}/vendor/maven-flat/spigot-1.21.11-deobf.jar").isFile()
     if (arclightSpigotDeobf) {
         compileOnly "io.izzel.arclight.generated:spigot:1.21.11:deobf"
@@ -50,6 +51,7 @@ processResources {
 shadowJar {
     exclude 'fabric.mod.json'
     exclude 'architectury.common.json'
+    exclude '*-refmap.json'
     exclude 'org/bukkit/**'
     // arclight 自身导出 org.spigotmc，重复导出会触发 JPMS ResolutionException
     exclude 'org/spigotmc/**'
@@ -81,10 +83,17 @@ tasks.register('versionCraftBukkit', com.ixnah.mc.paperarc.build.VersionCraftBuk
     jar.set(tasks.named('remapJar').flatMap { it.archiveFile })
     revision.set('v1_21_R7')
     mixinConfigs.set('')
+    stripRefmaps.set(true)
 }
 tasks.matching { it.name == 'versionCraftBukkit' }.configureEach {
     mustRunAfter tasks.named('remapJar')
     outputs.upToDateWhen { false }
+}
+tasks.named('remapJar') {
+    finalizedBy 'versionCraftBukkit'
+}
+tasks.named('assemble') {
+    dependsOn 'versionCraftBukkit'
 }
 tasks.named('build') {
     dependsOn 'versionCraftBukkit'

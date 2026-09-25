@@ -4,6 +4,7 @@ import com.destroystokyo.paper.event.entity.EndermanEscapeEvent;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -62,8 +63,8 @@ public abstract class EnderManEscapeMixin {
         return roll;
     }
 
-    @Inject(method = "hurt", at = @At("HEAD"))
-    private void paperarc$resetIndirect(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "hurtServer", at = @At("HEAD"))
+    private void paperarc$resetIndirect(ServerLevel level, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         paperarc$indirectFired = false;
         paperarc$indirectBlocked = false;
     }
@@ -71,7 +72,7 @@ public abstract class EnderManEscapeMixin {
     // INDIRECT: ordinal 1 is the teleport call inside the 64-attempt escape loop
     // (ordinal 0 is vanilla's unrelated random-teleport-on-hurt).
     @WrapOperation(
-            method = "hurt",
+            method = "hurtServer",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/monster/EnderMan;teleport()Z", ordinal = 1)
     )
     private boolean paperarc$indirect(EnderMan instance, Operation<Boolean> original) {

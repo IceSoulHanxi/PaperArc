@@ -35,7 +35,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class FireBlockPrimeMixin {
 
     @Inject(method = "checkBurnOut", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/world/level/block/TntBlock;explode(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V"),
+            target = "Lnet/minecraft/world/level/block/TntBlock;prime(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)Z"),
             cancellable = true)
     private void paperarc$primeFire(Level level, BlockPos pos, int chance, RandomSource random, int age,
                                     CallbackInfo ci) {

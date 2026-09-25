@@ -1,7 +1,6 @@
 package com.ixnah.mc.paperarc.mixin.common.api;
 
 import com.ixnah.mc.paperarc.bridge.api.PaperarcOfflinePlayerPdc;
-import net.minecraft.nbt.CompoundTag;
 import org.bukkit.craftbukkit.v.CraftOfflinePlayer;
 import org.bukkit.craftbukkit.v.persistence.CraftPersistentDataTypeRegistry;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,11 +28,6 @@ public abstract class CraftOfflinePlayerPdcApiMixin {
             new CraftPersistentDataTypeRegistry();
 
     @Shadow(remap = false)
-    private CompoundTag getData() {
-        throw new AssertionError();
-    }
-
-    @Shadow(remap = false)
     private File getDataFile() {
         throw new AssertionError();
     }
@@ -45,6 +39,6 @@ public abstract class CraftOfflinePlayerPdcApiMixin {
         if (online != null) {
             return online.getPersistentDataContainer();
         }
-        return new PaperarcOfflinePlayerPdc(this.getDataFile(), this.getData(), PAPERARC$PDC_REGISTRY);
+        return new PaperarcOfflinePlayerPdc(this.getDataFile(), PAPERARC$PDC_REGISTRY);
     }
 }

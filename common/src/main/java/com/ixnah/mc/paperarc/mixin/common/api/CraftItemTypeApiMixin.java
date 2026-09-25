@@ -9,12 +9,15 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(CraftItemType.class)
 public abstract class CraftItemTypeApiMixin {
 
-    @Shadow
-    public abstract net.minecraft.world.item.Item getHandle();
+    // 1.21.11：getHandle() 上移到泛型父类 CraftRegistryItem<M>（擦除为 Object），类型化的 @Shadow 对不上
+    @Unique
+    private net.minecraft.world.item.Item paperarc$handle() {
+        return ((CraftItemType<?>) (Object) this).getHandle();
+    }
 
     @Unique
     public String translationKey() {
-        return this.getHandle().getDescriptionId();
+        return this.paperarc$handle().getDescriptionId();
     }
 
     /**
@@ -25,7 +28,7 @@ public abstract class CraftItemTypeApiMixin {
     public com.google.common.collect.Multimap getDefaultAttributeModifiers() {
         com.google.common.collect.ImmutableMultimap.Builder<org.bukkit.attribute.Attribute, org.bukkit.attribute.AttributeModifier> out = com.google.common.collect.ImmutableMultimap.builder();
         net.minecraft.world.item.component.ItemAttributeModifiers modifiers =
-                this.getHandle().components().get(
+                this.paperarc$handle().components().get(
                         net.minecraft.core.component.DataComponents.ATTRIBUTE_MODIFIERS);
         if (modifiers != null) {
             for (net.minecraft.world.item.component.ItemAttributeModifiers.Entry entry : modifiers.modifiers()) {
@@ -42,7 +45,7 @@ public abstract class CraftItemTypeApiMixin {
 
     @Unique
     public org.bukkit.inventory.ItemRarity getItemRarity() {
-        net.minecraft.world.item.Rarity rarity = this.getHandle().components().get(
+        net.minecraft.world.item.Rarity rarity = this.paperarc$handle().components().get(
                 net.minecraft.core.component.DataComponents.RARITY);
         if (rarity == null) {
             return org.bukkit.inventory.ItemRarity.COMMON;

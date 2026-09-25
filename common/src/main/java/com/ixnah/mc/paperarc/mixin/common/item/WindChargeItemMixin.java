@@ -7,15 +7,14 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.ixnah.mc.paperarc.bridge.LaunchState;
 import com.ixnah.mc.paperarc.bridge.PaperArcBridge;
 import net.minecraft.network.protocol.game.ClientboundCooldownPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stat;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemCooldowns;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.WindChargeItem;
 import net.minecraft.world.level.Level;
@@ -26,29 +25,27 @@ import org.spongepowered.asm.mixin.injection.At;
 /**
  * Port of Paper's PlayerLaunchProjectileEvent for WindChargeItem.use
  * (PlayerLaunchProjectileEvent.patch).
- *
- * Paper's WindCharge variant has the richest cancel semantics of the launch
- * family: on cancellation it resyncs the container menu, resets the client
- * cooldown display (ClientboundCooldownPacket(this, 0)) and returns FAIL;
- * shouldConsume=false suppresses the consume at the end of use(). The vanilla
- * tail (playSound, addCooldown(10), awardStat, consume) is therefore wrapped
- * individually and suppressed via {@link LaunchState} flags.
- *
- * Bytecode-verified 1.21.1: exactly one call site each for addFreshEntity,
- * playSound, addCooldown, awardStat(Stat) and consume(int, LivingEntity).
  */
 @Mixin(WindChargeItem.class)
 public abstract class WindChargeItemMixin {
 
     @WrapOperation(
             method = "use",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;addFreshEntity(Lnet/minecraft/world/entity/Entity;)Z")
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/Projectile;spawnProjectileFromRotation(Lnet/minecraft/world/entity/projectile/Projectile$ProjectileFactory;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;FFF)Lnet/minecraft/world/entity/projectile/Projectile;")
     )
-    private boolean paperarc$launch(Level world, Entity projectile, Operation<Boolean> original,
-                                    Level level, Player user, InteractionHand hand) {
-        if (world.isClientSide()) {
-            return original.call(world, projectile);
-        }
+    private <T extends Projectile> T paperarc$launch(
+            Projectile.ProjectileFactory<T> factory,
+            ServerLevel serverLevel,
+            ItemStack stack,
+            LivingEntity shooter,
+            float z,
+            float velocity,
+            float inaccuracy,
+            Operation<T> original,
+            Level level,
+            Player user,
+            InteractionHand hand) {
+        T projectile = factory.create(serverLevel, shooter, stack);
         PlayerLaunchProjectileEvent event = new PlayerLaunchProjectileEvent(
                 PaperArcBridge.bukkitPlayer(user),
                 CraftItemStack.asCraftMirror(user.getItemInHand(hand)),
@@ -57,33 +54,24 @@ public abstract class WindChargeItemMixin {
             LaunchState.cancelled(true);
             user.containerMenu.sendAllDataToRemote();
             if (user instanceof ServerPlayer serverPlayer) {
-                serverPlayer.connection.send(new ClientboundCooldownPacket(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey((Item) (Object) this), 0));
+                serverPlayer.connection.send(new ClientboundCooldownPacket(user.getCooldowns().getCooldownGroup(user.getItemInHand(hand)), 0));
             }
-            return false;
+            return projectile;
         }
         LaunchState.noConsume(!event.shouldConsume());
-        return original.call(world, projectile);
+        return Projectile.spawnProjectile(projectile, serverLevel, stack,
+                p -> p.shootFromRotation(shooter, shooter.getXRot(), shooter.getYRot(), z, velocity, inaccuracy));
     }
 
     @WrapOperation(
             method = "use",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;playSound(Lnet/minecraft/world/entity/player/Player;DDDLnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundSource;FF)V")
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;playSound(Lnet/minecraft/world/entity/Entity;DDDLnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundSource;FF)V")
     )
-    private void paperarc$silence(Level world, Player player, double x, double y, double z,
+    private void paperarc$silence(Level world, net.minecraft.world.entity.Entity player, double x, double y, double z,
                                   net.minecraft.sounds.SoundEvent sound, net.minecraft.sounds.SoundSource source,
                                   float volume, float pitch, Operation<Void> original) {
         if (!LaunchState.isCancelled()) {
             original.call(world, player, x, y, z, sound, source, volume, pitch);
-        }
-    }
-
-    @WrapOperation(
-            method = "use",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemCooldowns;addCooldown(Lnet/minecraft/world/item/Item;I)V")
-    )
-    private void paperarc$noCooldown(ItemCooldowns cooldowns, Item item, int duration, Operation<Void> original) {
-        if (!LaunchState.isCancelled()) {
-            original.call(cooldowns, item, duration);
         }
     }
 
@@ -109,9 +97,10 @@ public abstract class WindChargeItemMixin {
 
     @ModifyReturnValue(method = "use", at = @At("RETURN"))
     private InteractionResult paperarc$result(InteractionResult original,
-                                                               Level level, Player user, InteractionHand hand) {
+                                              Level level, Player user, InteractionHand hand) {
         return LaunchState.takeCancelled()
                 ? InteractionResult.FAIL
                 : original;
     }
 }
+

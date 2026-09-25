@@ -9,12 +9,15 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(CraftBlockType.class)
 public abstract class CraftBlockTypeApiMixin {
 
-    @Shadow
-    public abstract net.minecraft.world.level.block.Block getHandle();
+    // 1.21.11：getHandle() 上移到泛型父类 CraftRegistryItem<M>（擦除为 Object），类型化的 @Shadow 对不上
+    @Unique
+    private net.minecraft.world.level.block.Block paperarc$handle() {
+        return ((CraftBlockType<?>) (Object) this).getHandle();
+    }
 
     @Unique
     public String translationKey() {
-        return this.getHandle().getDescriptionId();
+        return this.paperarc$handle().getDescriptionId();
     }
 
     /**
@@ -23,6 +26,6 @@ public abstract class CraftBlockTypeApiMixin {
      */
     @Unique
     public boolean hasCollision() {
-        return this.getHandle().hasCollision;
+        return this.paperarc$handle().hasCollision;
     }
 }

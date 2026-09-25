@@ -3,6 +3,7 @@ package com.ixnah.mc.paperarc.mixin.common.server;
 import com.ixnah.mc.paperarc.mixin.common.player.ServerPlayerSetSpawnMixin;
 import com.destroystokyo.paper.event.player.PlayerSetSpawnEvent;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.coordinates.Coordinates;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.commands.SetSpawnCommand;
 import net.minecraft.server.level.ServerPlayer;
@@ -24,13 +25,13 @@ public class SetSpawnCommandMixin {
 
     @Inject(method = "setSpawn", at = @At("HEAD"))
     private static void paperarc$pushCommandCause(CommandSourceStack source, Collection<ServerPlayer> targets,
-                                                  BlockPos pos, float angle, CallbackInfoReturnable<Integer> cir) {
+                                                  BlockPos pos, Coordinates angle, CallbackInfoReturnable<Integer> cir) {
         com.ixnah.mc.paperarc.bridge.SpawnCauseSupport.push(PlayerSetSpawnEvent.Cause.COMMAND);
     }
 
     @Inject(method = "setSpawn", at = @At("RETURN"))
     private static void paperarc$popCommandCause(CommandSourceStack source, Collection<ServerPlayer> targets,
-                                                 BlockPos pos, float angle, CallbackInfoReturnable<Integer> cir) {
+                                                 BlockPos pos, Coordinates angle, CallbackInfoReturnable<Integer> cir) {
         com.ixnah.mc.paperarc.bridge.SpawnCauseSupport.clear();
     }
 }

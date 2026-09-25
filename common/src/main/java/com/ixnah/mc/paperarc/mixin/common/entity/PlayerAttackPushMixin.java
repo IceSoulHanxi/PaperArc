@@ -20,14 +20,14 @@ import org.spongepowered.asm.mixin.injection.At;
 public abstract class PlayerAttackPushMixin {
 
     @WrapOperation(
-            method = "attack(Lnet/minecraft/world/entity/Entity;)V",
+            method = "causeExtraKnockback(Lnet/minecraft/world/entity/Entity;FLnet/minecraft/world/phys/Vec3;)V",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/world/entity/Entity;push(DDD)V"
             )
     )
     private void paperarc$pushedByAttack(Entity instance, double x, double y, double z,
-                                         Operation<Void> original, Entity target) {
+                                         Operation<Void> original) {
         EntityPushedByEntityAttackEvent event = new EntityPushedByEntityAttackEvent(
                 PaperArcBridge.bukkitEntity(instance),
                 EntityKnockbackEvent.Cause.PUSH,

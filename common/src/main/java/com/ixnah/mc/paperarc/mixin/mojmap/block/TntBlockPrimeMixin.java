@@ -2,7 +2,7 @@ package com.ixnah.mc.paperarc.mixin.mojmap.block;
 
 import com.destroystokyo.paper.event.block.TNTPrimeEvent;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
@@ -37,15 +37,15 @@ import org.jetbrains.annotations.Nullable;
 @Mixin(TntBlock.class)
 public abstract class TntBlockPrimeMixin {
 
-    @Inject(method = "explode(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/LivingEntity;)V",
+    @Inject(method = "prime(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/LivingEntity;)Z",
             at = @At("HEAD"), cancellable = true, remap = false)
     private static void paperarc$prime(Level level, BlockPos pos, @Nullable LivingEntity entity,
-                                       CallbackInfo ci) {
+                                       CallbackInfoReturnable<Boolean> cir) {
         TNTPrimeEvent.PrimeReason reason = entity != null
                 ? TNTPrimeEvent.PrimeReason.PROJECTILE
                 : TNTPrimeEvent.PrimeReason.REDSTONE;
         if (!new TNTPrimeEvent(CraftBlock.at(level, pos), reason, PaperArcBridge.bukkitEntity(entity)).callEvent()) {
-            ci.cancel();
+            cir.setReturnValue(false);
         }
     }
 }

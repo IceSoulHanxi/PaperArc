@@ -8,8 +8,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import org.bukkit.craftbukkit.v.CraftEquipmentSlot;
-import org.bukkit.craftbukkit.v.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.v.inventory.CraftItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,16 +24,15 @@ public class CrossbowItemMixin {
      * ProjectileWeaponItemMixin inside draw(). Defaults to {@code true}
      * so any path that never fires the event keeps vanilla behavior.
      */
-    
-
     @WrapOperation(
-        method = "releaseUsing",
+        method = "onUseTick",
         at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/world/item/CrossbowItem;tryLoadProjectiles(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;)Z"
         )
     )
-    private boolean paperarc$loadCrossbow(LivingEntity shooter, ItemStack crossbow, Operation<Boolean> original) {
+    private boolean paperarc$loadCrossbow(LivingEntity shooter, ItemStack crossbow, Operation<Boolean> original,
+                                          Level level, LivingEntity livingEntity, ItemStack stack, int count) {
         EntityLoadCrossbowEvent event = new EntityLoadCrossbowEvent(
             (org.bukkit.entity.LivingEntity) PaperArcBridge.bukkitEntity(shooter),
             CraftItemStack.asCraftMirror(crossbow),
