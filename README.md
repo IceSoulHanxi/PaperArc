@@ -28,28 +28,24 @@ Paper API 的插件可以像在 Paper 服务端上一样正常加载与运行。
 
 | 组件 | 版本 |
 |------|------|
-| Minecraft | 1.21.1 |
+| Minecraft | 1.21.11 |
 | Java | 21 |
-| Arclight | 1.21.1（FeudalKings 分支，1.0.2-SNAPSHOT） |
-| 加载器 | Fabric Loader 0.19.x ／ NeoForge 21.1.x ／ Forge 52.1.x |
+| Arclight | 1.21.11（GroupOfSoldiers 分支，1.0.0-SNAPSHOT） |
+| 加载器 | Fabric Loader 0.18.x+ ／ NeoForge 21.11.x |
 | 构建 | Gradle 8.13 + Architectury Loom |
 
-三个加载器的 Arclight 发行版均可使用，按你现有的 Arclight 类型选择对应产物即可。
+Fabric 与 NeoForge 两个加载器的 Arclight 发行版均可使用，按你现有的 Arclight 类型选择对应产物即可。
 
 ## 安装
 
 1. 从下方构建说明获取（或下载）与你 Arclight 加载器对应的 Mod Jar：
    - Arclight-Fabric → `paperarc-<version>.jar`（fabric 产物）
    - Arclight-NeoForge → neoforge 产物
-   - Arclight-Forge → forge 产物
 2. 将 Jar 放入 Arclight 服务端的 `mods/` 目录；
    你的插件照常放在 `plugins/` 目录。
 3. 启动服务器，日志出现 `Done (` 即安装成功。
 
-> **不需要另外下载 MixinExtras。** Forge 端所需的 MixinExtras 已经通过
-> Jar-in-Jar 嵌在 PaperArc 的产物里（`forge/build.gradle` 的 `include`，
-> `remapJar` 会自动写进 `mods.toml` 的 `[[files]]`）；Fabric 与 NeoForge 由
-> 加载器自带。放一个 Jar 就够了。
+> **不需要另外下载 MixinExtras。** Fabric 与 NeoForge 均由加载器自带。放一个 Jar 就够了。
 
 ## 构建
 
@@ -67,7 +63,6 @@ cd paperarc
 |---|---|
 | Fabric | `fabric/build/libs/paperarc-<version>.jar` |
 | NeoForge | `neoforge/build/libs/paperarc-<version>.jar` |
-| Forge | `forge/build/libs/paperarc-<version>.jar` |
 
 > 构建需要访问 spigotmc / maven.izzel.io 等 Maven 仓库；网络受限时请自行
 > 为 Gradle/JVM 配置代理后再执行。
@@ -81,8 +76,7 @@ paperarc/
 ├── common/    # 跨平台共享主体：Paper API 实现、公共 Mixin、访问权限扩展
 ├── fabric/    # Fabric 入口 + Fabric 专属 Mixin
 ├── neoforge/  # NeoForge 入口 + 共享 Mojang 映射 Mixin
-├── forge/     # Forge 入口（复用共享 Mixin）
-└── buildSrc  # 构建辅助任务（CraftBukkit 包版本化）
+└── buildSrc   # 构建辅助任务（CraftBukkit 包版本化）
 ```
 
 ## 反馈与兼容性报告
