@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, 1.21.1 ]
   pull_request:
   workflow_dispatch:
 
@@ -37,18 +37,18 @@ jobs:
       - name: Cache Arclight spigot deps
         id: arclight-cache
         uses: actions/cache@v4
-        # 失败的 run 默认不落盘缓存；开启后即使后续步骤失败也保存，避免重复跑 BuildTools
         with:
-          save-always: true
           path: Arclight/.gradle
           key: arclight-spigotdeps-${{ env.ARCLIGHT_REF }}-v1
 
-      - name: Generate spigot-deobf (BuildTools, skipped when cached)
+      # 提前初始化 Gradle 环境与全局缓存，避免每次重复下载 Gradle
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Generate spigot-deobf (BuildTools)
+        if: steps.arclight-cache.outputs.cache-hit != 'true'
         working-directory: Arclight
         run: ./gradlew help --no-daemon
-
-      - name: Setup Gradle cache
-        uses: gradle/actions/setup-gradle@v3
 
       # build 会连带跑 check：checkMixinRegistry / checkLoaderMixinParity /
       # checkNoSilentInjections / checkIfaceImplPairing（后者需要 Arclight 运行时 jar，
