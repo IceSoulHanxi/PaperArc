@@ -51,7 +51,7 @@ jobs:
 
       # 提前初始化 Gradle 环境与全局缓存，避免每次重复下载 Gradle
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
 
       # 生成 spigot-deobf。remapSpigotJar 产出 mapped-deobf.jar（不触发自依赖 jar 的 spigotJar）。
       # 该任务内部走 BuildTools（下载 spigot 源码→编译→映射→remap），命中缓存时直接跳过。
