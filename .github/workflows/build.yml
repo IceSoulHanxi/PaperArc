@@ -44,21 +44,26 @@ jobs:
         id: arclight-cache
         uses: actions/cache@v4
         with:
-          save-always: true
           path: |
             Arclight/.gradle
             Arclight/arclight-common/build/arclight_cache
           key: arclight-spigotdeps-${{ env.ARCLIGHT_REF }}-v1
 
+      # 提前初始化 Gradle 环境与全局缓存，避免每次重复下载 Gradle
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       # 生成 spigot-deobf。remapSpigotJar 产出 mapped-deobf.jar（不触发自依赖 jar 的 spigotJar）。
-      # 该任务内部走 BuildTools（下载 spigot 源码→编译→映射→remap），命中缓存时秒级完成。
+      # 该任务内部走 BuildTools（下载 spigot 源码→编译→映射→remap），命中缓存时直接跳过。
       - name: Generate spigot-deobf
+        if: steps.arclight-cache.outputs.cache-hit != 'true'
         working-directory: Arclight
         run: ./gradlew :arclight-common:remapSpigotJar --no-daemon
 
       # 把 deobf 发布到 paperarc 期望的仓库坐标（io.izzel.arclight.generated:spigot:1.20.1:deobf）。
       # Arclight 本身不自动发布；spigotJar 依赖自身 jar 且 compileJava 依赖 CB 类会先失败。
       - name: Publish spigot-deobf to arclight_repo
+        if: steps.arclight-cache.outputs.cache-hit != 'true'
         working-directory: Arclight
         shell: bash
         run: |
@@ -68,9 +73,6 @@ jobs:
           cp "$SPIGOT_CACHE/spigot-1.20.1-mapped.jar" "$SPIGOT_REPO/spigot-1.20.1-mapped.jar"
           printf '%s\n' '<?xml version="1.0" encoding="UTF-8"?>' '<project xmlns="http://maven.apache.org/POM/4.0.0">' '  <modelVersion>4.0.0</modelVersion>' '  <groupId>io.izzel.arclight.generated</groupId>' '  <artifactId>spigot</artifactId>' '  <version>1.20.1</version>' '  <packaging>jar</packaging>' '</project>' > "$SPIGOT_REPO/spigot-1.20.1.pom"
           ls -la "$SPIGOT_REPO"
-
-      - name: Setup Gradle cache
-        uses: gradle/actions/setup-gradle@v3
 
       - name: Build PaperArc
         working-directory: PaperArc
